@@ -1,18 +1,21 @@
 var express = require('express');
 var cors = require('cors');
 var crypto = require('crypto');
-var fs = require('fs');
 var path = require('path');
+var Database = require('better-sqlite3');
 require('dotenv').config();
 
 var app = express();
 var PORT = process.env.PORT || 3000;
-var DATA_DIR = path.join(__dirname, 'data');
 var ADMIN_HASH = process.env.ADMIN_PASSWORD_HASH;
+var DB_PATH = path.join(__dirname, 'data.db');
 
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-}
+var db = new Database(DB_PATH);
+db.pragma('journal_mode = WAL');
+
+db.exec("CREATE TABLE IF NOT EXISTS subscribers (email TEXT PRIMARY KEY, created_at TEXT DEFAULT (datetime('now')))");
+db.exec("CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, phone TEXT, email TEXT, company TEXT, subject TEXT, message TEXT, date TEXT)");
+db.exec("CREATE TABLE IF NOT EXISTS unsubscribed_notified (email TEXT PRIMARY KEY, notified_at TEXT DEFAULT (datetime('now')))");
 
 app.use(cors());
 app.use(express.json({ limit: '100kb' }));
@@ -30,39 +33,23 @@ function sha256(str) {
   return crypto.createHash('sha256').update(str).digest('hex');
 }
 
-function readData(filename) {
-  var filePath = path.join(DATA_DIR, filename);
-  try {
-    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
-  } catch (_) {
-    return [];
-  }
-}
-
-function writeData(filename, data) {
-  var filePath = path.join(DATA_DIR, filename);
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
-}
-
 function authorize(password) {
   return password && ADMIN_HASH && sha256(password) === ADMIN_HASH;
 }
 
 app.post('/api/subscribe', function (req, res) {
   try {
-    var email = (req.body.email || '').trim();
+    var email = (req.body.email || '').trim().toLowerCase();
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return res.status(400).json({ error: 'Invalid email' });
     }
 
-    var list = readData('subscribers.json');
-    if (list.indexOf(email) !== -1) {
+    var existing = db.prepare("SELECT email FROM subscribers WHERE email = ?").get(email);
+    if (existing) {
       return res.status(409).json({ error: 'Already subscribed' });
     }
 
-    list.push(email);
-    writeData('subscribers.json', list);
-
+    db.prepare("INSERT INTO subscribers (email) VALUES (?)").run(email);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message || 'Server error' });
@@ -83,9 +70,8 @@ app.post('/api/contact', function (req, res) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    var list = readData('messages.json');
-    list.push({ name: name, phone: phone, email: email, company: company, subject: subject, message: message, date: date });
-    writeData('messages.json', list);
+    db.prepare("INSERT INTO messages (name, phone, email, company, subject, message, date) VALUES (?, ?, ?, ?, ?, ?, ?)")
+      .run(name, phone, email, company, subject, message, date);
 
     res.json({ success: true });
   } catch (err) {
@@ -99,9 +85,9 @@ app.post('/api/get-data', function (req, res) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    var subscribers = readData('subscribers.json');
-    var messages = readData('messages.json');
-    var notified = readData('unsubscribed_notified.json');
+    var subscribers = db.prepare("SELECT email FROM subscribers ORDER BY created_at ASC").all().map(function (r) { return r.email; });
+    var messages = db.prepare("SELECT * FROM messages ORDER BY id ASC").all();
+    var notified = db.prepare("SELECT email FROM unsubscribed_notified").all().map(function (r) { return r.email; });
 
     res.json({ subscribers: subscribers, messages: messages, notified: notified });
   } catch (err) {
@@ -116,10 +102,8 @@ app.post('/api/check-subscriber', function (req, res) {
       return res.status(400).json({ error: 'Invalid email' });
     }
 
-    var list = readData('subscribers.json');
-    var isSubscribed = list.indexOf(email) !== -1;
-
-    res.json({ subscribed: isSubscribed });
+    var existing = db.prepare("SELECT email FROM subscribers WHERE email = ?").get(email);
+    res.json({ subscribed: !!existing });
   } catch (err) {
     res.status(500).json({ error: err.message || 'Server error' });
   }
@@ -132,14 +116,10 @@ app.post('/api/unsubscribe', function (req, res) {
       return res.status(400).json({ error: 'Invalid email' });
     }
 
-    var list = readData('subscribers.json');
-    var idx = list.indexOf(email);
-    if (idx === -1) {
+    var result = db.prepare("DELETE FROM subscribers WHERE email = ?").run(email);
+    if (result.changes === 0) {
       return res.status(404).json({ error: 'Email not found in our subscribers list.' });
     }
-
-    list.splice(idx, 1);
-    writeData('subscribers.json', list);
 
     res.json({ success: true, message: 'You have been unsubscribed successfully.' });
   } catch (err) {
@@ -158,14 +138,10 @@ app.post('/api/delete-subscriber', function (req, res) {
       return res.status(400).json({ error: 'Email required' });
     }
 
-    var list = readData('subscribers.json');
-    var idx = list.indexOf(email);
-    if (idx === -1) {
+    var result = db.prepare("DELETE FROM subscribers WHERE email = ?").run(email);
+    if (result.changes === 0) {
       return res.status(404).json({ error: 'Email not found' });
     }
-
-    list.splice(idx, 1);
-    writeData('subscribers.json', list);
 
     res.json({ success: true });
   } catch (err) {
@@ -184,11 +160,7 @@ app.post('/api/notify-unsubscribe', function (req, res) {
       return res.status(400).json({ error: 'Email required' });
     }
 
-    var list = readData('unsubscribed_notified.json');
-    if (list.indexOf(email) === -1) {
-      list.push(email);
-      writeData('unsubscribed_notified.json', list);
-    }
+    db.prepare("INSERT OR IGNORE INTO unsubscribed_notified (email) VALUES (?)").run(email);
 
     res.json({ success: true, message: email + ' has been notified of unsubscription.' });
   } catch (err) {
@@ -203,11 +175,14 @@ app.post('/api/clear-data', function (req, res) {
     }
 
     var type = req.body.type || '';
-    if (type !== 'subscribers' && type !== 'messages') {
+    if (type === 'subscribers') {
+      db.prepare("DELETE FROM subscribers").run();
+    } else if (type === 'messages') {
+      db.prepare("DELETE FROM messages").run();
+    } else {
       return res.status(400).json({ error: 'Invalid type' });
     }
 
-    writeData(type + '.json', []);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message || 'Server error' });
