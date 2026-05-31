@@ -1,0 +1,14 @@
+{
+  "name": "royal-computers",
+  "version": "1.0.0",
+  "private": true,
+  "engines": { "node": ">=18.0.0" },
+  "scripts": {
+    "start": "node server/index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.0"
+  }
+}

@@ -1,0 +1,1823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';" />
+  <title>Products – Royal Computers Namibia</title>
+  <meta name="description" content="Shop laptop batteries, chargers, charging ports, LCD screens, networking gear, POS systems, and IT accessories at Royal Computers Namibia. Nationwide delivery.">
+  <link rel="canonical" href="https://netmac.co.za/products.html">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://netmac.co.za/" },
+      { "@type": "ListItem", "position": 2, "name": "Products", "item": "https://netmac.co.za/products.html" }
+    ]
+  }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/design-tokens.css">
+  <link rel="stylesheet" href="css/royal-theme.css" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="css/search-dropdown.css">
+  <link rel="stylesheet" href="css/print-quote.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="manifest" href="js/manifest.json" />
+  <meta name="theme-color" content="#e5383b" />
+  <link rel="apple-touch-icon" href="ROYAL PICS/royal logo.webp" />
+  <link rel="stylesheet" href="css/checkout-wizard.css" />
+  <link rel="stylesheet" href="css/enhanced-ui.css">
+  <link rel="stylesheet" href="css/interactive-components.css">
+  <link rel="stylesheet" href="css/ecommerce-features.css">
+
+  <link rel="stylesheet" href="css/pc-builder.css">
+  <link rel="stylesheet" href="css/mobile.css">
+  <style>
+    .shop-topbar {
+      max-width: 1200px; margin: 0 auto; padding: 48px 28px 28px;
+      display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap;
+    }
+    .shop-title-block h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.4px; color: var(--text); margin-bottom: 6px; }
+    .shop-breadcrumb { font-size: 13px; color: var(--text-muted); display: flex; gap: 8px; }
+    .shop-breadcrumb a { color: var(--red); transition: color var(--transition); }
+    .shop-breadcrumb a:hover { color: var(--red-dark); }
+    .shop-controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .search-products {
+      display: flex; align-items: center; background: var(--white); border: 1.5px solid var(--border);
+      overflow: hidden; border-radius: 8px;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    .search-products:focus-within { border-color: var(--red); box-shadow: 0 0 0 3px var(--red-glow); }
+    .search-products input {
+      border: none; outline: none; padding: 10px 14px; font-size: 14px; font-family: inherit;
+      background: transparent; color: var(--text); width: 220px;
+    }
+    .search-products input::placeholder { color: var(--text-muted); }
+    .search-products button {
+      background: var(--red); border: none; color: #fff; padding: 10px 16px; cursor: pointer;
+      font-size: 13px; font-weight: 600; letter-spacing: 0.3px;
+      transition: background var(--transition);
+    }
+    .search-products button:hover { background: var(--red-dark); }
+    .sort-wrap { display: flex; align-items: center; }
+    .sort-select {
+      padding: 10px 36px 10px 14px; border: 1.5px solid var(--border);
+      font-size: 13px; font-family: inherit; font-weight: 500; background: var(--white);
+      color: var(--text); cursor: pointer; border-radius: 8px;
+      -webkit-appearance: none; appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238899aa' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 12px center;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    .sort-select:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 3px var(--red-glow); }
+    .filter-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 10px 18px; border: 1.5px solid var(--border); background: var(--white);
+      color: var(--text); font-size: 13px; font-weight: 500; cursor: pointer;
+      border-radius: 8px; transition: all var(--transition);
+    }
+    .filter-btn:hover { border-color: var(--red); color: var(--red); }
+    .filter-btn .filter-arrow { font-size: 10px; color: var(--text-muted); }
+    .reset-btn {
+      padding: 10px 18px; border: 1.5px solid var(--border); background: var(--white);
+      color: var(--text-muted); font-size: 13px; font-weight: 500; cursor: pointer;
+      border-radius: 8px; opacity: 0.5; transition: all var(--transition);
+    }
+    .reset-btn:not(:disabled):hover { border-color: var(--red); color: var(--red); opacity: 1; }
+    .reset-btn:disabled { cursor: not-allowed; opacity: 0.3; }
+    .shop-divider { max-width: 1200px; margin: 0 auto; padding: 0 28px; }
+    .shop-divider hr { border: none; border-top: 1.5px solid var(--border); }
+    .products-container { max-width: 1200px; margin: 0 auto 80px; padding: 0 28px; }
+    .products-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 48px 24px; padding-top: 40px;
+    }
+    .product-card {
+      background: var(--dark-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      transition: all var(--transition);
+    }
+    .product-card:hover {
+      transform: translateY(-6px);
+      border-color: var(--border-red);
+      box-shadow: var(--shadow-lg);
+    }
+    .product-image-wrap {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+      margin-bottom: 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(0,0,0,0.04);
+    }
+    .product-image {
+      width: 100%; height: 100%; object-fit: contain; padding: 8px;
+      transition: transform 0.18s ease-in-out, opacity 0.18s ease-in-out;
+      will-change: transform, opacity;
+      mix-blend-mode: multiply;
+    }
+    .product-image-wrap .product-image.is-variant-transitioning { opacity: 0; transform: scale(0.965) !important; }
+    .product-card:hover .product-image-wrap img { transform: scale(1.05); }
+    .product-badge { position: absolute; top: 3px; left: 3px; background: var(--red); color: #fff; font-size: 7px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2px; padding: 1px 5px; z-index: 2; border-radius: 3px; line-height: 1.4; }
+    .product-badge.new { background: #6b7280; }
+    .product-badge.hot { background: var(--red); }
+    .product-badge.sale { background: #059669; }
+    .product-info { padding: 0; }
+    .product-category { font-size: 11px; text-transform: uppercase; letter-spacing: 0.7px; color: var(--text-muted); font-weight: 600; margin-bottom: 5px; }
+    .product-name { font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.4; margin-bottom: 6px; transition: color var(--transition); }
+    .product-card:hover .product-name { color: var(--red); }
+    .variant-selector { margin: 8px 0 4px; }
+    .variant-select { width: 100%; padding: 8px 10px; border: 1.5px solid var(--border); font-size: 12px; background: var(--white); color: var(--text); font-family: inherit; border-radius: var(--radius-sm); }
+    .product-price-row { display: flex; align-items: baseline; margin: 6px 0 0; gap: 8px; }
+    .product-price { font-size: 15px; font-weight: 700; color: var(--red); font-family: 'DM Mono', monospace; }
+    .product-old-price { font-size: 13px; color: var(--text-muted); text-decoration: line-through; font-family: 'DM Mono', monospace; }
+    .product-add {
+      margin-top: 8px;
+      height: 0;
+      overflow: hidden;
+      opacity: 0;
+      transition: height 0.22s var(--transition), opacity 0.22s var(--transition);
+    }
+    .product-card:hover .product-add {
+      height: 38px;
+      opacity: 1;
+    }
+    .product-add button {
+      width: 100%; height: 38px; background: var(--red); color: #fff; border: none;
+      font-size: 12px; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase;
+      cursor: pointer; border-radius: var(--radius-sm);
+      transition: background var(--transition), box-shadow var(--transition);
+    }
+    .product-add button:hover { background: var(--red-dark); box-shadow: 0 4px 16px var(--red-glow); }
+    #productDetailModal { align-items: center; justify-content: center; }
+    .product-detail-content { max-width: 920px; max-height: 90vh; overflow-y: auto; padding: 28px; }
+    .product-detail-top { display: flex; gap: 28px; }
+    .product-detail-top .pd-image { width: 280px; flex-shrink: 0; }
+    .product-detail-top .pd-image img { width: 100%; height: auto; object-fit: contain; border-radius: 10px; background: #f5f5f5; mix-blend-mode: multiply; border: 1px solid var(--border); }
+    .product-detail-top .pd-info { flex: 1; min-width: 0; }
+    .product-detail-top .pd-category { font-size: 11px; text-transform: uppercase; letter-spacing: 0.7px; color: var(--text-muted); font-weight: 600; margin-bottom: 6px; }
+    .product-detail-top .pd-name { font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 6px; line-height: 1.3; }
+    .product-detail-top .pd-badge { display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; color: #fff; margin-bottom: 8px; letter-spacing: 0.3px; }
+    .product-detail-top .pd-badge-hot { background: var(--red); }
+    .product-detail-top .pd-badge-new { background: #6b7280; }
+    .product-detail-top .pd-badge-sale { background: #059669; }
+    .product-detail-top .pd-date-new { display: inline-block; font-size: 11px; font-weight: 600; color: #059669; margin-bottom: 8px; }
+    .product-detail-top .pd-date-new::before { content: '\u2714\ufe0f '; }
+    .product-detail-top .pd-date { display: inline-block; font-size: 11px; color: var(--text-muted); margin-bottom: 8px; }
+    .product-detail-top .pd-brand { display: inline-block; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--red); background: var(--red-glow); padding: 2px 10px; border-radius: 4px; margin-bottom: 8px; }
+    .product-detail-top .pd-price-area { margin: 8px 0 12px; display: flex; align-items: baseline; gap: 10px; }
+    .product-detail-top .pd-current-price { font-size: 22px; font-weight: 800; color: var(--red); font-family: 'DM Mono', monospace; }
+    .product-detail-top .pd-old-price { font-size: 15px; color: var(--text-muted); text-decoration: line-through; font-family: 'DM Mono', monospace; }
+    .product-detail-top .pd-price-range { font-size: 15px; font-weight: 600; color: var(--text); font-family: 'DM Mono', monospace; }
+    .product-detail-top .pd-variants { border-top: 1px solid var(--border); padding-top: 12px; }
+    .product-detail-top .pd-variants h4 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 8px; }
+    .product-detail-top .pd-variant-row { display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: all 0.15s; border-radius: 6px; padding: 7px 10px; margin: 0 -10px; border-bottom: 1px solid var(--border); }
+    .product-detail-top .pd-variant-row:last-child { border-bottom: none; }
+    .product-detail-top .pd-variant-row:hover { background: var(--red-glow); }
+    .product-detail-top .pd-variant-row.pd-variant-selected { background: var(--red-glow); border-left: 3px solid var(--red); border-radius: 6px 4px 4px 6px; }
+    .product-detail-top .pd-variant-label { font-size: 13px; color: var(--text); display: flex; align-items: center; gap: 8px; }
+    .product-detail-top .pd-variant-label img { width: 22px; height: 22px; object-fit: contain; background: #f5f5f5; border-radius: 3px; mix-blend-mode: multiply; flex-shrink: 0; }
+    .product-detail-top .pd-variant-price { font-size: 14px; font-weight: 700; color: var(--red); font-family: 'DM Mono', monospace; display: flex; align-items: center; gap: 6px; }
+    .product-detail-top .pd-variant-sale { font-size: 9px; font-weight: 700; text-transform: uppercase; background: #059669; color: #fff; padding: 1px 6px; border-radius: 3px; letter-spacing: 0.3px; }
+    .pd-details { margin: 12px 0 0; }
+    .pd-desc { margin-bottom: 8px; }
+    .pd-desc:last-child { margin-bottom: 0; }
+    .pd-desc-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); display: block; margin-bottom: 2px; }
+    .pd-desc p { font-size: 12px; color: var(--text); line-height: 1.4; margin: 0; }
+    .pd-actions { display: flex; gap: 10px; margin-top: 18px; }
+    .pd-actions .pd-btn { flex: 1; padding: 13px; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .pd-actions .pd-btn-cart { background: var(--red); color: #fff; }
+    .pd-actions .pd-btn-cart:hover { background: var(--red-dark); box-shadow: 0 4px 16px var(--red-glow); }
+    .pd-actions .pd-btn-inquire { background: var(--dark-3); color: var(--text); border: 1px solid var(--border); }
+    .pd-actions .pd-btn-inquire:hover { border-color: var(--red); color: var(--red); }
+    .pd-actions .pd-btn-feedback { pointer-events: none; background: #059669 !important; }
+    .pd-related { border-top: 1px solid var(--border); margin-top: 22px; padding-top: 18px; }
+    .pd-related h4 { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 12px; }
+    .pd-related-list { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 6px; }
+    .pd-related-list::-webkit-scrollbar { height: 4px; }
+    .pd-related-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    .pd-related-item { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 130px; max-width: 140px; cursor: pointer; padding: 10px 8px 8px; border: 1px solid var(--border); border-radius: 10px; transition: all 0.15s; flex-shrink: 0; background: var(--white); }
+    .pd-related-item:hover { border-color: var(--red); box-shadow: 0 3px 12px var(--red-glow); transform: translateY(-2px); }
+    .pd-related-item img { width: 80px; height: 80px; object-fit: contain; background: #f5f5f5; border-radius: 6px; mix-blend-mode: multiply; }
+    .pd-related-item .pd-r-name { font-size: 12px; font-weight: 500; color: var(--text); text-align: center; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; width: 100%; }
+    .pd-related-item .pd-r-price { font-size: 13px; font-weight: 700; color: var(--red); font-family: 'DM Mono', monospace; white-space: nowrap; }
+    .pd-related-item:hover .pd-r-name { color: var(--red); }
+    @media (max-width: 600px) { .product-detail-top { flex-direction: column; } .product-detail-top .pd-image { width: 100%; max-width: 280px; } }
+      .pagination { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 40px; padding: 20px 0; }
+    .page-btn { padding: 10px 24px; border: 1px solid var(--border); background: #fff; border-radius: var(--radius-sm); cursor: pointer; font-size: 13px; font-weight: 600; transition: all var(--transition); }
+    .page-btn:hover:not(:disabled) { border-color: var(--red); color: var(--red); }
+    .page-btn:disabled { opacity: 0.4; cursor: default; }
+    .page-info { font-size: 13px; color: #666; font-weight: 500; }
+    .filter-panel {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    .filter-section { margin-bottom: 20px; }
+    .filter-section:last-child { margin-bottom: 0; }
+    .filter-section-title {
+      font-size: 12px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.8px; color: var(--text-muted); margin-bottom: 12px;
+    }
+    .filter-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .filter-chip {
+      padding: 6px 14px; border: 1.5px solid var(--border); border-radius: 20px;
+      background: transparent; color: var(--text); font-size: 12px; font-weight: 500;
+      cursor: pointer; transition: all var(--transition); font-family: inherit;
+    }
+    .filter-chip:hover { border-color: var(--red); color: var(--red); }
+    .filter-chip.active { border-color: var(--red); background: var(--red-glow); color: var(--red); }
+    .price-range-wrap { display: flex; align-items: center; gap: 8px; }
+    .price-input {
+      width: 100px; padding: 8px 10px; border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+      background: var(--dark-3); color: var(--text); font-family: inherit; font-size: 13px;
+    }
+    .price-input:focus { outline: none; border-color: var(--red); }
+    .price-range-sep { color: var(--text-muted); font-size: 13px; }
+    @media (max-width: 768px) {
+      .shop-topbar { flex-direction: column; align-items: flex-start; gap: 12px; }
+      .shop-controls { width: 100%; }
+      .search-products { width: 100%; }
+      .search-products input { width: 100%; }
+      .sort-wrap { width: 100%; }
+      .sort-select { width: 100%; }
+      .filter-btn, .reset-btn { width: 100%; justify-content: center; }
+      .products-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    }
+    @media (max-width: 480px) {
+      .products-grid { grid-template-columns: 1fr; gap: 10px; }
+      .shop-topbar { padding: 8px; }
+      .search-products input { font-size: 13px; padding: 8px; }
+    }
+  </style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<div class="page-loader" id="pageLoader">
+  <div class="loader-spinner"></div>
+  <div class="loader-text">Loading…</div>
+</div>
+
+<canvas id="shader-canvas" class="shader-canvas"></canvas>
+
+<div class="spotlight-container-global">
+  <div class="spotlight-overlay-global">
+    <div class="spotlight-global spotlight-left-global"></div>
+    <div class="spotlight-global spotlight-mid-global"></div>
+    <div class="spotlight-global spotlight-right-global"></div>
+  </div>
+</div>
+
+
+<!-- NEWSLETTER POPUP -->
+<div class="newsletter-overlay" id="newsletterOverlay">
+  <div class="newsletter-box">
+    <button class="close-newsletter" onclick="closeNewsletter()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <img src="ROYAL PICS/royal logo.webp" alt="Royal Computers Namibia" class="nl-logo" />
+    <h3>Stay in the Loop</h3>
+    <p>Get exclusive deals, new arrivals, and tech tips delivered to your inbox.</p>
+    <div class="nl-input-group">
+      <input type="email" id="nlEmail" placeholder="Enter your email" />
+      <button type="submit" id="nlSubscribeBtn">Subscribe</button>
+    </div>
+    <p class="privacy">No spam, ever. <a href="unsubscribe.html" style="color:#e5383b;">Unsubscribe anytime</a>.</p>
+  </div>
+</div>
+
+<!-- CART SIDEBAR -->
+<div class="cart-overlay" id="cartOverlay"></div>
+<div class="cart-sidebar" id="cartSidebar">
+  <div class="cart-header">
+    <h2 id="cartHeaderTitle">Shopping Cart</h2>
+    <div class="cart-header-actions">
+      <button class="btn-clear-cart" id="clearCartBtn">Clear Cart</button>
+      <button class="cart-close" id="closeCartBtn">&times;</button>
+    </div>
+  </div>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-footer">
+    <div class="cart-total">
+      <span>Total:</span>
+      <span id="cartTotalPrice">N$0.00</span>
+    </div>
+    <button class="btn-checkout" id="checkoutBtn" onclick="handleCheckout()">Generate Quote</button>
+    <button class="btn-continue" id="continueShopping" onclick="closeCart()">Continue Shopping</button>
+  </div>
+</div>
+
+<!-- GUIDE MODAL -->
+<div class="guide-overlay" id="guideModal">
+  <div class="guide-modal">
+    <div class="bg-header">
+      <h3 id="guideModalTitle">Guide</h3>
+      <button class="bg-close" onclick="closeGuideModal()">&times;</button>
+    </div>
+    <div class="bg-body" id="guideModalBody"></div>
+  </div>
+</div>
+
+<!-- CHECKOUT MODAL -->
+<div class="modal-overlay" id="checkoutModal">
+  <div class="modal-content" style="overflow-y:auto; max-width:720px;">
+    <button class="modal-close" id="closeCheckoutBtn">&times;</button>
+    <div class="checkout-form">
+      <h2>Order Information</h2>
+      <form id="checkoutFormElement">
+        <div class="form-group">
+          <label class="form-label" for="emailInput">Email Address *</label>
+          <input type="email" id="emailInput" class="form-input" placeholder="your@email.com" required>
+          <div class="form-error" id="emailError"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="phoneInput">Phone Number *</label>
+          <input type="tel" id="phoneInput" class="form-input" placeholder="+264 61 234 5678" required>
+          <div class="form-error" id="phoneError"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="nameInput">Full Name</label>
+          <input type="text" id="nameInput" class="form-input" placeholder="Your name">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="companyInput">Company (Optional)</label>
+          <input type="text" id="companyInput" class="form-input" placeholder="Your company name">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="addressInput">Address (Optional)</label>
+          <textarea id="addressInput" placeholder="Your street address..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="branchSelect">Collection Branch *</label>
+          <select id="branchSelect" class="form-input" style="appearance: none; background: var(--dark-3); padding-right: 36px;" required>
+            <option value="branch-001" selected>Gustav Voigts Centre, Windhoek</option>
+            <option value="branch-002">Swakopmund</option>
+            <option value="branch-003">Oshakati</option>
+            <option value="branch-004">Walvis Bay</option>
+            <option value="branch-005">Tsumeb</option>
+            <option value="branch-006">Grove Mall, Windhoek</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="notesInput">Special Requests / Notes</label>
+          <textarea id="notesInput" placeholder="Any special notes for your order..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="additionalDetailsInput">Additional Customer Details</label>
+          <textarea id="additionalDetailsInput" placeholder="Add any additional information you'd like included on the quote (ID number, reference, etc.)..."></textarea>
+        </div>
+        <div class="form-group form-checkbox">
+          <input type="checkbox" id="termsCheckbox">
+          <label for="termsCheckbox" style="margin: 0; font-size: 13px;">I agree to the terms and conditions</label>
+        </div>
+        <div class="checkout-actions">
+          <button type="button" class="btn-cancel" id="cancelCheckoutBtn">Cancel</button>
+          <button type="submit" class="btn-generate" id="generateQuoteBtn">Generate Quote</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- QUOTE INFO MODAL -->
+<div class="modal-overlay" id="quoteInfoModal">
+  <div class="modal-content" style="max-width: 500px;">
+    <button class="modal-close" id="closeQuoteInfoBtn">&times;</button>
+    <div class="checkout-form">
+      <h2>Quote Information (Optional)</h2>
+      <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">Fill in your details and select a branch to continue.</p>
+      <form id="quoteInfoForm">
+        <div class="form-group">
+          <label class="form-label" for="quoteInfoEmail">Email Address</label>
+          <input type="email" id="quoteInfoEmail" class="form-input" placeholder="your@email.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="quoteInfoName">Full Name</label>
+          <input type="text" id="quoteInfoName" class="form-input" placeholder="Your name">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="quoteInfoCompany">Company Name</label>
+          <input type="text" id="quoteInfoCompany" class="form-input" placeholder="Your company">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="quoteInfoBranch">Collection Branch *</label>
+          <select id="quoteInfoBranch" class="form-input" style="appearance: none; background: var(--dark-3); padding-right: 36px;" required>
+            <option value="" selected>Select a branch...</option>
+            <option value="branch-001">Gustav Voigts Centre, Windhoek</option>
+            <option value="branch-002">Swakopmund</option>
+            <option value="branch-003">Oshakati</option>
+            <option value="branch-004">Walvis Bay</option>
+            <option value="branch-005">Tsumeb</option>
+            <option value="branch-006">Grove Mall, Windhoek</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="quoteInfoReference">Reference / PO Number</label>
+          <input type="text" id="quoteInfoReference" class="form-input" placeholder="e.g., PO-2026-001">
+        </div>
+        <div class="checkout-actions">
+          <button type="button" class="btn-cancel" id="cancelQuoteInfoBtn">Cancel</button>
+          <button type="submit" class="btn-generate">Generate Quote Preview</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- QUOTE PREVIEW MODAL -->
+<div class="modal-overlay" id="quotePreviewModal">
+  <div class="modal-content" style="max-width: 900px; max-height: 90vh; overflow-y: auto;">
+    <button class="modal-close" id="closeQuotePreviewBtn">&times;</button>
+    <div id="quotePreviewContent"></div>
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 30px; padding: 20px; border-top: 1px solid var(--border);">
+      <button onclick="printQuotePreview()" style="padding: 12px; background: #2196f3; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px;">🖨️ Print</button>
+      <button onclick="saveQuoteAsPDF()" style="padding: 12px; background: #4caf50; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px;">📄 Save PDF</button>
+      <button onclick="showStockInquiryFromQuote()" style="padding: 12px; background: #ff9800; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px;">📦 Stock Inquiry</button>
+      <button onclick="editQuoteInfo()" style="padding: 12px; background: var(--dark-3); color: var(--text); border: 1px solid var(--border); border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px;">✏️ Modify</button>
+    </div>
+  </div>
+</div>
+
+<!-- QUOTE DISPLAY MODAL -->
+<div class="modal-overlay" id="quoteModal">
+  <div class="modal-content">
+    <button class="modal-close" id="closeQuoteBtn">&times;</button>
+    <div class="quote-display" id="quoteContent"></div>
+  </div>
+</div>
+
+<!-- PRODUCT DETAIL MODAL -->
+<div class="modal-overlay" id="productDetailModal">
+  <div class="modal-content product-detail-content">
+    <button class="modal-close" id="closeProductDetailBtn">&times;</button>
+    <div id="productDetailTop"></div>
+    <div class="pd-actions">
+      <button class="pd-btn pd-btn-cart" id="pdAddToCartBtn">Add to Cart</button>
+      <button class="pd-btn pd-btn-inquire" id="pdInquireBtn">Inquire</button>
+    </div>
+    <div class="pd-related" id="pdRelatedSection">
+      <h4>You might also like</h4>
+      <div class="pd-related-list" id="pdRelatedList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="header-inner">
+    <a href="index.html" class="logo">
+      <img src="ROYAL PICS/royal logo.webp" alt="Royal Computers Namibia" />
+    </a>
+    <nav>
+      <button class="nav-close" aria-label="Close menu">&times;</button>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="products.html" class="active">Products</a></li>
+        <li><a href="Contact-us.html">Contact</a></li>
+        <li><a href="About-us.html">About Us</a></li>
+      </ul>
+    </nav>
+    <button class="mobile-toggle" id="mobileToggle" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="header-right">
+      <button class="cart-btn" id="openCartBtn" onclick="openCart()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <span class="cart-count" id="cartCount" style="display:none;">0</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div id="main-content" class="shop-topbar">
+  <div class="shop-title-block">
+    <h1>All Products</h1>
+    <div class="shop-breadcrumb"><a href="index.html">Home</a><span>/</span><span>Products</span></div>
+  </div>
+  <div class="shop-controls">
+    <div class="search-products" id="searchProductsWrap">
+      <input type="text" id="searchInput" placeholder="Search products…" autocomplete="off">
+      <button type="button" id="searchProductsBtn" aria-label="Search products">Search</button>
+    </div>
+    <div class="sort-wrap" id="sortWrap">
+      <select id="sortSelect" class="sort-select">
+        <option value="newest">Newest</option>
+        <option value="name-asc">Name A–Z</option>
+        <option value="name-desc">Name Z–A</option>
+        <option value="price-low">Price Low</option>
+        <option value="price-high">Price High</option>
+      </select>
+    </div>
+    <button type="button" class="filter-btn" id="filterToggleBtn">Filters <span class="filter-arrow">▾</span></button>
+    <button type="button" class="reset-btn" id="resetFiltersBtn" disabled>Reset</button>
+  </div>
+  <div id="guideSuggestion" class="guide-suggestion" style="display:none;">
+    <span class="guide-suggestion-icon" id="guideSuggestionIcon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="6" width="18" height="12" rx="2" ry="2"/><line x1="23" y1="10" x2="23" y2="14"/><line x1="7" y1="10" x2="7" y2="14"/><line x1="11" y1="10" x2="11" y2="14"/><line x1="15" y1="10" x2="15" y2="14"/></svg></span>
+    <span class="guide-suggestion-text" id="guideSuggestionText">Need help finding the right battery?</span>
+    <button class="guide-suggestion-btn" id="guideSuggestionBtn" onclick="openGuideModal('battery')">Open Battery Guide <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-left:4px;"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
+    <button class="guide-suggestion-close" onclick="document.getElementById('guideSuggestion').style.display='none'" title="Dismiss"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  </div>
+</div>
+<div class="shop-divider"><hr></div>
+<div class="products-container" id="filterPanelContainer" style="padding-top:20px;display:none;"></div>
+<div class="shop-divider"><hr></div>
+
+<div class="products-container">
+  <div class="skeleton-grid" id="skeletonGrid">
+    <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-line wide"></div><div class="skeleton-line medium"></div><div class="skeleton-line short"></div></div>
+    <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-line wide"></div><div class="skeleton-line medium"></div><div class="skeleton-line short"></div></div>
+    <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-line wide"></div><div class="skeleton-line medium"></div><div class="skeleton-line short"></div></div>
+    <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-line wide"></div><div class="skeleton-line medium"></div><div class="skeleton-line short"></div></div>
+    <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-line wide"></div><div class="skeleton-line medium"></div><div class="skeleton-line short"></div></div>
+    <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-line wide"></div><div class="skeleton-line medium"></div><div class="skeleton-line short"></div></div>
+    <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-line wide"></div><div class="skeleton-line medium"></div><div class="skeleton-line short"></div></div>
+    <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-line wide"></div><div class="skeleton-line medium"></div><div class="skeleton-line short"></div></div>
+  </div>
+  <div class="products-grid" id="productsGrid">
+    <div class="pc-builder-card" id="openPcBuilderBtn" style="cursor:pointer;">
+      <div class="pc-builder-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+      <div class="pc-builder-text">
+        <strong>Build a Complete PC</strong>
+        <span>Choose Entry, Mid, or High — pre-selected compatible parts added to your cart instantly</span>
+      </div>
+      <div class="pc-builder-badge">Try Now</div>
+    </div></div>
+  <div class="pagination" id="pagination">
+    <button class="page-btn" id="prevPageBtn" disabled>&#8592; Previous</button>
+    <span class="page-info" id="pageInfo">Page 1</span>
+    <button class="page-btn" id="nextPageBtn">Next &#8594;</button>
+  </div>
+</div>
+
+<!-- AI RECOMMENDATIONS SECTION -->
+<div class="products-container" id="recContainer"></div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="footer-brand-body">
+        <div class="footer-brand-name">Royal Computers Namibia</div>
+        <p>Leading the way in digital lifestyle</p>
+        <div style="margin-top:12px;">
+          <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> GF Shop 12 Gustav Voigts Center, Independence Ave, Windhoek</div>
+          <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg> 061228179</div>
+          <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.832-1.438A9.956 9.956 0 0 0 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18c-1.889 0-3.633-.656-5.008-1.756l-.36-.268-3.008.894.894-3.008-.268-.36A7.94 7.94 0 0 1 4 12c0-4.411 3.589-8 8-8s8 3.589 8 8-3.589 8-8 8z"/></svg> +264813631483</div>
+          <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> windhoek@netmac.co.za</div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Pages</h4>
+      <ul>
+        <li><a href="products.html">Products</a></li>
+        <li><a href="Contact-us.html">Contact Us</a></li>
+        <li><a href="About-us.html">About Us</a></li>
+        <li><a href="privacy-policy.html">Privacy Policy</a></li>
+        <li><a href="term&conditions.html">Terms & Conditions</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Branches</h4>
+      <ul>
+        <li><a href="Contact-us.html">Windhoek</a></li>
+        <li><a href="Contact-us.html">Swakopmund</a></li>
+        <li><a href="Contact-us.html">Oshakati</a></li>
+        <li><a href="Contact-us.html">Walvis Bay</a></li>
+        <li><a href="Contact-us.html">Tsumeb</a></li>
+        <li><a href="Contact-us.html">Grove Mall, Windhoek</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Social</h4>
+      <ul>
+        <li><a href="https://www.facebook.com/RoyalComputersNamibia/" target="_blank"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle;margin-right:6px;"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>Facebook</a></li>
+        <li><a href="https://www.instagram.com/royalcomputernam/" target="_blank"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>Instagram</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>Copyright © Royal Computers Namibia</span>
+    <span><a href="term&conditions.html">Terms and conditions</a> apply</span>
+  </div>
+</footer>
+
+<script src="js/products-data.js"></script>
+<script defer src="js/pages-data.js"></script>
+<script defer src="js/search-engine.js"></script>
+<script defer src="js/search-dropdown.js"></script>
+<script defer src="js/product-display-fix.js"></script>
+<script defer src="js/shader-background.js"></script>
+<script defer src="js/main.js"></script>
+<script src="js/cart.js"></script>
+<script defer src="js/quote.js"></script>
+<script defer src="js/branches.js"></script>
+  <script defer src="js/cart-ui.js"></script>
+  <script defer src="js/pc-builder.js"></script>
+<script defer src="js/cart-badge-sync.js"></script>
+<script defer src="js/animations.js"></script>
+<script defer src="js/product-filters.js"></script>
+<script defer src="js/original-code-map.js"></script>
+<script defer src="js/loader.js"></script>
+<script defer src="js/guides-modal.js"></script>
+<script defer src="js/mobile-nav.js"></script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var filterToggle = document.getElementById('filterToggleBtn');
+    var filterPanel = document.getElementById('filterPanelContainer');
+    if (filterToggle && filterPanel && window.PRODUCT_FILTERS) {
+      filterToggle.addEventListener('click', function() {
+        var isVisible = filterPanel.style.display !== 'none';
+        filterPanel.style.display = isVisible ? 'none' : 'block';
+        filterToggle.textContent = isVisible ? '🔽 Filters' : '🔼 Hide Filters';
+        if (!isVisible && !filterPanel.hasChildNodes()) {
+          window.PRODUCT_FILTERS.renderFilterPanel(filterPanel);
+          window.PRODUCT_FILTERS.onChange(function() {
+            var event = new CustomEvent('filtersChanged', { detail: window.PRODUCT_FILTERS.getActiveFilters() });
+            window.dispatchEvent(event);
+          });
+        }
+      });
+    }
+  });
+</script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('js/sw.js')
+        .then(reg  => console.log('[SW] Registered, scope:', reg.scope))
+        .catch(err => console.warn('[SW] Registration failed:', err));
+    });
+  }
+</script>
+
+<script>
+  function closeNewsletter() {
+    document.getElementById('newsletterOverlay').classList.remove('open');
+    var count = parseInt(localStorage.getItem('nl_close_count') || '0', 10) + 1;
+    localStorage.setItem('nl_close_count', String(count));
+    setTimeout(function() {
+      var el = document.getElementById('newsletterOverlay');
+      if (el && !localStorage.getItem('nl_subscribed')) el.classList.add('open');
+    }, count * 30000);
+  }
+  if (!localStorage.getItem('nl_subscribed')) {
+    setTimeout(function() {
+      var el = document.getElementById('newsletterOverlay');
+      if (el) el.classList.add('open');
+    }, 60000);
+  }
+  document.getElementById('newsletterOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closeNewsletter();
+  });
+</script>
+
+<script>
+  (function(){
+    const PRODUCTS_UI_STATE_KEY = 'royal_products_ui_state';
+    localStorage.removeItem(PRODUCTS_UI_STATE_KEY);
+    const DEFAULT_SORT = 'newest';
+    const ITEMS_PER_PAGE = 12;
+    const VALID_SORTS = ['newest', 'name-asc', 'name-desc', 'price-low', 'price-high'];
+    const CATEGORY_ALIASES = {
+      'Components': ['Motherboards','Processors','Memory','Graphics','Power Supply','ATX Cases','Power'],
+      'Cables & Adapters': 'Cables',
+      'Phone Parts': ['Phone Screens','Screen Protectors','Chargers','Phone Accessories','Charging Ports'],
+      'Printers & Ink': 'Printers',
+      'TVs & Monitors': ['TVs','Monitors'],
+      'Power & UPS': ['Power','Power Supply','Batteries'],
+      'Notebook Parts': ['Notebooks','Laptop Screens','Batteries','Chargers'],
+      'POS & Software': ['Point of Sale','Software']
+    };
+    const productGroups = Array.isArray(window.PRODUCTS_DB) ? window.PRODUCTS_DB : [];
+    function getURLParam(param) { const params = new URLSearchParams(window.location.search); return params.get(param); }
+    const highlightProductId = getURLParam('highlight') || null;
+    let filteredGroups = [...productGroups];
+    const searchInput = document.getElementById('searchInput');
+    const searchProductsWrap = document.getElementById('searchProductsWrap');
+    const searchProductsBtn = document.getElementById('searchProductsBtn');
+    const sortSelect = document.getElementById('sortSelect');
+    const sortWrap = document.getElementById('sortWrap');
+    const resetFiltersBtn = document.getElementById('resetFiltersBtn');
+    const grid = document.getElementById('productsGrid');
+    const uiState = getInitialState();
+
+    function formatPrice(n) { return 'N$\u202f' + n.toLocaleString('en-NA'); }
+    function getGroupMinPrice(g) { return Math.min(...g.variants.map(v => v.price)); }
+    function escapeHtml(value) {
+      const div = document.createElement('div');
+      div.textContent = value;
+      return div.innerHTML;
+    }
+
+    function getSavedState() {
+      try {
+        return JSON.parse(localStorage.getItem(PRODUCTS_UI_STATE_KEY)) || {};
+      } catch (error) {
+        return {};
+      }
+    }
+
+    function getInitialState() {
+      const savedState = getSavedState();
+      const urlSearch = getURLParam('search');
+      const urlSort = getURLParam('sort');
+      const urlCategory = getURLParam('category');
+      const urlPage = parseInt(getURLParam('page'), 10);
+      return {
+        query: typeof urlSearch === 'string' ? urlSearch : (savedState.query || ''),
+        sort: VALID_SORTS.includes(urlSort) ? urlSort : (VALID_SORTS.includes(savedState.sort) ? savedState.sort : DEFAULT_SORT),
+        category: typeof urlCategory === 'string' ? urlCategory : (savedState.category || ''),
+        page: urlPage > 0 ? urlPage : (savedState.page || 1)
+      };
+    }
+
+    function persistState() {
+      try {
+        localStorage.setItem(PRODUCTS_UI_STATE_KEY, JSON.stringify({
+          query: uiState.query,
+          sort: uiState.sort,
+          category: uiState.category,
+          page: uiState.page
+        }));
+      } catch (error) {
+        console.warn('Could not save products page state');
+      }
+    }
+
+    function updateURLState() {
+      const params = new URLSearchParams(window.location.search);
+      if (uiState.query) { params.set('search', uiState.query); } else { params.delete('search'); }
+      if (uiState.sort !== DEFAULT_SORT) { params.set('sort', uiState.sort); } else { params.delete('sort'); }
+      if (uiState.category) { params.set('category', uiState.category); } else { params.delete('category'); }
+      if (uiState.page > 1) { params.set('page', uiState.page); } else { params.delete('page'); }
+      if (highlightProductId) { params.set('highlight', highlightProductId); }
+      const queryString = params.toString();
+      const nextUrl = queryString ? `${window.location.pathname}?${queryString}` : window.location.pathname;
+      window.history.replaceState({}, '', nextUrl);
+    }
+
+    function getSearchText(group) {
+      const variantText = (group.variants || []).map(v => `${v.label} ${v.price}`).join(' ');
+      return [group.id, group.name, group.category, group.badge || '', variantText].join(' ').toLowerCase();
+    }
+
+    function prefersReducedMotion() {
+      return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    }
+
+    function getVariantData(group, variantIndex) {
+      const variants = group.variants || [];
+      const safeIndex = Number.isInteger(variantIndex) && variants[variantIndex] ? variantIndex : 0;
+      const variant = variants[safeIndex] || variants[0] || null;
+      return {
+        index: safeIndex,
+        variant: variant,
+        image: variant && variant.image ? variant.image : group.image,
+        alt: variant ? `${group.name} - ${variant.label}` : group.name
+      };
+    }
+
+    function attachProductImageFallback(img) {
+      if (!img || img.dataset.fallbackBound === 'true') return;
+      img.addEventListener('error', function() {
+        const fallbackImage = this.dataset.baseImage || this.getAttribute('src');
+        if (!fallbackImage) return;
+        this.closest('.product-image-wrap')?.classList.remove('is-image-loading');
+        this.classList.remove('is-variant-transitioning');
+        if (this.dataset.currentSrc === fallbackImage) { return; }
+        this.dataset.currentSrc = fallbackImage;
+        this.src = fallbackImage;
+      });
+      img.dataset.fallbackBound = 'true';
+    }
+
+    function setCardImage(card, group, variantIndex, options = {}) {
+      const { animate = true } = options;
+      const img = card.querySelector('.product-image');
+      const wrap = card.querySelector('.product-image-wrap');
+      if (!img || !wrap) return;
+      attachProductImageFallback(img);
+      const variantData = getVariantData(group, variantIndex);
+      const targetImage = variantData.image || group.image;
+      const fallbackImage = group.image;
+      const currentImage = img.dataset.currentSrc || img.getAttribute('src') || fallbackImage;
+      const shouldAnimate = animate && !prefersReducedMotion() && Boolean(variantData.variant && variantData.variant.image) && targetImage !== currentImage;
+      const finalizeImageSwap = (nextImage, nextAlt, useAnimation) => {
+        const applyImage = () => {
+          img.alt = nextAlt;
+          img.dataset.currentSrc = nextImage;
+          img.src = nextImage;
+          requestAnimationFrame(() => {
+            img.classList.remove('is-variant-transitioning');
+            wrap.classList.remove('is-image-loading');
+          });
+        };
+        if (useAnimation) {
+          wrap.classList.add('is-image-loading');
+          img.classList.add('is-variant-transitioning');
+          setTimeout(applyImage, 90);
+        } else {
+          img.classList.remove('is-variant-transitioning');
+          wrap.classList.remove('is-image-loading');
+          applyImage();
+        }
+      };
+      if (targetImage === currentImage) { img.alt = variantData.alt; return; }
+      if (!variantData.variant || !variantData.variant.image) { finalizeImageSwap(fallbackImage, variantData.alt, false); return; }
+      const preloadedImage = new Image();
+      wrap.classList.add('is-image-loading');
+      preloadedImage.onload = () => finalizeImageSwap(targetImage, variantData.alt, shouldAnimate);
+      preloadedImage.onerror = () => finalizeImageSwap(fallbackImage, variantData.alt, false);
+      preloadedImage.src = targetImage;
+    }
+
+    function updateCardVariantState(card, group, variantIndex, options = {}) {
+      const { animateImage = true } = options;
+      const variantData = getVariantData(group, variantIndex);
+      const priceSpan = card.querySelector('.product-price');
+      const addBtn = card.querySelector('.add-to-cart-btn');
+      if (priceSpan && variantData.variant) { priceSpan.textContent = formatPrice(variantData.variant.price); }
+      if (addBtn) { addBtn.dataset.variant = variantData.index; }
+      setCardImage(card, group, variantData.index, { animate: animateImage });
+    }
+
+    function sortGroups(groups, sortVal) {
+      const result = [...groups];
+      if (sortVal === 'newest') { result.sort((a, b) => new Date(b.date) - new Date(a.date)); }
+      else if (sortVal === 'price-low') { result.sort((a, b) => getGroupMinPrice(a) - getGroupMinPrice(b)); }
+      else if (sortVal === 'price-high') { result.sort((a, b) => getGroupMinPrice(b) - getGroupMinPrice(a)); }
+      else if (sortVal === 'name-asc') { result.sort((a, b) => a.name.localeCompare(b.name)); }
+      else if (sortVal === 'name-desc') { result.sort((a, b) => b.name.localeCompare(a.name)); }
+      return result;
+    }
+
+    function updateControlState() {
+      const hasQuery = Boolean(uiState.query);
+      const hasCategory = Boolean(uiState.category);
+      const hasCustomSort = uiState.sort !== DEFAULT_SORT;
+      const hasActiveFilters = hasQuery || hasCategory || hasCustomSort;
+      if (searchInput && searchInput.value !== uiState.query) { searchInput.value = uiState.query; }
+      if (sortSelect && sortSelect.value !== uiState.sort) { sortSelect.value = uiState.sort; }
+      if (searchProductsWrap) { searchProductsWrap.classList.toggle('active', hasQuery); }
+      if (sortWrap) { sortWrap.classList.toggle('active', hasCustomSort); }
+      if (resetFiltersBtn) {
+        resetFiltersBtn.disabled = !hasActiveFilters;
+      }
+    }
+
+    function applyFiltersAndSort(resetPage) {
+      if (resetPage !== false) uiState.page = 1;
+      const term = uiState.query.trim().toLowerCase();
+      const cat = uiState.category.trim();
+      let result = [...productGroups];
+      if (cat) {
+        var targetCats = CATEGORY_ALIASES[cat];
+        if (targetCats) {
+          if (typeof targetCats === 'string') targetCats = [targetCats];
+          result = result.filter(function(group) { return targetCats.indexOf(group.category) !== -1; });
+        } else {
+          result = result.filter(function(group) { return group.category.toLowerCase() === cat.toLowerCase(); });
+        }
+      }
+      if (term) { result = result.filter(group => getSearchText(group).includes(term)); }
+      filteredGroups = sortGroups(result, uiState.sort);
+      updateControlState();
+      persistState();
+      updateURLState();
+      render();
+    }
+
+
+    function addToCart(groupId, variantIdx) {
+      const product = productGroups.find(p => p.id === groupId);
+      if (product) {
+        window.CART.add(product, variantIdx);
+        updateCartDisplay();
+        if (groupId && groupId.indexOf('NTCHR-') === 0) {
+          setTimeout(function() { window.suggestCloverCable && window.suggestCloverCable(); }, 500);
+        }
+      }
+    }
+
+    function updateCartDisplay() {
+      const cartItems = window.CART.getItems();
+      const cartItemsEl = document.getElementById('cartItems');
+      const cartTotalEl = document.getElementById('cartTotalPrice');
+      const total = window.CART.getTotal();
+      if (cartItems.length === 0) {
+        cartItemsEl.innerHTML = '<div class="cart-empty"><span>Your cart is empty</span><a href="products.html" class="start-shopping-btn">\u2190 Start Shopping</a></div>';
+      } else {
+        let html = '';
+        cartItems.forEach(item => {
+          html += `
+            <div class="cart-item">
+              <img src="${item.image}" alt="${item.name}" class="cart-item-img">
+              <div class="cart-item-info">
+                <div class="cart-item-name">${item.name}</div>
+                <div class="cart-item-variant">${item.variantLabel}</div>
+                <div class="cart-item-price">${formatPrice(item.price)}</div>
+                <div class="cart-item-qty">
+                  <button class="qty-btn qty-decrease" data-id="${item.productId}" data-variant="${item.variantIndex}">−</button>
+                  <span>${item.quantity}</span>
+                  <button class="qty-btn qty-increase" data-id="${item.productId}" data-variant="${item.variantIndex}">+</button>
+                </div>
+              </div>
+              <button class="cart-item-remove" data-id="${item.productId}" data-variant="${item.variantIndex}">&times;</button>
+            </div>
+          `;
+        });
+        cartItemsEl.innerHTML = html;
+        cartItemsEl.querySelectorAll('.qty-decrease').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const item = cartItems.find(i => i.productId === btn.dataset.id && i.variantIndex == btn.dataset.variant);
+            if (item) window.CART.updateQuantity(btn.dataset.id, parseInt(btn.dataset.variant), item.quantity - 1);
+            updateCartDisplay();
+          });
+        });
+        cartItemsEl.querySelectorAll('.qty-increase').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const item = cartItems.find(i => i.productId === btn.dataset.id && i.variantIndex == btn.dataset.variant);
+            if (item) window.CART.updateQuantity(btn.dataset.id, parseInt(btn.dataset.variant), item.quantity + 1);
+            updateCartDisplay();
+          });
+        });
+        cartItemsEl.querySelectorAll('.cart-item-remove').forEach(btn => {
+          btn.addEventListener('click', () => {
+            window.CART.remove(btn.dataset.id, parseInt(btn.dataset.variant));
+            updateCartDisplay();
+          });
+        });
+      }
+      cartTotalEl.textContent = formatPrice(total.total);
+    }
+
+    function render() {
+      renderProductGrid();
+    }
+
+    function renderProductGrid() {
+      var skeleton = document.getElementById('skeletonGrid');
+      if (skeleton) skeleton.style.display = 'none';
+      if (!grid) return;
+      var totalItems = filteredGroups.length;
+      var totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE) || 1;
+      if (uiState.page > totalPages) uiState.page = totalPages;
+      var start = (uiState.page - 1) * ITEMS_PER_PAGE;
+      var pageItems = filteredGroups.slice(start, start + ITEMS_PER_PAGE);
+      if (!totalItems) {
+        const emptyMessage = uiState.query
+          ? '<div class="no-results"><p>No products found for "' + escapeHtml(uiState.query) + '"</p></div>'
+          : '<div class="no-results"><p>No products found</p></div>';
+        grid.innerHTML = emptyMessage;
+        updatePagination(totalItems, totalPages);
+        return;
+      }
+      let html = '';
+      if (uiState.page === 1 && !uiState.query && !uiState.category) {
+        html += '<div class="pc-builder-card" id="openPcBuilderBtn" style="cursor:pointer;"><div class="pc-builder-icon">\uD83D\uDDA5\uFE0F</div><div class="pc-builder-text"><strong>Build a Complete PC</strong><span>Choose Entry, Mid, or High \u2014 pre-selected compatible parts added to your cart instantly</span></div><div class="pc-builder-badge">Try Now</div></div>';
+      }
+      pageItems.forEach(function(group) {
+        const variants = group.variants;
+        const hasVariants = variants.length > 1;
+        const defaultVariant = getVariantData(group, 0);
+        const defaultPrice = defaultVariant.variant ? defaultVariant.variant.price : 0;
+        const groupId = group.id;
+        const badge = group.badge;
+        let optionsHtml = '';
+        variants.forEach(function(variant, idx) {
+          optionsHtml += '<option value="' + idx + '" data-price="' + variant.price + '" data-image="' + escapeHtml(variant.image || '') + '">' + variant.label + ' – ' + formatPrice(variant.price) + '</option>';
+        });
+        const oldPrice = group.oldPrice || (group.old_price || null);
+        const oldPriceHtml = oldPrice ? '<span class="product-old-price">' + formatPrice(oldPrice) + '</span>' : '';
+        html += '<div class="product-card" data-group-id="' + groupId + '"><div class="product-image-wrap"><img src="' + defaultVariant.image + '" alt="' + escapeHtml(defaultVariant.alt) + '" class="product-image" data-base-image="' + group.image + '" data-current-src="' + defaultVariant.image + '" loading="lazy">' + (badge ? '<span class="product-badge ' + badge + '">' + badge + '</span>' : '') + '</div><div class="product-info"><div class="product-category">' + group.category + '</div><div class="product-name">' + group.name + '</div>' + (hasVariants ? '<div class="variant-selector"><select class="variant-select" data-group="' + groupId + '">' + optionsHtml + '</select></div>' : '') + '<div class="product-price-row"><span class="product-price" id="price-' + groupId + '">' + formatPrice(defaultPrice) + '</span>' + oldPriceHtml + '</div><div class="product-add"><button class="add-to-cart-btn" data-group="' + groupId + '" data-variant="' + defaultVariant.index + '">Add to Cart</button></div></div></div>';
+      });
+      grid.innerHTML = html;
+      updatePagination(totalItems, totalPages);
+      document.querySelectorAll('.product-image').forEach(attachProductImageFallback);
+      document.querySelectorAll('.variant-select').forEach(select => {
+        select.addEventListener('change', function() {
+          const groupId = this.dataset.group;
+          const card = this.closest('.product-card');
+          const group = productGroups.find(item => item.id === groupId);
+          if (!card || !group) return;
+          updateCardVariantState(card, group, this.selectedIndex, { animateImage: true });
+        });
+      });
+      document.querySelectorAll('.product-card').forEach(card => {
+        const group = productGroups.find(item => item.id === card.dataset.groupId);
+        if (!group) return;
+        updateCardVariantState(card, group, 0, { animateImage: false });
+        card.addEventListener('click', function(e) {
+          if (e.target.closest('.add-to-cart-btn') || e.target.closest('.variant-select')) return;
+          openProductDetail(group);
+        });
+      });
+      document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const groupId = btn.dataset.group;
+          const variantIdx = parseInt(btn.dataset.variant, 10);
+          addToCart(groupId, variantIdx);
+        });
+      });
+    }
+
+    function updatePagination(totalItems, totalPages) {
+      var prevBtn = document.getElementById('prevPageBtn');
+      var nextBtn = document.getElementById('nextPageBtn');
+      var pageInfo = document.getElementById('pageInfo');
+      if (!prevBtn || !nextBtn || !pageInfo) return;
+      prevBtn.disabled = uiState.page <= 1;
+      nextBtn.disabled = uiState.page >= totalPages;
+      pageInfo.textContent = 'Page ' + uiState.page + ' of ' + totalPages + ' (' + totalItems + ' products)';
+    }
+
+    function goToPrevPage() { if (uiState.page > 1) { uiState.page--; updateURLState(); persistState(); render(); } }
+    function goToNextPage() { var totalPages = Math.ceil(filteredGroups.length / ITEMS_PER_PAGE) || 1; if (uiState.page < totalPages) { uiState.page++; updateURLState(); persistState(); render(); } }
+
+    function handleSearchInput() {
+      uiState.query = searchInput.value.trim();
+      applyFiltersAndSort();
+      updateGuideSuggestion(uiState.query);
+    }
+
+    function updateGuideSuggestion(query) {
+      var el = document.getElementById('guideSuggestion');
+      if (!el) return;
+      var q = query.toLowerCase();
+      var guides = [
+        { keywords: ['battery','batteries','ntbk-bat','cell','cells','li-ion','liion','lithium','pack','notebook battery','laptop battery','replace battery','batery','batt','btry','power pack','internal battery','external battery','cmos battery','cmos','rtc battery','backup battery','swollen battery','bloated battery','dead battery','draining battery','short battery life','bat'], name: 'Battery', type: 'battery' },
+        { keywords: ['charger','charging','ntchr','power supply','ac adapter','adapter','adaptor','charger cable','power brick','power cord','magsafe','usb-c charger','type c charger','barrel plug','car charger','travel charger','fast charger','quick charge','usb pd','watt','voltage','ampere','amp','wrong charger','not charging','charger not working','charger port','power adapter','chargers','charing','chrgr'], name: 'Charger', type: 'charger' },
+        { keywords: ['port','dc jack','charging port','power jack','dc connector','dc in','charge port','usb-c port','usb port','type c port','barrel jack','charging socket','charger socket','loose port','broken port','port repair','jack repair','power connector','pin','dc pin','soldered jack','jack replacement','charging issue','not detecting charger','wobbly port','dc receptacle','female jack'], name: 'Charging Port', type: 'port' },
+        { keywords: ['screen','display','lcd','led','monitor','panel','touchscreen','touch screen','digitizer','glass','lcd panel','led panel','ips','tn','oled','amoled','retina','matte screen','glossy screen','screen replacement','display replacement','cracked screen','broken screen','dead pixels','backlight','bleeding','flickering','dim screen','no display','screen cable','lvds','edp','40-pin','30-pin','glare','anti-glare','resolution','full hd','4k','uhd','wled','wva','wide viewing angle'], name: 'Screen', type: 'screen' }
+      ];
+      var matched = guides.find(function(g) { return g.keywords.some(function(k) { return q.includes(k); }); });
+      if (matched && q.length > 1) {
+        var iconSvgs = { battery: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="6" width="18" height="12" rx="2" ry="2"/><line x1="23" y1="10" x2="23" y2="14"/></svg>', charger: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>', port: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 2v2"/><path d="M12 20H2"/><path d="M5 20v-6"/></svg>', screen: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>' }; document.getElementById('guideSuggestionIcon').innerHTML = iconSvgs[matched.type] || '';
+        document.getElementById('guideSuggestionText').textContent = 'Need help finding the right ' + matched.name.toLowerCase() + '?';
+        document.getElementById('guideSuggestionBtn').innerHTML = 'Open ' + matched.name + ' Guide <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-left:4px;"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
+        document.getElementById('guideSuggestionBtn').onclick = function() { openGuideModal(matched.type); };
+        el.style.display = 'flex';
+      } else {
+        el.style.display = 'none';
+      }
+    }
+    function handleSortChange() { uiState.sort = VALID_SORTS.includes(sortSelect.value) ? sortSelect.value : DEFAULT_SORT; applyFiltersAndSort(); }
+    function resetFilters() { uiState.query = ''; uiState.category = ''; uiState.sort = DEFAULT_SORT; applyFiltersAndSort(); if (searchInput) searchInput.focus(); }
+
+    if (searchInput) {
+      searchInput.value = uiState.query;
+      searchInput.addEventListener('input', handleSearchInput);
+      searchInput.addEventListener('search', handleSearchInput);
+    }
+    if (searchProductsBtn) { searchProductsBtn.addEventListener('click', handleSearchInput); }
+    if (sortSelect) {
+      sortSelect.value = uiState.sort;
+      sortSelect.addEventListener('change', handleSortChange);
+    }
+    if (resetFiltersBtn) { resetFiltersBtn.addEventListener('click', resetFilters); }
+
+    applyFiltersAndSort();
+
+    var prevPageBtn = document.getElementById('prevPageBtn');
+    var nextPageBtn = document.getElementById('nextPageBtn');
+    if (prevPageBtn) prevPageBtn.addEventListener('click', goToPrevPage);
+    if (nextPageBtn) nextPageBtn.addEventListener('click', goToNextPage);
+
+    if (highlightProductId) {
+      setTimeout(() => {
+        var safeId = highlightProductId.replace(/[^\w-]/g, '');
+        if (safeId.length) {
+          const productCard = document.querySelector('[data-group-id="' + safeId + '"]');
+          if (productCard) {
+            productCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            productCard.style.outline = '3px solid #e5383b';
+            productCard.style.outlineOffset = '8px';
+            setTimeout(() => { productCard.style.outline = 'none'; }, 2000);
+          }
+        }
+      }, 300);
+    }
+  })();
+</script>
+
+<!-- PRODUCT DETAIL MODAL -->
+<script>
+  var _pdCurrentGroup = null;
+
+  function generateProductDetails(group) {
+    var name = group.name || '';
+    var category = group.category || '';
+    var variants = group.variants || [];
+    var id = group.id || '';
+    var labelList = variants.map(function(v) { return v.label; });
+    var desc = group.description || '';
+    var compatibility = group.compatibility || '';
+    var specs = group.specs || '';
+
+    // Use inline data if provided
+    if (desc || compatibility || specs) {
+      var html = '';
+      if (desc) html += '<div class="pd-desc"><span class="pd-desc-label">Description</span><p>' + escapeHtml(desc) + '</p></div>';
+      if (compatibility) html += '<div class="pd-desc"><span class="pd-desc-label">Compatibility</span><p>' + escapeHtml(compatibility) + '</p></div>';
+      if (specs) html += '<div class="pd-desc"><span class="pd-desc-label">Specifications</span><p>' + escapeHtml(specs) + '</p></div>';
+      return html;
+    }
+
+    // ── Auto-generate if no inline data ──
+    var catLower = category.toLowerCase();
+    var nameLower = name.toLowerCase();
+
+    // Batteries
+    if (catLower.indexOf('batter') !== -1 || id.indexOf('NTBK-BAT') === 0) {
+      var v = variants[0] || {};
+      var voltage = v.label ? (v.label.match(/(\d+\.?\d*)V/i) || [])[1] || '' : '';
+      var capacity = v.label ? (v.label.match(/(\d+mAh|\d+\.?\d*Wh)/i) || [])[0] || '' : '';
+      desc = 'Replacement notebook battery pack.';
+      if (voltage) desc += ' Voltage: ' + voltage + 'V.';
+      if (capacity) desc += ' Capacity: ' + capacity + '.';
+      desc += ' Compatible with ' + name.replace(/Notebook Battery/i,'').replace(/NTBK-BAT.*/,'').trim() + ' series.';
+      compatibility = 'Laptop models: ' + labelList.join(', ');
+    }
+    // Charging Ports (check before Chargers to avoid 'charg' overlap)
+    else if (catLower.indexOf('charging port') !== -1) {
+      desc = 'Replacement DC charging jack/power port for notebook.';
+      compatibility = 'Compatible with: ' + labelList.join(', ');
+    }
+    // Chargers
+    else if (catLower === 'chargers' || id.indexOf('NTCHR') === 0) {
+      var specsList = [];
+      variants.forEach(function(v) {
+        var s = v.label.replace(/^\d+\.\s*/,'');
+        specsList.push(s);
+      });
+      desc = name + '. Genuine replacement AC adapter.';
+      compatibility = 'Connector types: ' + specsList.join(' | ');
+    }
+    // RAM
+    else if (catLower.indexOf('memory') !== -1 || catLower.indexOf('ram') !== -1) {
+      var ramType = '';
+      if (nameLower.indexOf('ddr4') !== -1) ramType = 'DDR4';
+      else if (nameLower.indexOf('ddr3') !== -1) ramType = 'DDR3';
+      else if (nameLower.indexOf('ddr2') !== -1) ramType = 'DDR2';
+      else if (nameLower.indexOf('ddr1') !== -1) ramType = 'DDR1';
+      var formFactor = nameLower.indexOf('notebook') !== -1 ? 'SO-DIMM' : 'DIMM';
+      desc = ramType + ' ' + formFactor + ' memory module.';
+      specs = 'Available capacities: ' + labelList.join(', ');
+    }
+    // Storage
+    else if (catLower.indexOf('storage') !== -1 || catLower.indexOf('ssd') !== -1 || catLower.indexOf('flash') !== -1 || catLower.indexOf('memory card') !== -1) {
+      if (nameLower.indexOf('enclosure') !== -1 || nameLower.indexOf('case') !== -1) desc = 'External storage enclosure for hard drives or SSDs.';
+      else if (nameLower.indexOf('ssd') !== -1) desc = 'Solid State Drive (SSD) for fast read/write speeds.';
+      else if (nameLower.indexOf('hdd') !== -1 || nameLower.indexOf('hard drive') !== -1) desc = 'Internal/external hard disk drive for data storage.';
+      else if (nameLower.indexOf('nvme') !== -1) desc = 'NVMe enclosure for high-speed SSD storage.';
+      else if (nameLower.indexOf('flash') !== -1) desc = 'Portable flash drive for file transfer and backup.';
+      else if (nameLower.indexOf('memory card') !== -1 || nameLower.indexOf('micro sd') !== -1) desc = 'Memory card for cameras, phones, and devices.';
+      else if (nameLower.indexOf('adapter') !== -1) desc = 'Memory card adapter for reading SD/Micro SD cards.';
+      else desc = 'Storage device.';
+      specs = 'Available capacities: ' + labelList.join(', ');
+    }
+    // Screens (laptop)
+    else if (catLower.indexOf('laptop screen') !== -1 || catLower.indexOf('notebook screen') !== -1) {
+      var size = (name.match(/(\d+\.\d+)"|(\d+\.\d+)\s*inch/i) || [])[0] || '';
+      desc = 'Replacement LCD/LED screen panel for notebook.';
+      if (size) desc += ' Size: ' + size + '.';
+      compatibility = 'Compatible connectors: ' + labelList.join(', ');
+    }
+    // Phone screens
+    else if (catLower.indexOf('phone screen') !== -1) {
+      desc = 'Replacement LCD/OLED screen assembly for mobile phone.';
+      compatibility = 'Compatible models: ' + labelList.join(', ');
+    }
+    // Motherboards
+    else if (catLower.indexOf('motherboard') !== -1) {
+      desc = 'Replacement/upgrade motherboard.';
+      specs = 'Socket/chipset options: ' + labelList.join(', ');
+    }
+    // Processors
+    else if (catLower.indexOf('processor') !== -1 || catLower.indexOf('cpu') !== -1) {
+      if (nameLower.indexOf('heat sink') !== -1 || nameLower.indexOf('heat sink + fan') !== -1) desc = 'CPU cooling heatsink with fan assembly.';
+      else if (nameLower.indexOf('thermal') !== -1 || nameLower.indexOf('heat paste') !== -1) desc = 'Thermal compound for CPU/GPU heat transfer.';
+      else desc = 'Desktop processor (CPU).';
+      specs = 'Options: ' + labelList.join(', ');
+    }
+    // Keyboards
+    else if (catLower.indexOf('keyboard') !== -1) {
+      if (id.indexOf('NTBK-KYB') === 0) {
+        desc = 'Replacement notebook keyboard.';
+        compatibility = 'Compatible with: ' + labelList.join(', ');
+      } else {
+        desc = 'Desktop/wireless keyboard.';
+        specs = 'Options: ' + labelList.join(', ');
+      }
+    }
+    // Cables
+    else if (catLower.indexOf('cable') !== -1 || catLower.indexOf('adapter') !== -1) {
+      desc = name + '.';
+      specs = 'Lengths/types: ' + labelList.join(', ');
+    }
+    // Printers
+    else if (catLower.indexOf('printer') !== -1) {
+      desc = 'Printer for home or office use.';
+      specs = 'Model: ' + labelList.join(', ');
+    }
+    // TVs & Monitors
+    else if (catLower.indexOf('tv') !== -1 || catLower.indexOf('monitor') !== -1) {
+      if (catLower.indexOf('tv') !== -1) desc = 'Television.';
+      else desc = 'Desktop monitor.';
+      specs = 'Screen sizes: ' + labelList.join(', ');
+    }
+    // Audio
+    else if (catLower.indexOf('audio') !== -1 || catLower.indexOf('speaker') !== -1 || catLower.indexOf('headset') !== -1) {
+      desc = name + '.';
+      specs = 'Options: ' + labelList.join(', ');
+    }
+    // Mice
+    else if (catLower.indexOf('mice') !== -1 || catLower.indexOf('mouse') !== -1) {
+      desc = name + '.';
+    }
+    // Networking
+    else if (catLower.indexOf('network') !== -1) {
+      desc = 'Networking equipment.';
+      specs = 'Options: ' + labelList.join(', ');
+    }
+    // Power Supply (PC PSU)
+    else if (catLower.indexOf('power supply') !== -1) {
+      desc = 'Desktop PC power supply unit (PSU).';
+      specs = 'Wattage: ' + labelList.join(', ');
+    }
+    // Power / UPS
+    else if (catLower.indexOf('power') !== -1 || catLower.indexOf('ups') !== -1) {
+      desc = 'Uninterruptible Power Supply (UPS) for backup power protection.';
+      specs = 'Models: ' + labelList.join(', ');
+    }
+    // Point of Sale
+    else if (catLower.indexOf('point of sale') !== -1 || catLower.indexOf('pos') !== -1) {
+      desc = name + ' for retail and business use.';
+    }
+    // Notebooks
+    else if (catLower.indexOf('notebook') !== -1) {
+      desc = name + '.';
+      specs = 'Configuration: ' + labelList.join(', ');
+    }
+    // Graphics
+    else if (catLower.indexOf('graphics') !== -1 || catLower.indexOf('gpu') !== -1) {
+      desc = name + ' for gaming and professional use.';
+      specs = 'Options: ' + labelList.join(', ');
+    }
+    // ATX Cases
+    else if (catLower.indexOf('atx case') !== -1) {
+      desc = 'Desktop PC casing for ATX motherboard and components.';
+    }
+    // Gaming
+    else if (catLower.indexOf('gaming') !== -1) {
+      desc = name + ' for gaming use.';
+    }
+    // Consumables (ink/toner)
+    else if (catLower.indexOf('consumables') !== -1 || catLower.indexOf('toner') !== -1 || catLower.indexOf('cartridge') !== -1 || catLower.indexOf('ink') !== -1) {
+      if (nameLower.indexOf('toner') !== -1) desc = 'Compatible toner cartridge for laser printers.';
+      else if (nameLower.indexOf('ink') !== -1) desc = 'Ink cartridge or bottle for inkjet printers.';
+      else desc = 'Printer consumable.';
+    }
+    // Cellphones
+    else if (catLower.indexOf('cellphone') !== -1 || catLower === 'cellphones') {
+      desc = 'Smartphone.';
+      specs = 'Models: ' + labelList.join(', ');
+    }
+    // Screen Protectors
+    else if (catLower.indexOf('screen protector') !== -1 || catLower.indexOf('tempered glass') !== -1) {
+      desc = 'Tempered glass screen protector for device display protection.';
+      compatibility = 'Compatible models: ' + labelList.join(', ');
+    }
+    // Phone Accessories
+    else if (catLower.indexOf('phone accessory') !== -1) {
+      if (nameLower.indexOf('cable') !== -1 || nameLower.indexOf('sync') !== -1) desc = 'Phone charging and sync cable.';
+      else if (nameLower.indexOf('charger') !== -1 || nameLower.indexOf('otg') !== -1) desc = name + '.';
+      else if (nameLower.indexOf('powerbank') !== -1 || nameLower.indexOf('power bank') !== -1) desc = 'Portable power bank for mobile device charging.';
+      else desc = name + '.';
+    }
+    // Accessories / default
+    else {
+      desc = name + '.';
+      if (labelList.length) specs = 'Options: ' + labelList.join(', ');
+    }
+
+    var html = '';
+    if (desc) html += '<div class="pd-desc"><span class="pd-desc-label">Description</span><p>' + escapeHtml(desc) + '</p></div>';
+    if (compatibility) html += '<div class="pd-desc"><span class="pd-desc-label">Compatibility</span><p>' + escapeHtml(compatibility) + '</p></div>';
+    if (specs) html += '<div class="pd-desc"><span class="pd-desc-label">Specifications</span><p>' + escapeHtml(specs) + '</p></div>';
+    return html;
+  }
+
+  function openProductDetail(group) {
+    var modal = document.getElementById('productDetailModal');
+    var top = document.getElementById('productDetailTop');
+    var relatedList = document.getElementById('pdRelatedList');
+    var addBtn = document.getElementById('pdAddToCartBtn');
+    if (!modal || !top) return;
+
+    _pdCurrentGroup = group;
+
+    var formatPrice = function(n) { return 'N$\u202f' + n.toLocaleString('en-NA'); };
+    var escapeHtml = function(value) {
+      var div = document.createElement('div');
+      div.textContent = value;
+      return div.innerHTML;
+    };
+
+    // Price info
+    var prices = (group.variants || []).map(function(v) { return v.price; });
+    var minPrice = Math.min.apply(null, prices);
+    var maxPrice = Math.max.apply(null, prices);
+    var hasMultiplePrices = prices.length > 1 && minPrice !== maxPrice;
+
+    // Old price
+    var oldPrice = group.oldPrice || group.old_price || null;
+    var isOnSale = oldPrice !== null;
+
+    // Variants
+    var variantsHtml = '';
+    (group.variants || []).forEach(function(v, idx) {
+      var varImg = v.image ? '<img src="' + escapeHtml(v.image) + '" alt="' + escapeHtml(v.label) + '">' : '';
+      var selected = idx === 0 ? ' pd-variant-selected' : '';
+      var saleTag = isOnSale && oldPrice > v.price ? '<span class="pd-variant-sale">Sale</span>' : '';
+      variantsHtml +=
+        '<div class="pd-variant-row' + selected + '" data-variant-idx="' + idx + '">' +
+          '<span class="pd-variant-label">' + varImg + escapeHtml(v.label) + '</span>' +
+          '<span class="pd-variant-price">' + formatPrice(v.price) + saleTag + '</span>' +
+        '</div>';
+    });
+
+    // Badge
+    var badgeHtml = group.badge ? '<span class="pd-badge pd-badge-' + group.badge + '">' + group.badge + '</span>' : '';
+
+    // Date info
+    var dateHtml = '';
+    if (group.date) {
+      var d = new Date(group.date);
+      var now = new Date();
+      var daysDiff = Math.floor((now - d) / (1000 * 60 * 60 * 24));
+      var dateStr = d.toLocaleDateString('en-ZA', { year:'numeric', month:'short', day:'numeric' });
+      if (daysDiff <= 30) dateHtml = '<span class="pd-date-new">New arrival</span>';
+      else dateHtml = '<span class="pd-date">Added ' + dateStr + '</span>';
+    }
+
+    // Price range / old price display
+    var priceDisplayHtml = '';
+    if (isOnSale) {
+      priceDisplayHtml =
+        '<div class="pd-price-area">' +
+          '<span class="pd-old-price">' + formatPrice(oldPrice) + '</span>' +
+          '<span class="pd-current-price" id="pdSelectedPrice">' + formatPrice(minPrice) + '</span>' +
+        '</div>';
+    } else if (hasMultiplePrices) {
+      priceDisplayHtml =
+        '<div class="pd-price-area">' +
+          '<span class="pd-price-range">From ' + formatPrice(minPrice) + ' – ' + formatPrice(maxPrice) + '</span>' +
+        '</div>';
+    } else {
+      priceDisplayHtml =
+        '<div class="pd-price-area">' +
+          '<span class="pd-current-price" id="pdSelectedPrice">' + formatPrice(minPrice) + '</span>' +
+        '</div>';
+    }
+
+    // Category icon mapping
+    var categoryIcons = {
+      'Motherboards': '&#x1F9F1;', 'Processors': '&#x2699;', 'Memory': '&#x1F4BE;',
+      'Storage': '&#x1F4E6;', 'ATX Cases': '&#x1F4BB;', 'Power Supply': '&#x26A1;',
+      'Chargers': '&#x1F50C;', 'Charging Ports': '&#x1F50C;', 'Batteries': '&#x1F50B;',
+      'Laptop Screens': '&#x1F5A5;', 'Phone Screens': '&#x1F4F1;',
+      'Cables': '&#x1F4EC;', 'Mice': '&#x1F5B1;', 'Keyboards': '&#x2328;',
+      'Audio': '&#x1F50A;', 'TVs': '&#x1F4FA;', 'Monitors': '&#x1F5A5;',
+      'Printers': '&#x1F5A8;', 'Networking': '&#x1F4E1;', 'Point of Sale': '&#x1F4B3;',
+      'Software': '&#x1F4C0;', 'Optical Drives': '&#x1F4BF;',
+      'Accessories': '&#x1F3A7;', 'Phone Accessories': '&#x1F4F1;',
+      'Screen Protectors': '&#x1F4F1;', 'Notebooks': '&#x1F4BB;'
+    };
+    var catIcon = categoryIcons[group.category] || '&#x1F4E6;';
+
+    // Auto-detect brand
+    function detectBrand(g) {
+      var n = g.name || '';
+      var known = ['kMax','Trend Tech','Trendtech','SonicGear','Samsung','Huawei','Apple','Intel',
+                   'Toshiba','LG','HP','Lenovo','Acer','Dell','Canon','Microsoft','GeForce',
+                   'Dahua','kStar','Econo','Proline','MSI','AP Series'];
+      for (var i = 0; i < known.length; i++) {
+        if (n.indexOf(known[i]) === 0) return known[i];
+      }
+      if (n.indexOf('iPhone') !== -1) return 'Apple';
+      if (n.indexOf('HP ') !== -1 || n.indexOf('Compaq') !== -1) return 'HP';
+      return '';
+    }
+    var brand = detectBrand(group);
+
+    // Description & details
+    var detailsHtml = generateProductDetails(group);
+    if (detailsHtml) detailsHtml = '<div class="pd-details">' + detailsHtml + '</div>';
+
+    top.innerHTML =
+      '<div class="product-detail-top">' +
+        '<div class="pd-image">' +
+          '<img src="' + escapeHtml(group.image) + '" alt="' + escapeHtml(group.name) + '" id="pdMainImage">' +
+          detailsHtml +
+        '</div>' +
+        '<div class="pd-info">' +
+          '<div class="pd-category">' + catIcon + ' ' + escapeHtml(group.category) + '</div>' +
+          '<div class="pd-name">' + escapeHtml(group.name) + '</div>' +
+          badgeHtml +
+          (brand ? '<div class="pd-brand">' + escapeHtml(brand) + '</div>' : '') +
+          priceDisplayHtml +
+          '<div class="pd-variants">' +
+            '<h4>Select variant</h4>' +
+            variantsHtml +
+          '</div>' +
+        '</div>' +
+      '</div>';
+
+    if (addBtn) addBtn.dataset.variant = '0';
+
+    // Click variant to select and swap image + update price
+    top.querySelectorAll('.pd-variant-row').forEach(function(row) {
+      row.addEventListener('click', function() {
+        top.querySelectorAll('.pd-variant-row').forEach(function(r) { r.classList.remove('pd-variant-selected'); });
+        this.classList.add('pd-variant-selected');
+        var idx = parseInt(this.dataset.variantIdx, 10);
+        if (addBtn) addBtn.dataset.variant = idx;
+        var v = (group.variants || [])[idx];
+        if (v) {
+          // Swap image if variant has its own
+          var mainImg = document.getElementById('pdMainImage');
+          if (mainImg) mainImg.src = v.image || group.image;
+          // Update price display
+          var priceTarget = document.getElementById('pdSelectedPrice');
+          if (priceTarget) priceTarget.textContent = formatPrice(v.price);
+        }
+      });
+    });
+
+    // Related / suggested products
+    var relatedHtml = '';
+    if (window.PRODUCTS_DB) {
+      var pool = window.PRODUCTS_DB.filter(function(p) { return p.id !== group.id; });
+      // Prioritise same-category products
+      var sameCat = pool.filter(function(p) { return p.category === group.category; });
+      var other = pool.filter(function(p) { return p.category !== group.category; });
+      // Shuffle the "other" array for variety
+      for (var i = other.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var tmp = other[i]; other[i] = other[j]; other[j] = tmp;
+      }
+      var related = sameCat.concat(other).slice(0, 6);
+      related.forEach(function(r) {
+        var minPrice = Math.min.apply(null, (r.variants || []).map(function(v) { return v.price; }));
+        relatedHtml +=
+          '<div class="pd-related-item" data-id="' + r.id + '">' +
+            '<img src="' + escapeHtml(r.image) + '" alt="' + escapeHtml(r.name) + '">' +
+            '<span class="pd-r-name">' + escapeHtml(r.name) + '</span>' +
+            '<span class="pd-r-price">' + formatPrice(minPrice) + '</span>' +
+          '</div>';
+      });
+    }
+    var relatedSection = document.getElementById('pdRelatedSection');
+    if (relatedHtml) {
+      relatedList.innerHTML = relatedHtml;
+      relatedSection.style.display = 'block';
+    } else {
+      relatedSection.style.display = 'none';
+    }
+
+    // Click related products
+    relatedList.querySelectorAll('.pd-related-item').forEach(function(item) {
+      item.addEventListener('click', function() {
+        var id = this.dataset.id;
+        var found = window.PRODUCTS_DB.find(function(p) { return p.id === id; });
+        if (found) openProductDetail(found);
+      });
+    });
+
+    modal.style.display = 'flex';
+  }
+
+  function closeProductDetail() {
+    document.getElementById('productDetailModal').style.display = 'none';
+    _pdCurrentGroup = null;
+  }
+
+  document.getElementById('closeProductDetailBtn').addEventListener('click', closeProductDetail);
+  document.getElementById('productDetailModal').addEventListener('click', function(e) {
+    if (e.target === this) closeProductDetail();
+  });
+
+  document.getElementById('pdAddToCartBtn').addEventListener('click', function() {
+    if (!_pdCurrentGroup) return;
+    var variantIdx = parseInt(this.dataset.variant || '0', 10);
+    if (window.CART) {
+      window.CART.add(_pdCurrentGroup, variantIdx);
+      if (window.updateCartDisplay) window.updateCartDisplay();
+      // Feedback
+      var orig = this.innerHTML;
+      this.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Added';
+      this.classList.add('pd-btn-feedback');
+      var self = this;
+      setTimeout(function() {
+        self.innerHTML = orig;
+        self.classList.remove('pd-btn-feedback');
+      }, 1800);
+    }
+  });
+
+  function buildBranchSelector() {
+    if (!window.BRANCHES) return '<p style="font-size:13px;color:var(--text-muted);">Branch info unavailable.</p>';
+    var branches = window.BRANCHES.getAllBranches();
+    var html = '<div style="display:flex;flex-direction:column;gap:10px;">';
+    branches.forEach(function(b) {
+      var wa = b.whatsapp || b.phone || '';
+      html += '<div class="pd-branch-option" data-whatsapp="' + wa.replace(/[^0-9]/g,'') + '" data-name="' + b.name.replace('Royal Computers - ', '') + '" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:all 0.15s;background:var(--white);">' +
+        '<div style="width:36px;height:36px;border-radius:50%;background:var(--red-glow);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;font-weight:700;color:var(--red);">' + b.city.charAt(0) + '</div>' +
+        '<div style="flex:1;"><div style="font-size:14px;font-weight:600;color:var(--text);">' + b.name.replace('Royal Computers - ', '') + '</div><div style="font-size:12px;color:var(--text-muted);">' + b.address + '</div></div>' +
+        '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-muted);flex-shrink:0;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>' +
+        '</div>';
+    });
+    html += '</div>';
+    return html;
+  }
+
+  document.getElementById('pdInquireBtn').addEventListener('click', function() {
+    if (!_pdCurrentGroup) return;
+    var group = _pdCurrentGroup;
+    var addBtn = document.getElementById('pdAddToCartBtn');
+    var variantIdx = parseInt(addBtn ? addBtn.dataset.variant : '0', 10);
+    var variant = (group.variants || [])[variantIdx] || group.variants[0];
+    var label = variant ? ' - ' + variant.label : '';
+    var price = variant ? variant.price : 0;
+
+    // Create branch selector overlay
+    var overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);z-index:5000;display:flex;align-items:center;justify-content:center;';
+    var box = document.createElement('div');
+    box.style.cssText = 'background:var(--white);border-radius:16px;padding:28px;max-width:460px;width:90%;max-height:90vh;overflow-y:auto;box-shadow:0 25px 80px rgba(0,0,0,0.3);animation:popIn 0.3s cubic-bezier(0.34,1.56,0.64,1);';
+    box.innerHTML =
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">' +
+        '<h3 style="font-size:18px;font-weight:700;color:var(--text);margin:0;">Inquire at branch</h3>' +
+        '<button id="pdBranchClose" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-muted);padding:0;line-height:1;">&times;</button>' +
+      '</div>' +
+      '<p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Select a branch to send your inquiry about <strong>' + group.name + label + '</strong> (N$' + price + '):</p>' +
+      buildBranchSelector();
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+
+    overlay.querySelectorAll('.pd-branch-option').forEach(function(opt) {
+      opt.addEventListener('click', function() {
+        var waNum = this.dataset.whatsapp;
+        var branchName = this.dataset.name;
+        var msg = 'Hi ' + branchName + ', I am interested in: ' + group.name + label + ' - is it available in stock?';
+        document.body.removeChild(overlay);
+        window.open('https://wa.me/' + waNum + '?text=' + encodeURIComponent(msg), '_blank');
+      });
+    });
+
+    document.getElementById('pdBranchClose').addEventListener('click', function() {
+      document.body.removeChild(overlay);
+    });
+    overlay.addEventListener('click', function(e) {
+      if (e.target === this) document.body.removeChild(overlay);
+    });
+  });
+</script>
+
+<!-- UNIFIED CART & QUOTE FUNCTIONALITY -->
+<script>
+  function switchCartMode(newMode) {
+    if (newMode !== 'purchase' && newMode !== 'quote') return;
+    window.CART.setMode(newMode);
+    updateModeUI();
+  }
+
+  function updateModeUI() {
+    const mode = window.CART.getMode();
+    const cartModeBtn = document.getElementById('cartModeBtn');
+    const quoteModeBtn = document.getElementById('quoteModeBtn');
+    const quoteFieldsSection = document.getElementById('quoteFieldsSection');
+    const cartHeaderTitle = document.getElementById('cartHeaderTitle');
+    const checkoutBtn = document.getElementById('checkoutBtn');
+    if (mode === 'quote') {
+      if (cartModeBtn) { cartModeBtn.style.borderBottom = '2px solid transparent'; cartModeBtn.style.backgroundColor = 'var(--bg)'; cartModeBtn.style.color = 'var(--text-muted)'; }
+      if (quoteModeBtn) { quoteModeBtn.style.borderBottom = '3px solid var(--red)'; quoteModeBtn.style.backgroundColor = 'var(--white)'; quoteModeBtn.style.color = 'var(--text)'; }
+      if (quoteFieldsSection) quoteFieldsSection.style.display = 'flex';
+    } else {
+      if (cartModeBtn) { cartModeBtn.style.borderBottom = '3px solid var(--red)'; cartModeBtn.style.backgroundColor = 'var(--white)'; cartModeBtn.style.color = 'var(--text)'; }
+      if (quoteModeBtn) { quoteModeBtn.style.borderBottom = '2px solid transparent'; quoteModeBtn.style.backgroundColor = 'var(--bg)'; quoteModeBtn.style.color = 'var(--text-muted)'; }
+      if (quoteFieldsSection) quoteFieldsSection.style.display = 'none';
+    }
+    if (cartHeaderTitle) cartHeaderTitle.textContent = 'Get a Quote';
+    if (checkoutBtn) checkoutBtn.textContent = 'Generate Quote';
+  }
+
+  function handleCheckout() { openQuoteInfoModal(); }
+
+  function openQuoteInfoModal() {
+    const items = window.CART.getItems();
+    if (!items.length) { alert('Please add at least one product to generate a quote.'); return; }
+    const modal = document.getElementById('quoteInfoModal');
+    if (modal) { modal.style.display = 'flex'; }
+  }
+
+  function closeQuoteInfoModal() { const modal = document.getElementById('quoteInfoModal'); if (modal) modal.style.display = 'none'; }
+
+  function generateQuotePreview() {
+    const items = window.CART.getItems();
+    if (!items.length) { alert('Please add at least one product to generate a quote.'); return; }
+    const branch = document.getElementById('quoteInfoBranch').value;
+    if (!branch) { alert('Please select a branch.'); return; }
+    const quoteData = {
+      date: new Date().toISOString(), branch: branch,
+      guestEmail: document.getElementById('quoteInfoEmail').value || '',
+      guestName: document.getElementById('quoteInfoName').value || 'Customer',
+      company: document.getElementById('quoteInfoCompany').value || '',
+      customerRef: document.getElementById('quoteInfoReference').value || '',
+      products: items, accountType: 'quote', billingAddress: '', billingCity: '', billingPostal: ''
+    };
+    window.CURRENT_QUOTE = quoteData;
+    try {
+      const quoteHtml = generateWebQuotePDF(quoteData);
+      const previewContent = document.getElementById('quotePreviewContent');
+      if (previewContent) { previewContent.innerHTML = quoteHtml; }
+      closeQuoteInfoModal();
+      const previewModal = document.getElementById('quotePreviewModal');
+      if (previewModal) { previewModal.style.display = 'flex'; }
+    } catch (error) { console.error('Error generating quote:', error); alert('Error generating quote. Please check browser console.'); }
+  }
+
+  function printQuotePreview() {
+    const previewContent = document.getElementById('quotePreviewContent');
+    if (!previewContent) return;
+    const printWindow = window.open('', '', 'width=1000,height=700');
+    printWindow.document.write('<!DOCTYPE html><html><head><title>Quote</title><style>@media print { body { margin: 0; } }</style></head><body>');
+    printWindow.document.write(previewContent.innerHTML);
+    if (previewContent.querySelector('style')) {
+      printWindow.document.write('<style>' + (previewContent.querySelector('style').innerHTML || '') + '</style>');
+    }
+    printWindow.document.write('</body></html>');
+    printWindow.document.close();
+    setTimeout(() => printWindow.print(), 500);
+  }
+
+  function saveQuoteAsPDF() { alert('Use the Print button and select "Save as PDF" in the print dialog.'); printQuotePreview(); }
+
+  function showStockInquiryFromQuote() {
+    if (!window.CURRENT_QUOTE) return;
+    const quote = window.CURRENT_QUOTE;
+    const modal = document.createElement('div');
+    modal.id = 'stockInquiryModalFromQuote';
+    modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:10000;';
+    const content = document.createElement('div');
+    content.style.cssText = 'background:var(--dark-2);border-radius:12px;padding:30px;max-width:600px;width:90%;max-height:90vh;overflow-y:auto;box-shadow:0 10px 40px rgba(0,0,0,0.4);border:1px solid var(--border);color:var(--text);';
+    let branchInfo = { name: 'Not specified', email: '' };
+    if (quote.branch && window.BRANCHES) { const branch = window.BRANCHES.getBranchById(quote.branch); if (branch) branchInfo = branch; }
+    let itemsTableHtml = '<table border="1" cellpadding="8" style="border-collapse:collapse;width:100%;margin:10px 0;"><tr style="background:var(--dark-3);"><th>Product</th><th>Quantity</th><th>Price</th></tr>';
+    quote.products.forEach(item => {
+      const lineTotal = (item.price || 0) * (item.quantity || 1);
+      itemsTableHtml += `<tr><td>${escapeHtml(item.name)}</td><td>${item.quantity}</td><td>N$${lineTotal.toFixed(2)}</td></tr>`;
+    });
+    itemsTableHtml += '</table>';
+    const emailBody = 'Hello,\n\nI am interested in the following items from the attached quote and would like to check their current stock availability:\n\n' + itemsTableHtml + '\n\nCustomer Details:\nName: ' + (quote.guestName || 'Customer') + '\nEmail: ' + (quote.guestEmail || 'Not provided') + '\nReference: ' + (quote.customerRef || '-') + '\n\nCould you please confirm the stock availability and expected delivery time?\n\nThank you,\n' + (quote.guestName || 'Customer');
+    content.innerHTML = `
+      <div style="margin-bottom:20px;"><h3 style="color:var(--red);margin-top:0;">Stock Inquiry</h3><p>Send an inquiry to <strong>${escapeHtml(branchInfo.name)}</strong> about item availability:</p></div>
+      <div style="margin-bottom:15px;background:var(--dark-3);padding:15px;border-radius:6px;border-left:4px solid var(--red);"><p style="margin:0 0 5px 0;font-weight:bold;font-size:13px;">Branch Contact:</p><p style="margin:2px 0;font-size:13px;"><strong>Email:</strong> ${escapeHtml(branchInfo.email)}</p></div>
+      <div style="margin-bottom:15px;"><label style="display:block;font-weight:bold;margin-bottom:8px;font-size:13px;">Message to send:</label><textarea id="stockInquiryTextFromQuote" readonly style="width:100%;height:250px;padding:10px;border:1px solid var(--border);border-radius:6px;font-family:monospace;font-size:12px;background:var(--dark-3);color:var(--text);">${escapeHtml(emailBody)}</textarea></div>
+      <div style="display:flex;gap:10px;"><button onclick="this.closest('[id=stockInquiryModalFromQuote]').remove()" style="flex:1;padding:12px;background:var(--dark-3);color:var(--text);border:1px solid var(--border);border-radius:6px;font-weight:bold;cursor:pointer;">Close</button><button onclick="document.getElementById('stockInquiryTextFromQuote').select();document.execCommand('copy');alert('Copied to clipboard!')" style="flex:1;padding:12px;background:#2196f3;color:white;border:none;border-radius:6px;font-weight:bold;cursor:pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg> Copy Message</button></div>
+    `;
+    modal.appendChild(content);
+    document.body.appendChild(modal);
+    modal.addEventListener('click', function(e) { if (e.target === this) this.remove(); });
+  }
+
+  function editQuoteInfo() {
+    const previewModal = document.getElementById('quotePreviewModal');
+    if (previewModal) previewModal.style.display = 'none';
+    const infoModal = document.getElementById('quoteInfoModal');
+    if (infoModal) infoModal.style.display = 'flex';
+  }
+
+  function generateWebQuotePDF(quote) {
+    const invoiceDate = new Date(quote.date).toLocaleDateString('en-ZA');
+    const expiryDate = new Date(new Date(quote.date).getTime() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('en-ZA');
+    const documentNo = 'WQ' + Math.floor(Math.random() * 9000000 + 1000000);
+    let branchInfo = { name: 'Royal Computers', address: '', phone: '', email: '', hours: '' };
+    if (quote.branch && window.BRANCHES) {
+      const branch = window.BRANCHES.getBranchById(quote.branch);
+      if (branch) { branchInfo = { name: branch.name || 'Royal Computers', address: branch.address || '', phone: branch.phone || '', email: branch.email || '', hours: branch.hours || '' }; }
+    }
+    const items = quote.products || quote.items || [];
+    const subtotal = items.reduce((sum, p) => sum + ((p.price || 0) * (p.quantity || 1)), 0);
+    const total = subtotal;
+    let productRows = '';
+    items.forEach(p => {
+      const itemPrice = (p.price || 0);
+      const itemTotal = itemPrice * (p.quantity || 1);
+      const unitPrice = itemPrice.toFixed(2);
+      const nettPrice = itemTotal.toFixed(2);
+      productRows += `<tr><td style="padding:8px;text-align:left;border-bottom:1px solid #ddd;font-family:Arial,sans-serif;font-size:11px;">${escapeHtml(p.productId || p.id || '')}</td><td style="padding:8px;text-align:left;border-bottom:1px solid #ddd;font-family:Arial,sans-serif;font-size:11px;">${escapeHtml(p.name || '')}</td><td style="padding:8px;text-align:center;border-bottom:1px solid #ddd;font-family:Arial,sans-serif;font-size:11px;">${p.quantity || 1}</td><td style="padding:8px;text-align:center;border-bottom:1px solid #ddd;font-family:Arial,sans-serif;font-size:11px;">-</td><td style="padding:8px;text-align:right;border-bottom:1px solid #ddd;font-family:Arial,sans-serif;font-size:11px;">N$${unitPrice}</td><td style="padding:8px;text-align:center;border-bottom:1px solid #ddd;font-family:Arial,sans-serif;font-size:11px;">0.00%</td><td style="padding:8px;text-align:center;border-bottom:1px solid #ddd;font-family:Arial,sans-serif;font-size:11px;">Incl.</td><td style="padding:8px;text-align:right;border-bottom:1px solid #ddd;font-family:Arial,sans-serif;font-size:11px;font-weight:500;">N$${nettPrice}</td></tr>`;
+    });
+    const accountTypeLabel = ({ 'cash': 'CASH', 'eft': 'EFT', 'swipe': 'SWIPE CARD', 'cheque': 'CHEQUE', 'other': 'OTHER' })[quote.accountType] || (quote.accountType || 'CASH').toUpperCase();
+    const customerName = quote.guestName || quote.name || 'Customer';
+    const customerEmail = quote.guestEmail || quote.email || '';
+    const billingAddress = quote.billingAddress || quote.address || '';
+    const billingCity = quote.billingCity || '';
+    const billingPostal = quote.billingPostal || '';
+    const customerBlock = '<strong style="font-family:Arial,sans-serif;font-size:11px;">' + escapeHtml(customerName) + '</strong><br/>' + escapeHtml(customerEmail) + '<br/>' + (billingAddress ? escapeHtml(billingAddress) + '<br/>' : '') + (billingCity ? escapeHtml(billingCity) + (billingPostal ? ' ' + escapeHtml(billingPostal) : '') + '<br/>' : '');
+    const esc = escapeHtml;
+    const dateFormatted = invoiceDate;
+    const validFormatted = expiryDate;
+    const BillLines = customerBlock;
+    const formatPrice = (n) => (n || 0).toFixed(2);
+    const customer = { paymentMethod: accountTypeLabel, company: quote.customerRef || '-', additionalDetails: '' };
+    return '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Web Quote - Royal Computers</title><style>*{margin:0;padding:0;box-sizing:border-box;}html,body{font-family:Arial,sans-serif;color:#333;background:white;font-size:11px;}.page{max-width:210mm;margin:0 auto;padding:20px;font-family:Arial,sans-serif;}.header-grid{display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-bottom:25px;}.company-box{border:2px solid #333;padding:15px;font-family:Arial,sans-serif;}.company-logo{font-size:14px;font-weight:bold;margin-bottom:10px;font-family:Arial,sans-serif;}.company-details{font-size:11px;line-height:1.6;font-family:Arial,sans-serif;}.company-details p{margin:2px 0;font-family:Arial,sans-serif;font-size:11px;}.invoice-box{border:1px solid #999;padding:15px;font-family:Arial,sans-serif;}.invoice-title{font-size:16px;font-weight:bold;text-decoration:underline;margin-bottom:8px;font-family:Arial,sans-serif;}.invoice-detail{display:grid;grid-template-columns:100px 1fr;margin-bottom:5px;font-size:11px;font-family:Arial,sans-serif;}.invoice-detail-label{font-weight:bold;font-family:Arial,sans-serif;font-size:11px;}.customer-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;}.customer-box{border:1px solid #999;padding:12px;min-height:100px;font-family:Arial,sans-serif;}.customer-title{font-weight:bold;font-size:11px;margin-bottom:6px;font-family:Arial,sans-serif;}.customer-text{font-size:11px;line-height:1.5;font-family:Arial,sans-serif;}.account-info{display:grid;grid-template-columns:repeat(6,1fr);gap:15px;padding:10px 0;margin-bottom:15px;border-bottom:1px solid #999;font-size:11px;font-family:Arial,sans-serif;}.account-field{font-family:Arial,sans-serif;}.account-label{font-weight:bold;margin-bottom:3px;font-family:Arial,sans-serif;font-size:11px;}.account-value{font-size:11px;font-family:Arial,sans-serif;}table{width:100%;border-collapse:collapse;margin-bottom:15px;font-family:Arial,sans-serif;}table th{background:#f5f5f5;padding:8px;text-align:left;border:1px solid #999;font-weight:bold;font-size:11px;font-family:Arial,sans-serif;}table td{padding:8px;border:1px solid #ddd;font-size:11px;font-family:Arial,sans-serif;}.totals-container{display:grid;grid-template-columns:1fr 220px;gap:20px;margin-bottom:20px;}.totals-right{padding-right:10px;font-family:Arial,sans-serif;}.totals-row{display:flex;justify-content:space-between;margin-bottom:3px;font-size:11px;font-family:Arial,sans-serif;}.totals-label{font-weight:bold;font-family:Arial,sans-serif;font-size:11px;}.totals-value{text-align:right;border-bottom:1px solid #999;padding-bottom:3px;min-width:90px;font-family:Arial,sans-serif;font-size:11px;}.totals-total{font-weight:bold;font-size:11px;border-top:2px solid #333;padding-top:5px;margin-top:5px;font-family:Arial,sans-serif;}.bank-section{border-top:2px solid #999;padding:15px 0;margin:20px 0;font-size:11px;font-family:Arial,sans-serif;}.bank-section p{margin:3px 0;font-family:Arial,sans-serif;font-size:11px;}.signature-section{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:40px;}.signature-area{font-size:11px;font-family:Arial,sans-serif;}.sig-line{border-top:1px solid #333;padding-top:30px;}.footer{text-align:center;font-size:9px;color:#666;margin-top:20px;border-top:1px solid #ddd;padding-top:10px;font-family:Arial,sans-serif;}.logo-img{max-width:120px;height:auto;margin-bottom:10px;}@media print{body{margin:0;padding:0;font-family:Arial,sans-serif;}.page{margin:0;padding:10px;height:auto;font-family:Arial,sans-serif;}}</style></head><body><div class="page"><div class="header-grid"><div class="company-box"><img src="ROYAL PICS/royal logo.webp" alt="Royal Computers" class="logo-img" onerror="this.style.display=\'none\';"><div class="company-details"><p style="font-weight:bold;">' + esc(branchInfo.name || 'Royal Computers') + '</p><p>' + esc(branchInfo.address || '') + '</p><p>' + (branchInfo.phone ? 'Tel: ' + esc(branchInfo.phone) : '') + '</p><p>' + (branchInfo.email ? 'Email: ' + esc(branchInfo.email) : '') + '</p></div></div><div class="invoice-box"><div class="invoice-title">Proforma Invoice</div><div class="invoice-detail"><span class="invoice-detail-label">Document No:</span><span>' + esc(quote.number || documentNo) + '</span></div><div class="invoice-detail"><span class="invoice-detail-label">Date:</span><span>' + dateFormatted + '</span></div><div class="invoice-detail"><span class="invoice-detail-label">Expiry:</span><span>' + validFormatted + '</span></div><div class="invoice-detail"><span class="invoice-detail-label">Page:</span><span>1 of 1</span></div></div></div><div class="customer-grid"><div class="customer-box"><div class="customer-title">Bill to:</div><div class="customer-text">' + BillLines + '</div></div><div class="customer-box"><div class="customer-title">Deliver to:</div><div class="customer-text">' + BillLines + '</div></div></div><div class="account-info"><div class="account-field"><div class="account-label">Account</div><div class="account-value">' + esc(customer.paymentMethod || accountTypeLabel || 'CASH') + '</div></div><div class="account-field"><div class="account-label">Your Ref</div><div class="account-value">' + esc(customer.company || '-') + '</div></div><div class="account-field"><div class="account-label">Tax Exempt</div><div class="account-value">N</div></div><div class="account-field"><div class="account-label">Tax Ref</div><div class="account-value">-</div></div><div class="account-field"><div class="account-label">Sales Code</div><div class="account-value">WEB QUOTE</div></div><div class="account-field"><div class="account-label">Expiry</div><div class="account-value">' + validFormatted + '</div></div></div><table><thead><tr><th>Code</th><th>Description</th><th>Quantity</th><th>Unit</th><th>Unit Price</th><th>Disc%</th><th>Tax</th><th>Nett Price</th></tr></thead><tbody>' + productRows + '</tbody></table><div class="totals-container"><div></div><div class="totals-right"><div class="totals-row"><span class="totals-label">Sub Total</span><span class="totals-value">N$' + formatPrice(subtotal) + '</span></div><div class="totals-row"><span class="totals-label">Discount @ 0.00%</span><span class="totals-value">-N$0.00</span></div><div class="totals-row"><span class="totals-label">VAT (Exclusive.)</span><span class="totals-value">N$0.00</span></div><div class="totals-row"><span class="totals-label">TAX</span><span class="totals-value">N$0.00</span></div><div class="totals-row totals-total"><span>TOTAL</span><span class="totals-value" style="font-weight:bold;">N$' + formatPrice(total) + '</span></div></div></div><div class="bank-section"><p><strong>' + esc(branchInfo.name) + '</strong></p><p>Bank: Windhoek</p><p>A/C#8001836801 Code: 486372</p></div><div class="signature-section"><div class="signature-area"><div><strong>Received in good order</strong></div><div style="margin-top:30px;text-align:center;">____________________</div><div style="text-align:center;font-size:10px;">Signature</div></div><div class="signature-area"><div><strong>Date</strong></div><div style="margin-top:30px;text-align:center;">____________________</div><div style="text-align:center;font-size:10px;">Authorized</div></div></div><div class="footer"><p>&copy; Royal Computers (Pty) Ltd | Web Quote Valid for 7 Days</p></div></div></body></html>';
+  }
+
+  function generateQuoteDocument() {
+    const items = window.CART.getItems();
+    if (!items.length) { alert('Please add at least one product to generate a quote.'); return; }
+    const accountType = document.getElementById('quoteAccountType').value;
+    if (!accountType) { alert('Please select an account type.'); return; }
+    const branch = document.getElementById('quoteBranch').value;
+    if (!branch) { alert('Please select a pickup/processing branch.'); return; }
+    const guestName = document.getElementById('quoteGuestName').value;
+    if (!guestName) { alert('Please enter your name.'); return; }
+    const guestEmail = document.getElementById('quoteGuestEmail').value;
+    if (!guestEmail) { alert('Please enter your email address.'); return; }
+    const customerRef = document.getElementById('quoteCustomerRef').value;
+    const billingAddress = document.getElementById('quoteBillingAddress').value;
+    const billingCity = document.getElementById('quoteBillingCity').value;
+    const billingPostal = document.getElementById('quoteBillingPostal').value;
+    window.CART.setQuoteFields({ accountType: accountType, customerRef: customerRef, guestName: guestName, guestEmail: guestEmail, branch: branch, billingAddress: billingAddress, billingCity: billingCity, billingPostal: billingPostal });
+    const quote = { date: new Date().toISOString(), products: items, accountType: accountType, customerRef: customerRef || '-', guestName: guestName, guestEmail: guestEmail, branch: branch, billingAddress: billingAddress, billingCity: billingCity, billingPostal: billingPostal };
+    const quoteHtml = generateWebQuotePDF(quote);
+    const previewContent = document.getElementById('quotePreviewContent');
+    if (previewContent) { previewContent.innerHTML = quoteHtml; }
+  }
+
+  function showStockInquiryForm() {
+    const quoteFields = window.CART.getQuoteFields();
+    const items = window.CART.getItems();
+    if (!items.length) { alert('Please add items to the quote first.'); return; }
+    if (!quoteFields.branch) { alert('Please select a branch first.'); return; }
+    const branch = window.BRANCHES.getBranchById(quoteFields.branch);
+    if (!branch) { alert('Selected branch not found.'); return; }
+    let itemsTableHtml = '<table border="1" cellpadding="8" style="border-collapse:collapse;width:100%;"><tr style="background:var(--dark-3);"><th>Product</th><th>Quantity</th><th>Price</th></tr>';
+    items.forEach(item => { itemsTableHtml += '<tr><td>' + escapeHtml(item.name) + '</td><td>' + item.quantity + '</td><td>N$' + (item.price * item.quantity).toFixed(2) + '</td></tr>'; });
+    itemsTableHtml += '</table>';
+    const modal = document.createElement('div');
+    modal.id = 'stockInquiryModal';
+    modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:10000;';
+    const content = document.createElement('div');
+    content.style.cssText = 'background:var(--dark-2);border-radius:12px;padding:30px;max-width:600px;width:90%;max-height:90vh;overflow-y:auto;box-shadow:0 10px 40px rgba(0,0,0,0.4);border:1px solid var(--border);color:var(--text);';
+    const emailBody = 'Hello,\n\nI am interested in the following items and would like to check their current stock availability:\n\n' + itemsTableHtml + '\n\nCustomer Details:\nName: ' + quoteFields.guestName + '\nEmail: ' + quoteFields.guestEmail + '\nReference: ' + (quoteFields.customerRef || '-') + '\n\nCould you please confirm the stock availability and expected delivery time?\n\nThank you,\n' + quoteFields.guestName;
+    const encodedEmailBody = encodeURIComponent(emailBody);
+    const mailtoUrl = 'mailto:' + branch.email + '?subject=Stock%20Inquiry&body=' + encodedEmailBody;
+    content.innerHTML = '<div style="margin-bottom:20px;"><h3 style="color:var(--red);margin-top:0;">Stock Inquiry</h3><p>Send an inquiry to <strong>' + escapeHtml(branch.name) + '</strong> about item availability:</p></div><div style="margin-bottom:15px;background:var(--dark-3);padding:15px;border-radius:6px;border-left:4px solid var(--red);"><p style="margin:0 0 10px 0;font-weight:bold;">Branch Contact:</p><p style="margin:0;">Email: <strong>' + escapeHtml(branch.email) + '</strong></p><p style="margin:0;">Phone: ' + escapeHtml(branch.phone) + '</p><p style="margin:0;">Hours: ' + escapeHtml(branch.hours) + '</p></div><div style="margin-bottom:15px;"><label style="display:block;font-weight:bold;margin-bottom:8px;">Email Draft:</label><textarea id="stockInquiryText" readonly style="width:100%;height:250px;padding:10px;border:1px solid var(--border);border-radius:6px;font-family:monospace;font-size:12px;background:var(--dark-3);color:var(--text);">' + escapeHtml(emailBody) + '</textarea></div><div style="margin-bottom:15px;"><p style="margin:0 0 10px 0;font-size:12px;color:var(--text-muted);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg> You can edit the message above before copying.</p><button onclick="copyStockInquiryText()" style="width:100%;padding:12px;background:var(--red);color:white;border:none;border-radius:6px;font-weight:bold;cursor:pointer;font-size:14px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg> Copy to Clipboard</button></div><div style="margin-bottom:15px;background:#1a3a1a;padding:12px;border-radius:6px;border-left:4px solid #4caf50;"><p style="margin:0;font-size:12px;color:#4caf50;"><strong>Next Step:</strong> Open your email client and paste the message to <strong>' + escapeHtml(branch.email) + '</strong></p></div><div style="display:flex;gap:10px;"><button onclick="closeStockInquiryModal()" style="flex:1;padding:12px;background:var(--dark-3);color:var(--text);border:1px solid var(--border);border-radius:6px;font-weight:bold;cursor:pointer;">Close</button><button onclick="window.open(\'' + mailtoUrl + '\')" style="flex:1;padding:12px;background:#4caf50;color:white;border:none;border-radius:6px;font-weight:bold;cursor:pointer;">📧 Open Email Client</button></div>';
+    modal.appendChild(content);
+    document.body.appendChild(modal);
+    modal.addEventListener('click', function(e) { if (e.target === this) closeStockInquiryModal(); });
+  }
+
+  function closeStockInquiryModal() { const modal = document.getElementById('stockInquiryModal'); if (modal) modal.remove(); }
+
+  function copyStockInquiryText() {
+    const textarea = document.getElementById('stockInquiryText');
+    if (textarea) { textarea.select(); document.execCommand('copy'); alert('Message copied to clipboard! You can now paste it into your email.'); }
+  }
+
+  document.getElementById('cartOverlay')?.addEventListener('click', function(e) { if (e.target === this) closeCart(); });
+  document.getElementById('closeCheckoutBtn')?.addEventListener('click', function() { document.getElementById('checkoutModal').style.display = 'none'; });
+  document.getElementById('cancelCheckoutBtn')?.addEventListener('click', function() { document.getElementById('checkoutModal').style.display = 'none'; });
+  document.getElementById('checkoutModal')?.addEventListener('click', function(e) { if (e.target === this) { document.getElementById('checkoutModal').style.display = 'none'; } });
+  document.getElementById('closeQuoteInfoBtn')?.addEventListener('click', closeQuoteInfoModal);
+  document.getElementById('cancelQuoteInfoBtn')?.addEventListener('click', closeQuoteInfoModal);
+  document.getElementById('quoteInfoModal')?.addEventListener('click', function(e) { if (e.target === this) closeQuoteInfoModal(); });
+  document.getElementById('quoteInfoForm')?.addEventListener('submit', function(e) { e.preventDefault(); generateQuotePreview(); });
+  document.getElementById('closeQuotePreviewBtn')?.addEventListener('click', function() { document.getElementById('quotePreviewModal').style.display = 'none'; });
+  document.getElementById('quotePreviewModal')?.addEventListener('click', function(e) { if (e.target === this) { document.getElementById('quotePreviewModal').style.display = 'none'; closeCart(); } });
+  document.addEventListener('DOMContentLoaded', function() { if (window.CART && window.CART.getMode) { updateModeUI(); } });
+</script>
+
+<script src="js/api-config.js"></script>
+<script src="js/newsletter.js"></script>
+<script src="js/offline.js"></script>
+</body>
+</html>

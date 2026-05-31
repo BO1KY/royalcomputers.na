@@ -1,0 +1,1214 @@
+/**
+ * ═══════════════════════════════════════════════════════════════
+ *  ROYAL COMPUTERS NAMIBIA — Mobile Responsiveness Fixes
+ *  File: css/mobile-fixes.css
+ *
+ *  HOW TO USE:
+ *  Add ONE line inside <head> on every page, AFTER all other CSS:
+ *    <link rel="stylesheet" href="css/mobile-fixes.css">
+ *
+ *  This file patches mobile layout without touching desktop (>768px).
+ *  Desktop styles are 100 % untouched.
+ * ═══════════════════════════════════════════════════════════════
+ */
+
+/* ─────────────────────────────────────────
+   0. GLOBAL OVERFLOW GUARD
+   Stops any element from blowing out the
+   horizontal scroll on every page.
+───────────────────────────────────────── */
+html,
+body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+/* ─────────────────────────────────────────
+   1. HEADER & NAVIGATION
+───────────────────────────────────────── */
+@media (max-width: 768px) {
+
+    /* Compact header bar */
+    .header-inner {
+        padding: 10px 14px;
+        gap: 8px;
+        flex-wrap: nowrap;
+        /* keep logo / toggle / cart on one line */
+    }
+
+    .logo img {
+        height: 42px;
+        width: auto;
+    }
+
+    /* Show hamburger; push cart to far right */
+    .mobile-toggle {
+        display: flex !important;
+        order: 2;
+        flex-shrink: 0;
+    }
+
+    .header-right {
+        order: 3;
+        margin-left: auto;
+        flex-shrink: 0;
+    }
+
+    /* Full-screen overlay nav */
+    header nav {
+        position: fixed;
+        inset: 0;
+        background: var(--white);
+        z-index: 998;
+        /* below the header bar (z-index 999) */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.28s ease, visibility 0.28s ease;
+        pointer-events: none;
+    }
+
+    header nav.mobile-open {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: all;
+    }
+
+    header nav ul {
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        padding: 20px;
+        width: 100%;
+    }
+
+    header nav>ul>li>a {
+        font-size: 22px;
+        letter-spacing: 0;
+        padding: 14px 28px;
+        text-align: center;
+        display: block;
+        border-radius: 10px;
+    }
+
+    header nav .nav-close {
+        display: block;
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        background: none;
+        border: none;
+        font-size: 32px;
+        color: var(--text);
+        cursor: pointer;
+        line-height: 1;
+        padding: 4px 8px;
+        z-index: 1000;
+    }
+
+    /* Nav dropdown on mobile — show inline (stacked), not floating */
+    .nav-dropdown {
+        position: static !important;
+        transform: none !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        pointer-events: all !important;
+        box-shadow: none !important;
+        background: var(--gray-100) !important;
+        border-radius: 8px;
+        margin-top: 4px;
+        width: 100%;
+        min-width: unset;
+    }
+
+    .nav-dropdown a {
+        font-size: 15px !important;
+        padding: 10px 20px !important;
+    }
+}
+
+/* ─────────────────────────────────────────
+   2. HERO SECTION
+───────────────────────────────────────── */
+@media (max-width: 768px) {
+    .hero {
+        padding: 36px 16px 30px;
+        min-height: 320px;
+    }
+
+    .hero-logo img {
+        max-height: 100px;
+    }
+
+    .hero-title {
+        font-size: 26px;
+        line-height: 1.2;
+    }
+
+    .hero-sub {
+        font-size: 15px;
+        margin-bottom: 24px;
+    }
+
+    .hero-cta {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+    }
+
+    .hero-btn {
+        width: 100%;
+        max-width: 280px;
+        text-align: center;
+        padding: 14px 20px;
+        font-size: 15px;
+        min-height: 50px;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-title {
+        font-size: 22px;
+    }
+
+    .hero-sub {
+        font-size: 14px;
+    }
+
+    .hero-logo img {
+        max-height: 80px;
+    }
+}
+
+/* ─────────────────────────────────────────
+   3. SECTION SPACING
+───────────────────────────────────────── */
+@media (max-width: 768px) {
+    .section {
+        padding: 28px 14px;
+    }
+
+    .new-products-section {
+        padding: 28px 0;
+    }
+
+    .new-products-inner {
+        padding: 0 14px;
+    }
+
+    .services-section {
+        margin: 28px auto;
+        padding: 0 14px;
+    }
+
+    .about-container {
+        padding: 0 14px 48px;
+    }
+
+    .page-header {
+        padding: 24px 14px;
+    }
+
+    .page-header h1 {
+        font-size: 22px;
+    }
+
+    .breadcrumb {
+        padding: 10px 14px;
+        font-size: 12px;
+    }
+}
+
+/* ─────────────────────────────────────────
+   4. CATEGORY GRID
+───────────────────────────────────────── */
+@media (max-width: 768px) {
+    .category-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .category-card {
+        padding: 18px 12px;
+    }
+
+    .category-icon {
+        width: 68px;
+        height: 68px;
+    }
+
+    .category-card h3 {
+        font-size: 12px;
+    }
+
+    .category-card p {
+        font-size: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .category-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    .category-card {
+        padding: 12px 8px;
+    }
+
+    .category-icon {
+        width: 52px;
+        height: 52px;
+    }
+
+    .category-card h3 {
+        font-size: 11px;
+    }
+
+    .category-card p {
+        font-size: 9px;
+        display: none;
+    }
+
+    /* hide tiny description */
+}
+
+/* ─────────────────────────────────────────
+   5. SERVICES GRID
+───────────────────────────────────────── */
+@media (max-width: 768px) {
+    .services-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .service-card {
+        padding: 18px 12px;
+    }
+
+    .service-img-wrap {
+        width: 68px;
+        height: 68px;
+    }
+
+    .service-card p {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .services-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    .service-card {
+        padding: 12px 8px;
+    }
+
+    .service-img-wrap {
+        width: 52px;
+        height: 52px;
+    }
+
+    .service-card p {
+        font-size: 11px;
+    }
+}
+
+/* ─────────────────────────────────────────
+   6. PRODUCTS GRID (products.html)
+───────────────────────────────────────── */
+@media (max-width: 768px) {
+
+    /* Topbar */
+    .shop-topbar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 20px 14px 14px;
+    }
+
+    .shop-title-block h1 {
+        font-size: 20px;
+    }
+
+    .shop-controls {
+        width: 100%;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .search-products {
+        width: 100%;
+        flex: 1 1 100%;
+    }
+
+    .search-products input {
+        width: 100%;
+        font-size: 16px;
+        /* prevents iOS auto-zoom */
+    }
+
+    .sort-select {
+        width: 100%;
+        font-size: 16px;
+    }
+
+    .filter-btn,
+    .reset-btn {
+        flex: 1;
+        min-height: 44px;
+        justify-content: center;
+    }
+
+    .shop-divider {
+        padding: 0 14px;
+    }
+
+    .products-container {
+        padding: 0 14px;
+        margin-bottom: 48px;
+    }
+
+    /* Always show Add to Cart on mobile (hover doesn't exist) */
+    .product-add {
+        height: 38px !important;
+        opacity: 1 !important;
+    }
+
+    .products-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px !important;
+        padding-top: 20px;
+    }
+
+    .product-card {
+        padding: 10px;
+    }
+
+    .product-name {
+        font-size: 12px;
+    }
+
+    .product-price {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .products-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px !important;
+    }
+}
+
+/* Infinity scroll grid (home page) */
+@media (max-width: 768px) {
+    #infinityScrollContainer {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .product-item-scroll {
+        padding: 10px;
+    }
+
+    .product-name-scroll {
+        font-size: 12px;
+    }
+
+    .product-price-scroll {
+        font-size: 13px;
+    }
+
+    /* Always show add-to-cart btn on touch devices */
+    .add-to-cart-btn-scroll {
+        min-height: 44px;
+    }
+}
+
+@media (max-width: 480px) {
+    #infinityScrollContainer {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+}
+
+/* ─────────────────────────────────────────
+   7. PRODUCT DETAIL MODAL
+───────────────────────────────────────── */
+@media (max-width: 768px) {
+    .product-detail-content {
+        padding: 16px;
+        max-height: 95vh;
+    }
+
+    .product-detail-top {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .product-detail-top .pd-image {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .pd-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .pd-actions .pd-btn {
+        width: 100%;
+        min-height: 48px;
+        font-size: 15px;
+    }
+
+    .pd-related-list {
+        gap: 8px;
+    }
+}
+
+/* ─────────────────────────────────────────
+   8. CART SIDEBAR
+───────────────────────────────────────── */
+@media (max-width: 768px) {
+    .cart-sidebar {
+        width: 100%;
+        max-width: 100%;
+        /* slide from bottom on very small screens */
+    }
+
+    .cart-item {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .cart-item-img {
+        width: 56px;
+        height: 56px;
+    }
+
+    .cart-item-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .cart-footer {
+        padding: 16px;
+    }
+
+    .cart-footer button,
+    .btn-checkout,
+    .btn-continue {
+        min-height: 48px;
+        font-size: 14px;
+    }
+}
+
+/* ─────────────────────────────────────────
+   9. CHECKOUT MODAL
+───────────────────────────────────────── */
+@media (max-width: 768px) {
+
+    #checkoutModal .modal-content,
+    #quoteModal .modal-content {
+        width: 96%;
+        max-width: 96%;
+        max-height: 94vh;
+        border-radius: 14px;
+    }
+
+    .checkout-form {
+        padding: 18px;
+    }
+
+    .checkout-form h2 {
+        font-size: 18px;
+    }
+
+    /* Prevent iOS zoom on form inputs */
+    .checkout-form .form-input,
+    .checkout-form textarea,
+    .checkout-form select {
+        font-size: 16px !important;
+    }
+
+    .checkout-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .checkout-actions button {
+        min-height: 48px;
+        width: 100%;
+    }
+
+    /* Progress bar */
+    #checkoutProgress {
+        padding: 14px 12px 0;
+        gap: 2px;
+        flex-wrap: nowrap;
+    }
+
+    .progress-line {
+        width: 24px;
+    }
+
+    .progress-label {
+        font-size: 9px;
+    }
+
+    .progress-dot {
+        width: 26px;
+        height: 26px;
+        font-size: 11px;
+    }
+
+    .step-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .step-actions button {
+        min-height: 48px;
+    }
+
+    /* Quote action bar */
+    #quoteActionBar {
+        flex-wrap: wrap;
+        gap: 6px;
+        padding: 8px 10px;
+    }
+
+    #quoteActionBar button {
+        font-size: 12px !important;
+        padding: 8px 12px !important;
+        min-height: 40px;
+    }
+}
+
+/* ─────────────────────────────────────────
+  10. GUIDE / BUYER'S GUIDE MODAL
+───────────────────────────────────────── */
+@media (max-width: 768px) {
+    .guide-overlay {
+        padding: 0;
+        align-items: flex-end;
+        /* sheet slides up from bottom */
+    }
+
+    .guide-modal {
+        width: 100%;
+        max-width: 100%;
+        max-height: 90vh;
+        border-radius: 18px 18px 0 0;
+    }
+
+    .guide-modal .bg-header {
+        padding: 14px 16px;
+    }
+
+    .guide-modal .bg-body {
+        padding: 12px 14px 24px;
+    }
+
+    /* Stack search & button vertically */
+    .guide-modal .bg-search {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .guide-modal .bg-search input {
+        font-size: 16px;
+    }
+
+    .guide-modal .bg-search-btn {
+        width: 100%;
+        text-align: center;
+        min-height: 44px;
+    }
+
+    .guide-modal .bg-results {
+        max-height: 50vh;
+        overflow-y: auto;
+    }
+
+    .guide-modal .bg-result-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .guide-modal .bg-result-img {
+        width: 100%;
+        max-width: 180px;
+        height: auto;
+        margin: 0 auto;
+    }
+
+    .guide-modal .bg-result-actions {
+        flex-wrap: wrap;
+        width: 100%;
+        gap: 8px;
+    }
+
+    .guide-modal .bg-result-actions button {
+        flex: 1;
+        min-height: 44px;
+        font-size: 13px;
+    }
+
+    /* Special-order box */
+    .guide-modal .special-order-box {
+        padding: 14px;
+    }
+
+    .guide-modal .special-order-btn {
+        display: block;
+        width: 100%;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .guide-modal .bg-result-actions {
+        flex-direction: column;
+    }
+
+    .guide-modal .bg-result-actions button {
+        width: 100%;
+    }
+}
+
+/* ─────────────────────────────────────────
+  11. ZOOM PREVIEW MODAL
+───────────────────────────────────────── */
+@media (max-width: 768px) {
+    .zoom-preview-modal {
+        width: 95%;
+        max-width: 95%;
+    }
+
+    .zoom-preview-body {
+        padding: 14px;
+        gap: 12px;
+    }
+
+    .zoom-image-wrap {
+        max-height: 240px;
+    }
+
+    .zoom-preview-actions {
+        padding: 12px 14px;
+        gap: 8px;
+    }
+
+    .zp-btn {
+        min-height: 44px;
+    }
+}
+
+/* ─────────────────────────────────────────
+  12. PC BUILDER MODAL
+───────────────────────────────────────── */
+@media (max-width: 768px) {
+    .pcb-modal-overlay {
+        padding: 0;
+        align-items: flex-end;
+    }
+
+    .pcb-modal {
+        max-height: 92vh;
+        border-radius: 16px 16px 0 0;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .pcb-header {
+        padding: 16px 18px;
+    }
+
+    .pcb-body {
+        padding: 16px;
+    }
+
+    .pcb-tier-selector {
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .pcb-tier-btn {
+        flex: 1 1 calc(33% - 8px);
+        padding: 12px 8px;
+    }
+
+    .pcb-tier-btn .tier-name {
+        font-size: 13px;
+    }
+
+    .pcb-tier-btn .tier-price {
+        font-size: 11px;
+    }
+
+    .pcb-actions {
+        gap: 8px;
+        flex-direction: column;
+    }
+
+    .pcb-btn {
+        min-height: 48px;
+    }
+}
+
+/* ─────────────────────────────────────────
+  13. CONTACT PAGE
+───────────────────────────────────────── */
+@media (max-width: 768px) {
+    .contact-page {
+        padding: 0 14px;
+        gap: 28px;
+    }
+
+    .contact-form-card {
+        padding: 22px 16px;
+    }
+
+    .contact-form-card .form-input,
+    .contact-form-card textarea,
+    .contact-form-card select.form-input {
+        font-size: 16px !important;
+        /* prevent iOS zoom */
+    }
+
+    .branches-right {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .branch-card {
+        padding: 18px 14px;
+    }
+
+    .branch-card h3 {
+        font-size: 16px;
+    }
+}
+
+/* ─────────────────────────────────────────
+  14. ABOUT PAGE
+───────────────────────────────────────── */
+@media (max-width: 768px) {
+    .about-grid {
+        grid-template-columns: 1fr;
+        gap: 28px;
+    }
+
+    .about-text-block h2 {
+        font-size: 22px;
+    }
+
+    .about-text-block p {
+        font-size: 14px;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .values-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .stat-card {
+        padding: 20px 14px;
+    }
+
+    .stat-number {
+        font-size: 28px;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    .stat-card {
+        padding: 16px 10px;
+    }
+
+    .stat-number {
+        font-size: 24px;
+    }
+}
+
+/* ─────────────────────────────────────────
+  15. TERMS PAGE
+───────────────────────────────────────── */
+@media (max-width: 768px) {
+    .terms-container {
+        padding: 0 14px;
+    }
+
+    .terms-inner {
+        padding: 20px 14px;
+    }
+
+    .terms-intro {
+        font-size: 14px;
+    }
+
+    .term-item {
+        gap: 10px;
+    }
+
+    .term-bullet {
+        width: 28px;
+        height: 28px;
+        font-size: 13px;
+        flex-shrink: 0;
+    }
+}
+
+/* ─────────────────────────────────────────
+  16. FOOTER
+───────────────────────────────────────── */
+@media (max-width: 768px) {
+    footer {
+        padding: 32px 14px 20px;
+    }
+
+    .footer-inner {
+        grid-template-columns: 1fr;
+        gap: 24px;
+        margin-bottom: 20px;
+    }
+
+    .footer-brand .footer-brand-body {
+        padding-right: 0;
+    }
+
+    .footer-col {
+        width: 100%;
+    }
+
+    .footer-contact-item {
+        font-size: 13px;
+    }
+
+    .footer-bottom {
+        flex-direction: column;
+        gap: 6px;
+        text-align: center;
+        padding: 14px;
+        font-size: 12px;
+    }
+}
+
+/* ─────────────────────────────────────────
+  17. NEWSLETTER POPUP
+───────────────────────────────────────── */
+@media (max-width: 768px) {
+    .newsletter-box {
+        width: 92%;
+        padding: 28px 18px 24px;
+    }
+
+    .newsletter-box h3 {
+        font-size: 18px;
+    }
+
+    .newsletter-box .nl-input-group {
+        flex-direction: column;
+        border-radius: 10px;
+        overflow: visible;
+        gap: 8px;
+    }
+
+    .newsletter-box .nl-input-group input {
+        border: 1.5px solid var(--border);
+        border-radius: 8px;
+        padding: 12px 14px;
+        font-size: 16px;
+    }
+
+    .newsletter-box .nl-input-group button {
+        border-radius: 8px;
+        padding: 13px;
+        width: 100%;
+        min-height: 44px;
+    }
+}
+
+/* ─────────────────────────────────────────
+  18. BACK TO TOP BUTTON
+   Move it off the bottom-right so it doesn't
+   overlap the cart bar on small screens.
+───────────────────────────────────────── */
+@media (max-width: 768px) {
+    .back-to-top {
+        bottom: 1.2rem;
+        right: 1.2rem;
+        width: 40px;
+        height: 40px;
+    }
+}
+
+/* ─────────────────────────────────────────
+  19. COMPARE BAR (interactive-components)
+   Keep it above iOS home-indicator
+───────────────────────────────────────── */
+@media (max-width: 768px) {
+    .compare-bar {
+        padding: 10px 14px;
+        padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .compare-bar-items {
+        min-width: 0;
+    }
+
+    .compare-bar>button {
+        width: 100%;
+        min-height: 44px;
+    }
+}
+
+/* ─────────────────────────────────────────
+  20. FILTER PANEL (products sidebar)
+───────────────────────────────────────── */
+@media (max-width: 768px) {
+    .products-layout {
+        flex-direction: column !important;
+        padding: 0 14px !important;
+    }
+
+    .products-sidebar {
+        width: 100% !important;
+        position: static !important;
+        top: auto !important;
+    }
+
+    .filter-panel {
+        padding: 14px;
+    }
+
+    .filter-price-range input {
+        width: 80px;
+        font-size: 16px;
+    }
+
+    .filter-active-tags {
+        flex-wrap: wrap;
+    }
+}
+
+/* ─────────────────────────────────────────
+  21. SEARCH DROPDOWN
+───────────────────────────────────────── */
+@media (max-width: 768px) {
+    .search-dropdown {
+        max-height: 60vh;
+    }
+
+    .search-dropdown-item {
+        padding: 12px 12px;
+    }
+
+    .search-product-name,
+    .search-page-name {
+        font-size: 14px;
+    }
+
+    .search-product-price {
+        font-size: 13px;
+    }
+}
+
+/* ─────────────────────────────────────────
+  22. PAGINATION
+───────────────────────────────────────── */
+@media (max-width: 768px) {
+    .pagination {
+        flex-wrap: wrap;
+        gap: 6px;
+        padding: 14px 0;
+        justify-content: center;
+    }
+
+    .pagination button {
+        min-height: 44px;
+        padding: 8px 14px;
+    }
+}
+
+/* ─────────────────────────────────────────
+  23. FAQ
+───────────────────────────────────────── */
+@media (max-width: 768px) {
+    .faq-question {
+        font-size: 14px;
+        padding: 14px 16px;
+    }
+
+    .faq-answer-inner {
+        padding: 0 16px 16px;
+        font-size: 13px;
+    }
+}
+
+/* ─────────────────────────────────────────
+  24. GLOBAL TOUCH-TARGET MINIMUM (44 × 44 px)
+   Applied only on mobile to avoid bloating
+   the desktop layout.
+───────────────────────────────────────── */
+@media (max-width: 768px) {
+
+    button,
+    [role="button"],
+    .btn,
+    .hero-btn,
+    .filter-chip,
+    .add-to-cart-btn,
+    .bg-add-btn,
+    .bg-inquire-btn,
+    .special-order-btn,
+    .btn-checkout,
+    .btn-generate,
+    .btn-cancel,
+    .btn-step-next,
+    .btn-step-back,
+    .submit-btn,
+    .pagination button,
+    .pcb-btn,
+    .zp-btn {
+        min-height: 44px;
+    }
+
+    /* iOS-zoom prevention: all text inputs must be >= 16px */
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="search"],
+    input[type="number"],
+    input[type="password"],
+    textarea,
+    select {
+        font-size: 16px !important;
+    }
+
+    /* Images never overflow */
+    img {
+        max-width: 100%;
+        height: auto;
+    }
+}
+
+/* ─────────────────────────────────────────
+  25. ONE-CLICK CHECKOUT OVERLAY
+───────────────────────────────────────── */
+@media (max-width: 768px) {
+    .one-click-body {
+        padding: 20px 14px;
+    }
+
+    .one-click-product {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .one-click-product img {
+        width: 100px;
+        height: 100px;
+    }
+
+    .one-click-field input,
+    .one-click-field select {
+        font-size: 16px;
+    }
+
+    .one-click-submit {
+        min-height: 48px;
+        font-size: 15px;
+    }
+
+    .recommendations-scroll {
+        gap: 10px;
+    }
+
+    .rec-card {
+        width: 140px;
+    }
+}
+
+/* ─────────────────────────────────────────
+  26. BENTO GRID (enhanced-ui)
+   Force single column on small phones.
+───────────────────────────────────────── */
+@media (max-width: 768px) {
+    .bento-grid {
+        grid-template-columns: 1fr 1fr !important;
+        grid-auto-rows: auto;
+    }
+
+    .bento-wide,
+    .bento-tall,
+    .bento-full {
+        grid-column: 1 / -1;
+        grid-row: span 1;
+    }
+}
+
+@media (max-width: 480px) {
+    .bento-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* ─────────────────────────────────────────
+  27. SKELETON GRID
+───────────────────────────────────────── */
+@media (max-width: 768px) {
+    .skeleton-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        padding-top: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .skeleton-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+}
+
+/* ─────────────────────────────────────────
+  28. SAFE-AREA INSET (iPhone notch / bar)
+───────────────────────────────────────── */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+    @media (max-width: 768px) {
+        .cart-sidebar {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .compare-bar {
+            padding-bottom: calc(12px + env(safe-area-inset-bottom));
+        }
+
+        .guide-overlay {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+    }
+}

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://netmac.co.za/sitemap.xml

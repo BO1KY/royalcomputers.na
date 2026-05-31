@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';" />
+  <title>Unsubscribe – Royal Computers Namibia</title>
+  <meta name="description" content="Unsubscribe from the Royal Computers Namibia newsletter.">
+  <link rel="canonical" href="https://netmac.co.za/unsubscribe.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'DM Sans', sans-serif; background: #0d0d1a; color: #e0e0e0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; }
+    .card { background: #1a1a2e; border: 1px solid #2a2a3e; border-radius: 16px; padding: 40px 32px; max-width: 440px; width: 100%; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+    .logo { width: 64px; height: 64px; border-radius: 50%; margin-bottom: 16px; }
+    h1 { font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+    p { font-size: 14px; color: #999; line-height: 1.6; margin-bottom: 24px; }
+    .email-display { font-size: 16px; font-weight: 600; color: #fff; background: #0d0d1a; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; word-break: break-all; }
+    input { width: 100%; padding: 12px 16px; border: 2px solid #2a2a3e; border-radius: 8px; font-size: 15px; font-family: 'DM Sans', sans-serif; outline: none; background: #0d0d1a; color: #fff; transition: border-color .2s; }
+    input:focus { border-color: #e5383b; }
+    button { width: 100%; margin-top: 12px; padding: 12px; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: opacity .2s; }
+    button:hover { opacity: 0.85; }
+    button:disabled { opacity: 0.5; cursor: default; }
+    .btn-primary { background: #e5383b; color: #fff; }
+    .btn-secondary { background: #2a2a3e; color: #ccc; }
+    .btn-danger { background: #d32f2f; color: #fff; }
+    .step { display: none; }
+    .step.active { display: block; }
+    .message { margin-top: 16px; padding: 12px 16px; border-radius: 8px; font-size: 14px; display: none; }
+    .message.success { display: block; background: rgba(22,163,74,0.15); color: #4ade80; border: 1px solid rgba(22,163,74,0.3); }
+    .message.error { display: block; background: rgba(229,56,59,0.15); color: #f87171; border: 1px solid rgba(229,56,59,0.3); }
+    .message.info { display: block; background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
+    .back { display: inline-block; margin-top: 20px; font-size: 13px; color: #666; text-decoration: none; }
+    .back:hover { color: #e5383b; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <img src="ROYAL PICS/royal logo.webp" alt="Royal Computers Namibia" class="logo" />
+    <h1>Unsubscribe</h1>
+
+    <!-- STEP 1: Enter Email -->
+    <div class="step active" id="step1">
+      <p>Enter the email address you used to subscribe to the Royal Computers Namibia newsletter.</p>
+      <input type="email" id="unsubEmail" placeholder="your@email.com" autocomplete="email" />
+      <div class="message" id="step1Message"></div>
+      <button class="btn-primary" id="verifyBtn">Verify Email</button>
+    </div>
+
+    <!-- STEP 2: Confirm Unsubscribe -->
+    <div class="step" id="step2">
+      <p>You are currently subscribed with:</p>
+      <div class="email-display" id="confirmedEmail"></div>
+      <p style="font-size:13px;color:#f87171;margin-bottom:16px;">This action cannot be undone. You will no longer receive newsletters from Royal Computers Namibia.</p>
+      <div class="message" id="step2Message"></div>
+      <button class="btn-danger" id="confirmUnsubBtn">Yes, Unsubscribe Me</button>
+      <button class="btn-secondary" id="cancelBtn">Cancel</button>
+    </div>
+
+    <!-- STEP 3: Done -->
+    <div class="step" id="step3">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:16px;"><polyline points="20 6 9 17 4 12"/></svg>
+      <h1 style="color:#4ade80;">Unsubscribed</h1>
+      <p id="successMessage">You have been successfully unsubscribed from the Royal Computers Namibia newsletter.</p>
+      <a href="index.html" class="back" style="margin-top:12px;">&larr; Back to Home</a>
+    </div>
+
+    <a href="index.html" class="back" id="bottomBack">&larr; Back to Home</a>
+  </div>
+
+  <script>
+    var step1 = document.getElementById('step1');
+    var step2 = document.getElementById('step2');
+    var step3 = document.getElementById('step3');
+    var input = document.getElementById('unsubEmail');
+    var verifyBtn = document.getElementById('verifyBtn');
+    var confirmBtn = document.getElementById('confirmUnsubBtn');
+    var cancelBtn = document.getElementById('cancelBtn');
+    var step1Msg = document.getElementById('step1Message');
+    var step2Msg = document.getElementById('step2Message');
+    var confirmedEmail = document.getElementById('confirmedEmail');
+    var bottomBack = document.getElementById('bottomBack');
+    var verifiedEmail = '';
+
+    function showStep(num) {
+      step1.classList.toggle('active', num === 1);
+      step2.classList.toggle('active', num === 2);
+      step3.classList.toggle('active', num === 3);
+      bottomBack.style.display = num === 3 ? 'none' : '';
+    }
+
+    function clearMessages() {
+      step1Msg.className = 'message';
+      step1Msg.textContent = '';
+      step2Msg.className = 'message';
+      step2Msg.textContent = '';
+    }
+
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') verifyBtn.click();
+    });
+
+    verifyBtn.addEventListener('click', function() {
+      var email = input.value.trim().toLowerCase();
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        step1Msg.className = 'message error';
+        step1Msg.textContent = 'Please enter a valid email address.';
+        return;
+      }
+
+      verifyBtn.disabled = true;
+      verifyBtn.textContent = 'Checking...';
+      step1Msg.className = 'message';
+      step1Msg.textContent = '';
+
+      fetch('/api/check-subscriber', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email })
+      }).then(function(res) {
+        return res.json();
+      }).then(function(data) {
+        if (data.subscribed) {
+          verifiedEmail = email;
+          confirmedEmail.textContent = email;
+          clearMessages();
+          showStep(2);
+        } else {
+          step1Msg.className = 'message error';
+          step1Msg.textContent = 'This email is not subscribed to our newsletter.';
+        }
+      }).catch(function() {
+        step1Msg.className = 'message error';
+        step1Msg.textContent = 'Something went wrong. Please try again later.';
+      }).then(function() {
+        verifyBtn.disabled = false;
+        verifyBtn.textContent = 'Verify Email';
+      });
+    });
+
+    confirmBtn.addEventListener('click', function() {
+      if (!verifiedEmail) return;
+
+      confirmBtn.disabled = true;
+      confirmBtn.textContent = 'Unsubscribing...';
+      step2Msg.className = 'message';
+      step2Msg.textContent = '';
+
+      fetch('/api/unsubscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: verifiedEmail })
+      }).then(function(res) {
+        return res.json().then(function(data) {
+          if (!res.ok) throw new Error(data.error || 'Failed to unsubscribe');
+          return data;
+        });
+      }).then(function(data) {
+        showStep(3);
+        document.getElementById('successMessage').textContent = data.message || 'You have been successfully unsubscribed from the Royal Computers Namibia newsletter.';
+      }).catch(function(err) {
+        step2Msg.className = 'message error';
+        step2Msg.textContent = err.message;
+      }).then(function() {
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = 'Yes, Unsubscribe Me';
+      });
+    });
+
+    cancelBtn.addEventListener('click', function() {
+      showStep(1);
+      clearMessages();
+      verifiedEmail = '';
+    });
+  </script>
+</body>
+</html>

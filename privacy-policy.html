@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';" />
+  <title>Privacy Policy – Royal Computers Namibia</title>
+  <meta name="description" content="Privacy policy for Royal Computers Namibia. Learn how we collect, use, and protect your personal information, including email subscribers.">
+  <link rel="canonical" href="https://netmac.co.za/privacy-policy.html">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://netmac.co.za/" },
+      { "@type": "ListItem", "position": 2, "name": "Privacy Policy", "item": "https://netmac.co.za/privacy-policy.html" }
+    ]
+  }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/design-tokens.css">
+  <link rel="stylesheet" href="css/royal-theme.css" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="css/search-dropdown.css">
+  <link rel="stylesheet" href="css/print-quote.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/checkout-wizard.css" />
+  <link rel="stylesheet" href="css/enhanced-ui.css">
+  <link rel="stylesheet" href="css/interactive-components.css">
+  <link rel="stylesheet" href="css/ecommerce-features.css">
+  <link rel="stylesheet" href="css/mobile.css">
+  <link rel="manifest" href="js/manifest.json" />
+  <meta name="theme-color" content="#e5383b" />
+<link rel="apple-touch-icon" href="ROYAL PICS/royal logo.webp" />
+<style>
+  .terms-container { max-width: 800px; margin: 0 auto 48px; padding: 0 28px; }
+  .terms-card { background: var(--dark-card, #1a1a2e); border: 1px solid var(--border, #2a2a3e); border-radius: 16px; overflow: hidden; }
+  .terms-inner { padding: 32px; }
+  .terms-intro { font-size: 15px; color: var(--text-muted, #888); margin-bottom: 28px; padding-bottom: 20px; border-bottom: 1px solid var(--border, #2a2a3e); line-height: 1.7; }
+  .terms-list { display: flex; flex-direction: column; gap: 0; }
+  .policy-section { margin-bottom: 28px; }
+  .policy-section:last-child { margin-bottom: 0; }
+  .policy-section h2 { font-size: 18px; font-weight: 600; color: var(--text-on-dark, #fff); margin-bottom: 10px; }
+  .policy-section h3 { font-size: 15px; font-weight: 600; color: var(--text-on-dark, #fff); margin-top: 16px; margin-bottom: 8px; }
+  .policy-section p, .policy-section li { font-size: 14px; line-height: 1.7; color: var(--text-muted, #aaa); }
+  .policy-section ul { list-style: disc; padding-left: 20px; margin-top: 8px; }
+  .policy-section ul li { margin-bottom: 6px; }
+  .policy-section a { color: var(--red, #e5383b); }
+  .policy-section a:hover { text-decoration: underline; }
+  .notice { display: flex; align-items: flex-start; gap: 10px; margin-top: 28px; padding: 16px 20px; background: rgba(229, 56, 59, 0.08); border-radius: 10px; font-size: 13px; color: var(--text-muted, #aaa); line-height: 1.6; }
+  .last-updated { font-size: 12px; color: var(--text-dim, #666); margin-top: 20px; text-align: center; }
+  @media (max-width: 600px) { .terms-inner { padding: 20px 16px; } }
+</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<div class="page-loader" id="pageLoader">
+  <div class="loader-spinner"></div>
+  <div class="loader-text">Loading…</div>
+</div>
+
+<canvas id="shader-canvas" class="shader-canvas"></canvas>
+
+<div class="spotlight-container-global">
+  <div class="spotlight-overlay-global">
+    <div class="spotlight-global spotlight-left-global"></div>
+    <div class="spotlight-global spotlight-mid-global"></div>
+    <div class="spotlight-global spotlight-right-global"></div>
+  </div>
+</div>
+
+<!-- CART OVERLAY & SIDEBAR -->
+<div class="cart-overlay" id="cartOverlay"></div>
+<div class="cart-sidebar" id="cartSidebar">
+  <div class="cart-header">
+    <h2 id="cartHeaderTitle">Shopping Cart</h2>
+    <button class="cart-close" id="closeCartBtn" onclick="closeCart()">&times;</button>
+  </div>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-footer">
+    <div class="cart-total">
+      <span>Total:</span>
+      <span id="cartTotalPrice">N$0.00</span>
+    </div>
+    <button class="btn-clear-cart" id="clearCartBtn">Clear Cart</button>
+    <button class="btn-checkout" id="checkoutBtn" onclick="handleCheckout()">Generate Quote</button>
+    <button class="btn-continue" id="continueShopping" onclick="closeCart()">Continue Shopping</button>
+  </div>
+</div>
+
+<!-- CHECKOUT MODAL -->
+<div class="modal-overlay" id="checkoutModal">
+  <div class="modal-content" style="overflow-y:hidden;">
+    <button class="modal-close" id="closeCheckoutBtn">&times;</button>
+    <div class="checkout-form">
+      <h2>Order Information</h2>
+      <form id="checkoutFormElement">
+        <div class="form-group">
+          <label class="form-label" for="emailInput">Email Address *</label>
+          <input type="email" id="emailInput" class="form-input" placeholder="your@email.com" required>
+          <div class="form-error" id="emailError"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="phoneInput">Phone Number *</label>
+          <input type="tel" id="phoneInput" class="form-input" placeholder="+264 61 234 5678" required>
+          <div class="form-error" id="phoneError"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="nameInput">Full Name</label>
+          <input type="text" id="nameInput" class="form-input" placeholder="Your name">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="companyInput">Company (Optional)</label>
+          <input type="text" id="companyInput" class="form-input" placeholder="Your company name">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="addressInput">Address (Optional)</label>
+          <textarea id="addressInput" placeholder="Your street address..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="branchSelect">Collection Branch *</label>
+          <select id="branchSelect" class="form-input" required>
+            <option value="branch-001" selected>Gustav Voigts Centre, Windhoek</option>
+            <option value="branch-002">Swakopmund</option>
+            <option value="branch-003">Oshakati</option>
+            <option value="branch-004">Walvis Bay</option>
+            <option value="branch-005">Tsumeb</option>
+            <option value="branch-006">Grove Mall, Windhoek</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="notesInput">Special Requests / Notes</label>
+          <textarea id="notesInput" placeholder="Any special notes for your order..."></textarea>
+        </div>
+        <div class="form-group form-checkbox">
+          <input type="checkbox" id="termsCheckbox">
+          <label for="termsCheckbox" style="margin:0;font-size:13px;">I agree to the terms and conditions</label>
+        </div>
+        <div class="checkout-actions">
+          <button type="button" class="btn-cancel" id="cancelCheckoutBtn" onclick="closeCheckout()">Cancel</button>
+          <button type="submit" class="btn-generate" id="generateQuoteBtn">Generate Quote</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- QUOTE DISPLAY MODAL -->
+<div class="modal-overlay" id="quoteModal">
+  <div class="modal-content">
+    <button class="modal-close" id="closeQuoteBtn">&times;</button>
+    <div class="quote-display" id="quoteContent"></div>
+  </div>
+</div>
+
+<!-- NEWSLETTER POPUP -->
+<div class="newsletter-overlay" id="newsletterOverlay">
+  <div class="newsletter-box">
+    <button class="close-newsletter" onclick="closeNewsletter()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <img src="ROYAL PICS/royal logo.webp" alt="Royal Computers Namibia" class="nl-logo" />
+    <h3>Stay in the Loop</h3>
+    <p>Get exclusive deals, new arrivals, and tech tips delivered to your inbox.</p>
+    <div class="nl-input-group">
+      <input type="email" id="nlEmail" placeholder="Enter your email" />
+      <button type="submit" id="nlSubscribeBtn">Subscribe</button>
+    </div>
+    <p class="privacy">No spam, ever. <a href="unsubscribe.html" style="color:#e5383b;">Unsubscribe anytime</a>.</p>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="header-inner">
+    <a href="index.html" class="logo">
+      <img src="ROYAL PICS/royal logo.webp" alt="Royal Computers Namibia" />
+    </a>
+    <nav>
+      <button class="nav-close" aria-label="Close menu">&times;</button>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="products.html">Products</a></li>
+        <li><a href="Contact-us.html">Contact</a></li>
+        <li><a href="About-us.html">About Us</a></li>
+      </ul>
+    </nav>
+    <button class="mobile-toggle" id="mobileToggle" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="header-right">
+      <button class="cart-btn" id="openCartBtn" onclick="openCart()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <span class="cart-count" id="cartCount" style="display:none;">0</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- PAGE TITLE -->
+<div class="page-header">
+  <h1>Privacy Policy</h1>
+  <p>How we collect, use, and protect your personal information</p>
+</div>
+
+<!-- PRIVACY POLICY CONTENT -->
+<div id="main-content" class="terms-container">
+  <div class="terms-card">
+    <div class="terms-inner">
+      <div class="terms-intro">
+        Royal Computers Namibia ("we", "our", "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website or subscribe to our newsletter.
+      </div>
+      <div class="terms-list">
+
+        <div class="policy-section">
+          <h2>1. Information We Collect</h2>
+          <h3>Newsletter Subscribers</h3>
+          <p>When you subscribe to our newsletter, we collect your email address. This is the only personal information required to subscribe.</p>
+          <h3>Contact Form</h3>
+          <p>When you submit a contact form, we collect:</p>
+          <ul>
+            <li>Full name</li>
+            <li>Phone number</li>
+            <li>Email address</li>
+            <li>Company name (optional)</li>
+            <li>Message content</li>
+          </ul>
+        </div>
+
+        <div class="policy-section">
+          <h2>2. How We Use Your Information</h2>
+          <p>We use the information we collect for the following purposes:</p>
+          <ul>
+            <li>To send you newsletters, promotions, and updates you have subscribed to</li>
+            <li>To respond to your enquiries and messages</li>
+            <li>To improve our products and services</li>
+            <li>To comply with legal obligations</li>
+          </ul>
+        </div>
+
+        <div class="policy-section">
+          <h2>3. Legal Basis for Processing (GDPR)</h2>
+          <p>If you are in the European Economic Area, our legal basis for collecting and using your personal information depends on the data concerned and the context in which we collect it. We rely on:</p>
+          <ul>
+            <li><strong>Consent:</strong> You have given us explicit consent to process your data for a specific purpose (e.g., newsletter subscription).</li>
+            <li><strong>Legitimate interests:</strong> We may use your data for our legitimate business interests, such as responding to enquiries, provided it does not override your fundamental rights.</li>
+          </ul>
+        </div>
+
+        <div class="policy-section">
+          <h2>4. Data Storage and Retention</h2>
+          <p>Your personal information is stored securely on our servers. We retain subscriber email addresses and contact messages indefinitely unless you request deletion. You may <a href="unsubscribe.html" style="color:#e5383b;">unsubscribe from our newsletter here</a> at any time, or by contacting us directly.</p>
+        </div>
+
+        <div class="policy-section">
+          <h2>5. Data Sharing</h2>
+          <p>We do not sell, trade, or rent your personal information to third parties. We may share your data with:</p>
+          <ul>
+            <li>Service providers who assist us in operating our website and email delivery (e.g., email marketing platforms)</li>
+            <li>Law enforcement or regulatory authorities if required by law</li>
+          </ul>
+        </div>
+
+        <div class="policy-section">
+          <h2>6. Your Rights</h2>
+          <p>Depending on your jurisdiction, you may have the following rights regarding your personal data:</p>
+          <ul>
+            <li><strong>Access:</strong> Request a copy of the data we hold about you</li>
+            <li><strong>Rectification:</strong> Request correction of inaccurate data</li>
+            <li><strong>Erasure:</strong> Request deletion of your data ("right to be forgotten")</li>
+            <li><strong>Restriction:</strong> Request restriction of processing</li>
+            <li><strong>Data portability:</strong> Request transfer of your data to another service</li>
+            <li><strong>Object:</strong> Object to processing based on legitimate interests</li>
+            <li><strong>Withdraw consent:</strong> Withdraw consent at any time, without affecting the lawfulness of processing based on consent before its withdrawal</li>
+          </ul>
+          <p>To exercise any of these rights, please contact us at <strong>windhoek@netmac.co.za</strong>.</p>
+        </div>
+
+        <div class="policy-section">
+          <h2>7. Security</h2>
+          <p>We implement appropriate technical and organisational measures to protect your personal information against unauthorised access, alteration, disclosure, or destruction. However, no method of transmission over the Internet is 100% secure, and we cannot guarantee absolute security.</p>
+        </div>
+
+        <div class="policy-section">
+          <h2>8. Cookies</h2>
+          <p>Our website may use cookies and similar tracking technologies to enhance your browsing experience. You can set your browser to refuse all or some cookies, or to alert you when cookies are being sent.</p>
+        </div>
+
+        <div class="policy-section">
+          <h2>9. Third-Party Links</h2>
+          <p>Our website may contain links to third-party websites. We are not responsible for the privacy practices or content of those sites. We encourage you to review their privacy policies before providing any personal information.</p>
+        </div>
+
+        <div class="policy-section">
+          <h2>10. Changes to This Policy</h2>
+          <p>We may update this Privacy Policy from time to time. Changes will be posted on this page with an updated "Last updated" date. We encourage you to review this policy periodically.</p>
+        </div>
+
+        <div class="policy-section">
+          <h2>11. Contact Us</h2>
+          <p>If you have any questions about this Privacy Policy or wish to exercise your data protection rights, please contact us:</p>
+          <ul>
+            <li>Email: <a href="mailto:windhoek@netmac.co.za">windhoek@netmac.co.za</a></li>
+            <li>Phone: <a href="tel:+26461228179">061 228 179</a></li>
+            <li>WhatsApp: <a href="https://wa.me/264813631483">+264 81 363 1483</a></li>
+            <li>Address: GF Shop 12 Gustav Voigts Center, Independence Ave, Windhoek, Namibia</li>
+          </ul>
+        </div>
+
+      </div>
+      <div class="notice">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e5383b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;flex-shrink:0;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> By subscribing to our newsletter or using our contact forms, you acknowledge that you have read and understood this Privacy Policy.
+      </div>
+      <div class="last-updated">Last updated: May 2026</div>
+    </div>
+  </div>
+</div>
+
+<!-- NEWSLETTER SECTION -->
+<section class="newsletter-section">
+  <div class="newsletter-inner">
+    <img class="mailbox-img" src="ROYAL PICS/royal logo.webp" alt="Royal Computers Namibia" style="display:block;margin:0 auto;" />
+    <h2>Oh hi there &#128075; It's nice to meet you.</h2>
+    <h2>Sign up to receive awesome content in your inbox, every month.</h2>
+    <p class="sub">We don't spam! Read our <a href="privacy-policy.html">privacy policy</a> for more info.</p>
+    <div class="newsletter-form">
+      <input type="email" placeholder="Your email address" />
+      <button type="button">Subscribe</button>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="footer-brand-body">
+        <div class="footer-brand-name">Royal Computers Namibia</div>
+        <p>Leading the way in digital lifestyle</p>
+        <div style="margin-top:12px;">
+          <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> GF Shop 12 Gustav Voigts Center, Independence Ave, Windhoek</div>
+          <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg> 061228179</div>
+          <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.832-1.438A9.956 9.956 0 0 0 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18c-1.889 0-3.633-.656-5.008-1.756l-.36-.268-3.008.894.894-3.008-.268-.36A7.94 7.94 0 0 1 4 12c0-4.411 3.589-8 8-8s8 3.589 8 8-3.589 8-8 8z"/></svg> +264813631483</div>
+          <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> windhoek@netmac.co.za</div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Pages</h4>
+      <ul>
+        <li><a href="products.html">Products</a></li>
+        <li><a href="Contact-us.html">Contact Us</a></li>
+        <li><a href="About-us.html">About Us</a></li>
+        <li><a href="privacy-policy.html">Privacy Policy</a></li>
+        <li><a href="term&conditions.html">Terms & Conditions</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Branches</h4>
+      <ul>
+        <li><a href="Contact-us.html">Windhoek</a></li>
+        <li><a href="Contact-us.html">Swakopmund</a></li>
+        <li><a href="Contact-us.html">Oshakati</a></li>
+        <li><a href="Contact-us.html">Walvis Bay</a></li>
+        <li><a href="Contact-us.html">Tsumeb</a></li>
+        <li><a href="Contact-us.html">Grove Mall, Windhoek</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Social</h4>
+      <ul>
+        <li><a href="https://www.facebook.com/RoyalComputersNamibia/" target="_blank"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle;margin-right:6px;"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>Facebook</a></li>
+        <li><a href="https://www.instagram.com/royalcomputernam/" target="_blank"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>Instagram</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>Copyright &copy; Royal Computers Namibia</span>
+    <span><a href="term&conditions.html">Terms and conditions</a> apply</span>
+  </div>
+</footer>
+
+<script>
+  function openCart() {
+    document.getElementById('cartSidebar').classList.add('open');
+    document.getElementById('cartOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeCart() {
+    document.getElementById('cartSidebar').classList.remove('open');
+    document.getElementById('cartOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  document.getElementById('closeCartBtn').addEventListener('click', closeCart);
+  document.getElementById('cartOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closeCart();
+  });
+
+  function closeNewsletter() {
+    document.getElementById('newsletterOverlay').classList.remove('open');
+    var count = parseInt(localStorage.getItem('nl_close_count') || '0', 10) + 1;
+    localStorage.setItem('nl_close_count', String(count));
+    setTimeout(function() {
+      var el = document.getElementById('newsletterOverlay');
+      if (el && !localStorage.getItem('nl_subscribed')) el.classList.add('open');
+    }, count * 30000);
+  }
+  if (!localStorage.getItem('nl_subscribed')) {
+    setTimeout(function() {
+      var el = document.getElementById('newsletterOverlay');
+      if (el) el.classList.add('open');
+    }, 60000);
+  }
+  document.getElementById('newsletterOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closeNewsletter();
+  });
+
+  var header = document.querySelector('header');
+  window.addEventListener('scroll', function() {
+    if (window.scrollY > 20) {
+      header.classList.add('scrolled');
+    } else {
+      header.classList.remove('scrolled');
+    }
+  });
+</script>
+<script defer src="js/main.js"></script>
+<script src="js/cart.js"></script>
+<script defer src="js/quote.js"></script>
+<script src="js/products-data.js"></script>
+<script defer src="js/pages-data.js"></script>
+<script defer src="js/search-engine.js"></script>
+<script defer src="js/search-dropdown.js"></script>
+<script defer src="js/shader-background.js"></script>
+<script defer src="js/branches.js"></script>
+<script defer src="js/cart-ui.js"></script>
+<script defer src="js/cart-badge-sync.js"></script>
+<script defer src="js/animations.js"></script>
+<script defer src="js/loader.js"></script>
+<script defer src="js/mobile-nav.js"></script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('js/sw.js')
+        .then(reg  => console.log('[SW] Registered, scope:', reg.scope))
+        .catch(err => console.warn('[SW] Registration failed:', err));
+    });
+  }
+</script>
+
+<script src="js/api-config.js"></script>
+<script src="js/newsletter.js"></script>
+<script src="js/offline.js"></script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Offline – Royal Computers Namibia</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/design-tokens.css">
+  <link rel="stylesheet" href="css/animations.css" />
+  <link rel="stylesheet" href="css/mobile.css">
+  <style>
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 24px;
+    }
+    .box { max-width: 420px; }
+    .icon { font-size: 72px; margin-bottom: 24px; display: block; }
+    h1 { font-size: 28px; font-weight: 700; margin-bottom: 12px; color: var(--text); }
+    p { font-size: 16px; color: var(--text-muted); line-height: 1.7; margin-bottom: 28px; }
+    .btn {
+      display: inline-block;
+      background: var(--red);
+      color: #fff;
+      padding: 13px 32px;
+      border-radius: var(--radius-full);
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      text-decoration: none;
+      transition: background var(--transition);
+      font-family: 'DM Sans', sans-serif;
+    }
+    .btn:hover { background: var(--red-dark); }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <span class="icon">📡</span>
+    <h1>You're Offline</h1>
+    <p>It looks like you've lost your internet connection. Some pages you've visited recently may still be available.</p>
+    <button class="btn" onclick="window.location.reload()">Try Again</button>
+  </div>
+</body>
+</html>

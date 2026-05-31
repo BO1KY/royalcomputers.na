@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';" />
+  <title>Royal Computers Namibia – Leading the way in digital lifestyle</title>
+  <meta name="description" content="Royal Computers Namibia — Your trusted source for notebook batteries, laptop chargers, charging ports, screens, and IT accessories in Windhoek, Swakopmund, Oshakati, and across Namibia.">
+  <link rel="canonical" href="https://netmac.co.za/">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Royal Computers Namibia",
+    "url": "https://netmac.co.za/",
+    "logo": "https://netmac.co.za/ROYAL%20PICS/royal%20logo.webp",
+    "contactPoint": [
+      { "@type": "ContactPoint", "telephone": "+26461228179", "contactType": "sales", "areaServed": "NA" },
+      { "@type": "ContactPoint", "telephone": "+264813631483", "contactType": "sales", "contactOption": "WhatsApp", "areaServed": "NA" }
+    ],
+    "sameAs": [
+      "https://www.facebook.com/RoyalComputersNamibia/",
+      "https://www.instagram.com/royalcomputernam/"
+    ]
+  }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/design-tokens.css">
+  <link rel="stylesheet" href="css/royal-theme.css" media="print" onload="this.media='all'">
+  <style>
+    body { font-family: 'DM Sans', sans-serif; }
+    a { text-decoration: none; color: inherit; }
+    ul { list-style: none; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    .section { max-width: 1200px; margin: 0 auto; padding: 60px 28px; }
+    .services-section { max-width: 1200px; margin: 64px auto; padding: 0 28px; }
+    .new-products-section { padding: 60px 0; position: relative; overflow: hidden; }
+    .new-products-inner { max-width: 1200px; margin: 0 auto; padding: 0 28px; position: relative; z-index: 1; }
+
+    /* Hero image rotator */
+    .hero { position: relative; overflow: hidden; min-height: 420px; display: flex; align-items: center; background: transparent; z-index: 0; }
+    .hero-bg {
+      position: absolute; inset: 0; z-index: 0;
+      background-size: cover; background-position: center;
+      opacity: 0; transition: opacity 1.2s ease;
+    }
+    .hero-bg.active { opacity: 1; }
+    .hero-inner { position: relative; z-index: 1; width: 100%; }
+  </style>
+  <link rel="stylesheet" href="css/search-dropdown.css">
+  <link rel="stylesheet" href="css/print-quote.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="manifest" href="js/manifest.json" />
+  <meta name="theme-color" content="#e5383b" />
+
+  <link rel="apple-touch-icon" href="ROYAL PICS/royal logo.webp" />
+  <link rel="stylesheet" href="css/checkout-wizard.css" />
+  <link rel="stylesheet" href="css/enhanced-ui.css">
+  <link rel="stylesheet" href="css/interactive-components.css">
+  <link rel="stylesheet" href="css/ecommerce-features.css">
+  <link rel="stylesheet" href="css/mobile.css">
+
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<div class="page-loader" id="pageLoader">
+  <div class="loader-spinner"></div>
+  <div class="loader-text">Loading…</div>
+</div>
+
+<canvas id="shader-canvas" class="shader-canvas"></canvas>
+
+<div class="spotlight-container-global">
+  <div class="spotlight-overlay-global">
+    <div class="spotlight-global spotlight-left-global"></div>
+    <div class="spotlight-global spotlight-mid-global"></div>
+    <div class="spotlight-global spotlight-right-global"></div>
+  </div>
+</div>
+
+<!-- NEWSLETTER POPUP -->
+<div class="newsletter-overlay" id="newsletterOverlay">
+  <div class="newsletter-box">
+    <button class="close-newsletter" onclick="closeNewsletter()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <img src="ROYAL PICS/royal logo.webp" alt="Royal Computers Namibia" class="nl-logo" />
+    <h3>Stay in the Loop</h3>
+    <p>Get exclusive deals, new arrivals, and tech tips delivered to your inbox.</p>
+    <div class="nl-input-group">
+      <input type="email" id="nlEmail" placeholder="Enter your email" />
+      <button type="submit" id="nlSubscribeBtn">Subscribe</button>
+    </div>
+    <p class="privacy">No spam, ever. <a href="unsubscribe.html" style="color:#e5383b;">Unsubscribe anytime</a>.</p>
+  </div>
+</div>
+
+<!-- CART OVERLAY & SIDEBAR -->
+<div class="cart-overlay" id="cartOverlay"></div>
+<div class="cart-sidebar" id="cartSidebar">
+  <div class="cart-header">
+    <h2 id="cartHeaderTitle">Shopping Cart</h2>
+    <div class="cart-header-actions">
+      <button class="btn-clear-cart" id="clearCartBtn">Clear Cart</button>
+      <button class="cart-close" id="closeCartBtn" onclick="closeCart()">&times;</button>
+    </div>
+  </div>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-footer">
+    <div class="cart-total">
+      <span>Total:</span>
+      <span id="cartTotalPrice">N$0.00</span>
+    </div>
+    <button class="btn-checkout" id="checkoutBtn" onclick="handleCheckout()">Generate Quote</button>
+    <button class="btn-continue" id="continueShopping" onclick="closeCart()">Continue Shopping</button>
+  </div>
+</div>
+
+<!-- GUIDE MODAL -->
+<div class="guide-overlay" id="guideModal">
+  <div class="guide-modal">
+    <div class="bg-header">
+      <h3 id="guideModalTitle">Guide</h3>
+      <button class="bg-close" onclick="closeGuideModal()">&times;</button>
+    </div>
+    <div class="bg-body" id="guideModalBody"></div>
+  </div>
+</div>
+
+<!-- CHECKOUT MODAL -->
+<div class="modal-overlay" id="checkoutModal">
+  <div class="modal-content" style="overflow-y:hidden;">
+    <button class="modal-close" id="closeCheckoutBtn">&times;</button>
+    <div class="checkout-form">
+      <h2>Order Information</h2>
+      <form id="checkoutFormElement">
+        <div class="form-group">
+          <label class="form-label" for="emailInput">Email Address *</label>
+          <input type="email" id="emailInput" class="form-input" placeholder="your@email.com" required>
+          <div class="form-error" id="emailError"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="phoneInput">Phone Number *</label>
+          <input type="tel" id="phoneInput" class="form-input" placeholder="+264 61 234 5678" required>
+          <div class="form-error" id="phoneError"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="nameInput">Full Name</label>
+          <input type="text" id="nameInput" class="form-input" placeholder="Your name">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="companyInput">Company (Optional)</label>
+          <input type="text" id="companyInput" class="form-input" placeholder="Your company name">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="addressInput">Address (Optional)</label>
+          <textarea id="addressInput" placeholder="Your street address..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="branchSelect">Collection Branch *</label>
+          <select id="branchSelect" class="form-input" required>
+            <option value="branch-001" selected>Gustav Voigts Centre, Windhoek</option>
+            <option value="branch-002">Swakopmund</option>
+            <option value="branch-003">Oshakati</option>
+            <option value="branch-004">Walvis Bay</option>
+            <option value="branch-005">Tsumeb</option>
+            <option value="branch-006">Grove Mall, Windhoek</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="notesInput">Special Requests / Notes</label>
+          <textarea id="notesInput" placeholder="Any special notes for your order..."></textarea>
+        </div>
+        <div class="form-group form-checkbox">
+          <input type="checkbox" id="termsCheckbox">
+          <label for="termsCheckbox" style="margin:0;font-size:13px;">I agree to the terms and conditions</label>
+        </div>
+        <div class="checkout-actions">
+          <button type="button" class="btn-cancel" id="cancelCheckoutBtn" onclick="closeCheckout()">Cancel</button>
+          <button type="submit" class="btn-generate" id="generateQuoteBtn">Generate Quote</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- QUOTE DISPLAY MODAL -->
+<div class="modal-overlay" id="quoteModal">
+  <div class="modal-content">
+    <button class="modal-close" id="closeQuoteBtn">&times;</button>
+    <div class="quote-display" id="quoteContent"></div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="header-inner">
+    <a href="index.html" class="logo">
+      <img src="ROYAL PICS/royal logo.webp" alt="Royal Computers Namibia" />
+    </a>
+    <nav>
+      <button class="nav-close" aria-label="Close menu">&times;</button>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="About-us.html">About Us</a></li>
+      </ul>
+    </nav>
+    <button class="mobile-toggle" id="mobileToggle" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="header-right">
+      <button class="cart-btn" id="openCartBtn" onclick="openCart()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <span class="cart-count" id="cartCount" style="display:none;">0</span>
+      </button>
+
+    </div>
+
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero" id="main-content">
+  <div class="hero-bg" id="heroBg1"></div>
+  <div class="hero-bg" id="heroBg2"></div>
+  <div class="hero-inner">
+    <div class="hero-logo"><img src="ROYAL PICS/royal logo.webp" alt="Royal Computers Namibia" /></div>
+    <h1 class="hero-title">Royal Computers Namibia</h1>
+    <p class="hero-sub">Leading the way in digital lifestyle</p>
+    <div class="hero-cta">
+      <a href="products.html" class="hero-btn primary">Shop Products</a>
+      <a href="Contact-us.html" class="hero-btn secondary">Contact Us</a>
+    </div>
+  </div>
+</section>
+
+<!-- CATEGORY SECTION -->
+<section class="section" style="padding-top:40px;">
+  <h2 class="section-heading"><span>Categories</span></h2>
+  <div class="category-grid">
+    <a href="products.html?category=Components" class="category-card-link"><div class="category-card">
+      <div class="category-icon"><img src="ROYAL PICS/cpu core i5.webp" alt="Components"></div>
+      <h3>Components</h3>
+      <p>Motherboards, CPUs, RAM, Graphics Cards</p>
+    </div></a>
+    <a href="products.html?category=Storage" class="category-card-link"><div class="category-card">
+      <div class="category-icon"><img src="ROYAL PICS/120 GB SSD.webp" alt="Storage"></div>
+      <h3>Storage</h3>
+      <p>SSD, HDD, Flash Drives, Memory Cards</p>
+    </div></a>
+    <a href="products.html?category=Cables%20%26%20Adapters" class="category-card-link"><div class="category-card">
+      <div class="category-icon"><img src="ROYAL PICS/CBL-DVI-HDMI2.webp" alt="Cables"></div>
+      <h3>Cables & Adapters</h3>
+      <p>HDMI, VGA, USB, converters & switches</p>
+    </div></a>
+    <a href="products.html?category=Phone%20Parts" class="category-card-link"><div class="category-card">
+      <div class="category-icon"><img src="ROYAL PICS/iPhone 11 XR Screen.webp" alt="Phone Parts"></div>
+      <h3>Phone Parts</h3>
+      <p>Screens, screen protectors, chargers & cables</p>
+    </div></a>
+    <a href="products.html?category=Printers%20%26%20Ink" class="category-card-link"><div class="category-card">
+      <div class="category-icon"><img src="ROYAL PICS/PRNT-01.webp" alt="Printers"></div>
+      <h3>Printers & Ink</h3>
+      <p>Printers, toner cartridges & ink bottles</p>
+    </div></a>
+    <a href="products.html?category=TVs%20%26%20Monitors" class="category-card-link"><div class="category-card">
+      <div class="category-icon"><img src="ROYAL PICS/TV-03.webp" alt="TVs"></div>
+      <h3>TVs & Monitors</h3>
+      <p>LED TVs, monitors, projectors & mounts</p>
+    </div></a>
+    <a href="products.html?category=Networking" class="category-card-link"><div class="category-card">
+      <div class="category-icon"><img src="ROYAL PICS/KMX-NTWK-01.webp" alt="Networking"></div>
+      <h3>Networking</h3>
+      <p>Switches, Wi-Fi adapters, cables & extenders</p>
+    </div></a>
+    <a href="products.html?category=Power%20%26%20UPS" class="category-card-link"><div class="category-card">
+      <div class="category-icon"><img src="ROYAL PICS/UPS1000.webp" alt="Power"></div>
+      <h3>Power & UPS</h3>
+      <p>UPS backup, power supplies & batteries</p>
+    </div></a>
+    <a href="products.html?category=Notebook%20Parts" class="category-card-link"><div class="category-card">
+      <div class="category-icon"><img src="ROYAL PICS/laptop battery replacement.webp" alt="Notebook Parts"></div>
+      <h3>Notebook Parts</h3>
+      <p>Screens, batteries, chargers & keyboards</p>
+    </div></a>
+    <a href="products.html?category=POS%20%26%20Software" class="category-card-link"><div class="category-card">
+      <div class="category-icon"><img src="ROYAL PICS/POS-03.webp" alt="POS"></div>
+      <h3>POS & Software</h3>
+      <p>Barcode scanners, receipt printers & software</p>
+    </div></a>
+  </div>
+</section>
+
+<!-- SERVICES SECTION -->
+<section class="services-section">
+  <h2 class="section-heading"><span>Services</span></h2>
+  <div class="services-grid">
+    <div class="service-card"><div class="service-img-wrap"><img src="ROYAL PICS/laptop screen replacement.webp" alt="Laptop Screen Replacement"></div><p>Laptop Screen Replacement</p></div>
+    <div class="service-card"><div class="service-img-wrap"><img src="ROYAL PICS/phone screen replacement.webp" alt="Cellphone Screen Replacement"></div><p>Cellphone Screen Replacement</p></div>
+    <div class="service-card"><div class="service-img-wrap"><img src="ROYAL PICS/laptop charging port.webp" alt="Laptop Charging Port Repair"></div><p>Laptop Charging Port Repair</p></div>
+    <div class="service-card"><div class="service-img-wrap"><img src="ROYAL PICS/laptop keyboard replacement.webp" alt="Laptop Keyboard Replacement"></div><p>Laptop Keyboard Replacement</p></div>
+    <div class="service-card"><div class="service-img-wrap"><img src="ROYAL PICS/laptop battery replacement.webp" alt="Laptop Battery Replacement"></div><p>Laptop Battery Replacement</p></div>
+    <div class="service-card"><div class="service-img-wrap"><img src="ROYAL PICS/laptop ram upgrade.webp" alt="Laptop Ram Upgrade"></div><p>Laptop Ram Upgrade</p></div>
+    <div class="service-card"><div class="service-img-wrap"><img src="ROYAL PICS/virus removal.webp" alt="Virus Removal"></div><p>Virus Removal</p></div>
+    <div class="service-card"><div class="service-img-wrap"><img src="ROYAL PICS/pc laptop repairs.webp" alt="PC & Laptop Repairs"></div><p>PC &amp; Laptop Repairs</p></div>
+  </div>
+</section>
+
+<!-- PRODUCTS SECTION -->
+<section class="new-products-section">
+  <div class="new-products-inner">
+    <h2 class="section-heading"><span>Products</span></h2>
+    <div class="products-carousel">
+        <div id="infinityScrollContainer"></div>
+        <div id="loadingIndicator">Loading more products...</div>
+    </div>
+  </div>
+</section>
+
+<!-- BACK TO TOP -->
+<button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg></button>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="footer-brand-body">
+        <div class="footer-brand-name">Royal Computers Namibia</div>
+        <p>Leading the way in digital lifestyle</p>
+        <div style="margin-top:12px;">
+          <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> GF Shop 12 Gustav Voigts Center, Independence Ave, Windhoek</div>
+          <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg> 061228179</div>
+          <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.832-1.438A9.956 9.956 0 0 0 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18c-1.889 0-3.633-.656-5.008-1.756l-.36-.268-3.008.894.894-3.008-.268-.36A7.94 7.94 0 0 1 4 12c0-4.411 3.589-8 8-8s8 3.589 8 8-3.589 8-8 8z"/></svg> +264813631483</div>
+          <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> windhoek@netmac.co.za</div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Pages</h4>
+      <ul>
+        <li><a href="products.html">Products</a></li>
+        <li><a href="Contact-us.html">Contact Us</a></li>
+        <li><a href="About-us.html">About Us</a></li>
+        <li><a href="privacy-policy.html">Privacy Policy</a></li>
+        <li><a href="term&conditions.html">Terms & Conditions</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Branches</h4>
+      <ul>
+        <li><a href="Contact-us.html">Windhoek</a></li>
+        <li><a href="Contact-us.html">Swakopmund</a></li>
+        <li><a href="Contact-us.html">Oshakati</a></li>
+        <li><a href="Contact-us.html">Walvis Bay</a></li>
+        <li><a href="Contact-us.html">Tsumeb</a></li>
+        <li><a href="Contact-us.html">Grove Mall, Windhoek</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Social</h4>
+      <ul>
+        <li><a href="https://www.facebook.com/RoyalComputersNamibia/" target="_blank"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle;margin-right:6px;"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>Facebook</a></li>
+        <li><a href="https://www.instagram.com/royalcomputernam/" target="_blank"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>Instagram</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>Copyright © Royal Computers Namibia</span>
+    <span><a href="term&conditions.html">Terms and conditions</a> apply</span>
+  </div>
+</footer>
+
+<script>
+  // ── HOME BRANCHES ──
+  document.addEventListener('DOMContentLoaded', function() {
+    var homeContainer = document.getElementById('homeBranches');
+    if (!homeContainer || !window.BRANCHES) return;
+    var branches = window.BRANCHES.getAllBranches();
+    var branchImages = {
+      'branch-001': 'ROYAL PICS/Grove.webp',
+      'branch-002': 'ROYAL PICS/Swakop.webp',
+      'branch-003': 'ROYAL PICS/Oshakati.webp',
+      'branch-004': 'ROYAL PICS/Walvisbay.webp',
+      'branch-005': 'ROYAL PICS/Tsumeb.webp',
+      'branch-006': 'ROYAL PICS/Grove.webp'
+    };
+    branches.forEach(function(b) {
+      var card = document.createElement('div');
+      card.className = 'branch-card';
+      var imgSrc = branchImages[b.id] || '';
+      var imgHtml = imgSrc ? '<div class="branch-img"><img src="' + imgSrc + '" alt="' + b.city + '"></div>' : '';
+      var hoursFormatted = b.hours.replace(/\|/g, '<br>');
+      var status = b.isHeadquarters ? ' (HQ)' : '';
+      card.innerHTML =
+        imgHtml +
+        '<h3>' + b.name.replace('Royal Computers - ', '') + status + '</h3>' +
+        '<div class="branch-address">' + b.address + '</div>' +
+        '<div class="branch-phone"><a href="tel:' + b.phone + '">' + b.phone + '</a></div>' +
+        '<div class="branch-email"><a href="mailto:' + b.email + '">' + b.email + '</a></div>' +
+        '<div class="branch-hours">' + hoursFormatted + '</div>';
+      homeContainer.appendChild(card);
+    });
+  });
+</script>
+
+<script>
+  // ── SLIDER ──
+  let currentSlide = 0;
+  const totalSlides = 7;
+  const track = document.getElementById('slidesTrack');
+  const dotsContainer = document.getElementById('sliderDots');
+
+  for (let i = 0; i < totalSlides; i++) {
+    const dot = document.createElement('button');
+    dot.className = 'dot' + (i === 0 ? ' active' : '');
+    dot.setAttribute('aria-label', 'Go to slide ' + (i + 1));
+    dot.onclick = () => goToSlide(i);
+    dotsContainer.appendChild(dot);
+  }
+
+  function goToSlide(n) {
+    currentSlide = (n + totalSlides) % totalSlides;
+    track.style.transform = `translateX(-${currentSlide * 100}%)`;
+    document.querySelectorAll('.dot').forEach((d, i) => {
+      d.classList.toggle('active', i === currentSlide);
+    });
+  }
+
+  function changeSlide(dir) { goToSlide(currentSlide + dir); }
+
+  let autoTimer = setInterval(() => changeSlide(1), 5000);
+  const sliderEl = document.querySelector('.slider');
+  sliderEl.addEventListener('mouseenter', () => clearInterval(autoTimer));
+  sliderEl.addEventListener('mouseleave', () => {
+    autoTimer = setInterval(() => changeSlide(1), 5000);
+  });
+
+  // ── NEWSLETTER ──
+  function closeNewsletter() {
+    document.getElementById('newsletterOverlay').classList.remove('open');
+    var count = parseInt(localStorage.getItem('nl_close_count') || '0', 10) + 1;
+    localStorage.setItem('nl_close_count', String(count));
+    setTimeout(function() {
+      var el = document.getElementById('newsletterOverlay');
+      if (el && !localStorage.getItem('nl_subscribed')) el.classList.add('open');
+    }, count * 30000);
+  }
+  if (!localStorage.getItem('nl_subscribed')) {
+    setTimeout(function() {
+      var el = document.getElementById('newsletterOverlay');
+      if (el) el.classList.add('open');
+    }, 60000);
+  }
+  document.getElementById('newsletterOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closeNewsletter();
+  });
+
+  // ── BACK TO TOP ──
+  document.addEventListener('DOMContentLoaded', function() {
+    const btt = document.getElementById('backToTop');
+    window.addEventListener('scroll', function() {
+      btt.classList.toggle('visible', window.scrollY > 400);
+    });
+  });
+</script>
+<script defer src="js/main.js"></script>
+<script src="js/cart.js"></script>
+<script defer src="js/quote.js"></script>
+<script src="js/products-data.js"></script>
+<script defer src="js/infinity-scroll.js"></script>
+<script defer src="js/pages-data.js"></script>
+<script defer src="js/search-engine.js"></script>
+<script defer src="js/search-dropdown.js"></script>
+<script defer src="js/shader-background.js"></script>
+<script src="js/branches.js"></script>
+<script defer src="js/cart-ui.js"></script>
+<script defer src="js/cart-badge-sync.js"></script>
+<script defer src="js/animations.js"></script>
+
+<script defer src="js/original-code-map.js"></script>
+<script defer src="js/loader.js"></script>
+<script defer src="js/guides-modal.js"></script>
+<script defer src="js/mobile-nav.js"></script>
+
+<!-- HERO IMAGE ROTATOR -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var heroImages = [
+    'ROYAL PICS/cpu%20core%20i7.webp',
+    'ROYAL PICS/120%20GB%20SSD.webp',
+    'ROYAL PICS/Bluetooth%20Headset.webp',
+    'ROYAL PICS/TV-03.webp',
+    'ROYAL PICS/CP-01-P.webp'
+  ];
+  var bg1 = document.getElementById('heroBg1');
+  var bg2 = document.getElementById('heroBg2');
+  if (!bg1 || !bg2 || !heroImages.length) return;
+
+  function setBg(el, src) {
+    el.style.backgroundImage = 'url(' + src + ')';
+  }
+
+  var current = 0;
+  var active = bg1;
+  var inactive = bg2;
+
+  // Preload all images
+  heroImages.forEach(function(src) {
+    var img = new Image();
+    img.src = decodeURIComponent(src);
+  });
+
+  function switchImage() {
+    current = (current + 1) % heroImages.length;
+    var nextSrc = heroImages[current];
+    setBg(inactive, nextSrc);
+    inactive.classList.add('active');
+    active.classList.remove('active');
+    var tmp = active; active = inactive; inactive = tmp;
+  }
+
+  // Init — set first image
+  setBg(bg1, heroImages[0]);
+  bg1.classList.add('active');
+
+  setInterval(switchImage, 7000); // 7 seconds
+});
+</script>
+
+<!-- SERVICE WORKER REGISTRATION -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('js/sw.js')
+        .then(reg  => console.log('[SW] Registered, scope:', reg.scope))
+        .catch(err => console.warn('[SW] Registration failed:', err));
+    });
+  }
+</script>
+<script src="js/api-config.js"></script>
+<script src="js/newsletter.js"></script>
+<script src="js/offline.js"></script>
+</body>
+</html>

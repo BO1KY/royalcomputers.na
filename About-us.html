@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';" />
+  <title>About Us – Royal Computers Namibia</title>
+  <meta name="description" content="Learn about Royal Computers Namibia — your trusted IT partner since 2019. We sell laptops, notebook batteries, chargers, screens, and provide technical support across Namibia.">
+  <link rel="canonical" href="https://netmac.co.za/About-us.html">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://netmac.co.za/" },
+      { "@type": "ListItem", "position": 2, "name": "About Us", "item": "https://netmac.co.za/About-us.html" }
+    ]
+  }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/design-tokens.css">
+  <link rel="stylesheet" href="css/royal-theme.css" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="css/search-dropdown.css">
+  <link rel="stylesheet" href="css/print-quote.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/checkout-wizard.css" />
+  <link rel="stylesheet" href="css/enhanced-ui.css">
+  <link rel="stylesheet" href="css/interactive-components.css">
+  <link rel="stylesheet" href="css/ecommerce-features.css">
+  <link rel="stylesheet" href="css/mobile.css">
+  <link rel="manifest" href="js/manifest.json" />
+  <link rel="apple-touch-icon" href="ROYAL PICS/royal logo.webp" />
+  <style>
+    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; margin-bottom: 48px; }
+    .about-image { border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--border); background: var(--dark-card); position: relative; width: 100%; padding-top: 75%; }
+    .about-image img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; object-fit: cover; opacity: 0; transition: opacity 0.8s ease; }
+    .about-image img.active { opacity: 1; }
+    .about-text-block h2 { font-size: 26px; font-weight: 700; color: var(--text-on-dark); margin-bottom: 16px; letter-spacing: -0.5px; }
+    .about-text-block p { font-size: 15px; color: var(--text); line-height: 1.7; margin-bottom: 14px; }
+    .about-text-block p strong { color: var(--text); }
+    .highlight-red { color: var(--red); font-weight: 600; }
+    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 48px; }
+    .stat-card { background: var(--dark-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 32px 20px; text-align: center; transition: all var(--transition); }
+    .stat-card:hover { border-color: var(--border-red); transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+    .stat-number { font-size: 36px; font-weight: 800; color: var(--red); font-family: 'DM Mono', monospace; margin-bottom: 6px; }
+    .stat-label { font-size: 13px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .values-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 48px; }
+    .value-card { background: var(--dark-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 28px 24px; transition: all var(--transition); position: relative; overflow: hidden; }
+    .value-card::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, var(--red-glow), transparent); opacity: 0; transition: opacity var(--transition); border-radius: inherit; }
+    .value-card:hover { border-color: var(--border-red); transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+    .value-card:hover::before { opacity: 1; }
+    .value-card > * { position: relative; }
+    .value-icon { font-size: 32px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; }
+    .value-img { width: 48px; height: 48px; object-fit: cover; border-radius: 50%; border: 2px solid var(--border); }
+    .value-card h3 { font-size: 16px; font-weight: 700; color: var(--text-on-dark); margin-bottom: 8px; }
+    .value-card p { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+    .faq-wrapper { max-width: 800px; margin: 0 auto; }
+    .faq-section-title { text-align: center; font-size: 28px; font-weight: 700; color: var(--text-on-dark); margin-bottom: 40px; letter-spacing: -0.5px; position: relative; }
+    .faq-section-title::after { content: ''; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); width: 50px; height: 3px; background: var(--red); border-radius: 2px; }
+    .about-container { max-width: 1200px; margin: 0 auto; padding: 0 28px 80px; }
+    .page-header { padding: 40px 28px; text-align: center; border-bottom: 2px solid var(--border); margin-bottom: 32px; background: linear-gradient(180deg, var(--red-glow) 0%, transparent 100%); }
+    .page-header h1 { font-size: 30px; font-weight: 700; color: var(--text-on-dark); letter-spacing: -0.5px; }
+    .page-header p { font-size: 14px; color: var(--text-muted); margin-top: 8px; }
+    .breadcrumb { display: flex; gap: 6px; align-items: center; font-size: 13px; color: var(--text-muted); padding: 16px 28px; max-width: 1200px; margin: 0 auto; }
+    .breadcrumb a { color: var(--text-muted); transition: color var(--transition); }
+    .breadcrumb a:hover { color: var(--red); }
+    .breadcrumb span { color: var(--text); font-weight: 600; }
+    @media (max-width: 960px) { .about-grid { grid-template-columns: 1fr; gap: 32px; } .stats-grid { grid-template-columns: repeat(3, 1fr); } .values-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 768px) { .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; } .values-grid { grid-template-columns: 1fr; } .about-text-block h2 { font-size: 22px; } .stat-number { font-size: 28px; } }
+    @media (max-width: 480px) { .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; } }
+    .slide-dots { display: flex; justify-content: center; gap: 8px; margin-top: 10px; }
+    .slide-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--gray-200); border: none; cursor: pointer; padding: 0; transition: background 0.3s; }
+    .slide-dot.active { background: var(--red); }
+  </style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<div class="page-loader" id="pageLoader">
+  <div class="loader-spinner"></div>
+  <div class="loader-text">Loading…</div>
+</div>
+
+<canvas id="shader-canvas" class="shader-canvas"></canvas>
+
+<!-- SPOTLIGHT BACKGROUND -->
+<div class="spotlight-container-global">
+  <div class="spotlight-overlay-global">
+    <div class="spotlight-global spotlight-left-global"></div>
+    <div class="spotlight-global spotlight-mid-global"></div>
+    <div class="spotlight-global spotlight-right-global"></div>
+  </div>
+</div>
+
+<!-- NEWSLETTER POPUP -->
+<div class="newsletter-overlay" id="newsletterOverlay">
+  <div class="newsletter-box">
+    <button class="close-newsletter" onclick="closeNewsletter()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <img src="ROYAL PICS/royal logo.webp" alt="Royal Computers Namibia" class="nl-logo" />
+    <h3>Stay in the Loop</h3>
+    <p>Get exclusive deals, new arrivals, and tech tips delivered to your inbox.</p>
+    <div class="nl-input-group">
+      <input type="email" id="nlEmail" placeholder="Enter your email" />
+      <button type="submit" id="nlSubscribeBtn">Subscribe</button>
+    </div>
+    <p class="privacy">No spam, ever. <a href="unsubscribe.html" style="color:#e5383b;">Unsubscribe anytime</a>.</p>
+  </div>
+</div>
+
+<!-- CART SIDEBAR -->
+<div class="cart-overlay" id="cartOverlay"></div>
+<div class="cart-sidebar" id="cartSidebar">
+  <div class="cart-header">
+    <h2 id="cartHeaderTitle">Shopping Cart</h2>
+    <button class="cart-close" id="closeCartBtn" onclick="closeCart()">&times;</button>
+  </div>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-footer">
+    <div class="cart-total">
+      <span>Total:</span>
+      <span id="cartTotalPrice">N$0.00</span>
+    </div>
+    <button class="btn-clear-cart" id="clearCartBtn">Clear Cart</button>
+    <button class="btn-checkout" id="checkoutBtn" onclick="handleCheckout()">Generate Quote</button>
+    <button class="btn-continue" id="continueShopping" onclick="closeCart()">Continue Shopping</button>
+  </div>
+</div>
+
+<!-- CHECKOUT MODAL -->
+<div class="modal-overlay" id="checkoutModal">
+  <div class="modal-content" style="overflow-y:hidden;">
+    <button class="modal-close" id="closeCheckoutBtn">&times;</button>
+    <div class="checkout-form">
+      <h2>Order Information</h2>
+      <form id="checkoutFormElement">
+        <div class="form-group">
+          <label class="form-label" for="emailInput">Email Address *</label>
+          <input type="email" id="emailInput" class="form-input" placeholder="your@email.com" required>
+          <div class="form-error" id="emailError"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="phoneInput">Phone Number *</label>
+          <input type="tel" id="phoneInput" class="form-input" placeholder="+264 61 234 5678" required>
+          <div class="form-error" id="phoneError"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="nameInput">Full Name</label>
+          <input type="text" id="nameInput" class="form-input" placeholder="Your name">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="companyInput">Company (Optional)</label>
+          <input type="text" id="companyInput" class="form-input" placeholder="Your company name">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="addressInput">Address (Optional)</label>
+          <textarea id="addressInput" placeholder="Your street address..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="branchSelect">Collection Branch *</label>
+          <select id="branchSelect" class="form-input" style="appearance: none; background: url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2712%27 height=%2712%27 viewBox=%270 0 12 12%27%3E%3Cpath fill=%27%236b7280%27 d=%27M6 8L1 3h10z%27/%3E%3C/svg%3E') no-repeat right 12px center; padding-right: 36px;" required>
+            <option value="branch-001" selected>Gustav Voigts Centre, Windhoek</option>
+            <option value="branch-002">Swakopmund</option>
+            <option value="branch-003">Oshakati</option>
+            <option value="branch-004">Walvis Bay</option>
+            <option value="branch-005">Tsumeb</option>
+            <option value="branch-006">Grove Mall, Windhoek</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="notesInput">Special Requests / Notes</label>
+          <textarea id="notesInput" placeholder="Any special notes for your order..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="additionalDetailsInput">Additional Customer Details</label>
+          <textarea id="additionalDetailsInput" placeholder="Add any additional information you'd like included on the quote (ID number, reference, etc.)..."></textarea>
+        </div>
+        <div class="form-group form-checkbox">
+          <input type="checkbox" id="termsCheckbox">
+          <label for="termsCheckbox" style="margin: 0; font-size: 13px;">I agree to the terms and conditions</label>
+        </div>
+        <div class="checkout-actions">
+          <button type="button" class="btn-cancel" id="cancelCheckoutBtn" onclick="closeCheckout()">Cancel</button>
+          <button type="submit" class="btn-generate" id="generateQuoteBtn">Generate Quote</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- QUOTE DISPLAY MODAL -->
+<div class="modal-overlay" id="quoteModal">
+  <div class="modal-content">
+    <button class="modal-close" id="closeQuoteBtn">&times;</button>
+    <div class="quote-display" id="quoteContent"></div>
+  </div>
+</div>
+
+<!-- GUIDE MODAL -->
+<div class="guide-overlay" id="guideModal">
+  <div class="guide-modal">
+    <div class="bg-header">
+      <h3 id="guideModalTitle">Guide</h3>
+      <button class="bg-close" onclick="closeGuideModal()">&times;</button>
+    </div>
+    <div class="bg-body" id="guideModalBody"></div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="header-inner">
+    <a href="index.html" class="logo">
+      <img src="ROYAL PICS/royal logo.webp" alt="Royal Computers Namibia" />
+    </a>
+    <nav>
+      <button class="nav-close" aria-label="Close menu">&times;</button>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="products.html">Products</a></li>
+        <li><a href="Contact-us.html">Contact</a></li>
+        <li><a href="About-us.html" class="active">About Us</a></li>
+      </ul>
+    </nav>
+    <button class="mobile-toggle" id="mobileToggle" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="header-right">
+      <button class="cart-btn" id="openCartBtn" onclick="openCart()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <span class="cart-count" id="cartCount" style="display:none;">0</span>
+      </button>
+
+    </div>
+
+  </div>
+</header>
+
+<!-- BREADCRUMB -->
+<div class="breadcrumb">
+  <a href="index.html">Home</a> &rsaquo; <span>About Us</span>
+</div>
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+  <h1>About Us</h1>
+  <p>Your trusted technology partner since 2005</p>
+</div>
+
+<!-- ABOUT CONTENT -->
+<div id="main-content" class="about-container">
+
+  <!-- Company Intro -->
+  <div class="about-grid">
+    <div class="about-text-block">
+      <h2>Who We Are</h2>
+      <p><strong>Royal Computers Namibia</strong> is a leading IT products and services company serving the African market. We specialize in the sales of <span class="highlight-red">Computers, Accessories, Printers, Software, Consumables, Networking Equipment</span> and offer comprehensive <span class="highlight-red">Technical Support</span> across our network of branches.</p>
+      <p>Since our founding in 2005, we have been committed to providing end users with the best IT solutions at competitive prices without compromising on quality. We source top-quality products from leading vendors, and all our products carry at least <strong>twelve (12) months warranty</strong>, subject to terms and conditions.</p>
+      <p>Our friendly and knowledgeable sales team is ready to assist you at any of our shops. We believe in building lasting relationships with our customers through exceptional service and support.</p>
+    </div>
+    <div class="about-image" id="branchSlideshow">
+      <img src="ROYAL PICS/Grove.webp" alt="Windhoek" class="active" data-index="0" />
+      <img src="ROYAL PICS/Swakop.webp" alt="Swakopmund Branch" data-index="1" />
+      <img src="ROYAL PICS/Oshakati.webp" alt="Oshakati Branch" data-index="2" />
+      <img src="ROYAL PICS/Walvisbay.webp" alt="Walvis Bay Branch" data-index="3" />
+      <img src="ROYAL PICS/Tsumeb.webp" alt="Tsumeb Branch" data-index="4" />
+      <img src="ROYAL PICS/Grove.webp" alt="Grove Mall, Windhoek" data-index="5" />
+      <div class="slide-dots"></div>
+    </div>
+  </div>
+
+  <!-- Stats Counters -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-number">20+</div>
+      <div class="stat-label">Years Experience</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">50k+</div>
+      <div class="stat-label">Happy Customers</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">6</div>
+      <div class="stat-label">Branches</div>
+    </div>
+  </div>
+
+  <!-- Values / Mission -->
+  <h2 class="faq-section-title">Our Values</h2>
+  <div class="values-grid">
+    <div class="value-card">
+      <div class="value-icon"><img src="ROYAL PICS/QUALITY.webp" alt="Quality" class="value-img" /></div>
+      <h3>Quality First</h3>
+      <p>We never compromise on quality. Every product we sell and every service we offer meets the highest standards.</p>
+    </div>
+    <div class="value-card">
+      <div class="value-icon"><img src="ROYAL PICS/CUSTOMER.webp" alt="Customer Focus" class="value-img" /></div>
+      <h3>Customer Focus</h3>
+      <p>Our customers are at the heart of everything we do. We listen, understand, and deliver solutions that truly help.</p>
+    </div>
+    <div class="value-card">
+      <div class="value-icon"><img src="ROYAL PICS/INNOVATION.webp" alt="Innovation" class="value-img" /></div>
+      <h3>Innovation</h3>
+      <p>We stay ahead of the curve, bringing the latest technology and repair techniques to serve you better.</p>
+    </div>
+    <div class="value-card">
+      <div class="value-icon"><img src="ROYAL PICS/INTEGRITY.webp" alt="Integrity" class="value-img" /></div>
+      <h3>Integrity</h3>
+      <p>Honest pricing, transparent service, and ethical business practices are the foundation of our reputation.</p>
+    </div>
+    <div class="value-card">
+      <div class="value-icon"><img src="ROYAL PICS/FAST.webp" alt="Fast Service" class="value-img" /></div>
+      <h3>Fast Service</h3>
+      <p>Most repairs completed within 24–48 hours. We value your time and work efficiently to minimize downtime.</p>
+    </div>
+    <div class="value-card">
+      <div class="value-icon"><img src="ROYAL PICS/COMMUNITY.webp" alt="Community" class="value-img" /></div>
+      <h3>Community</h3>
+      <p>Proudly Namibian, we support local communities and strive to make technology accessible to everyone.</p>
+    </div>
+  </div>
+
+  <!-- FAQ Accordion -->
+  <h2 class="faq-section-title">Frequently Asked Questions</h2>
+  <div class="faq-wrapper">
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        What products do you sell?
+        <span class="faq-question-icon">&#9660;</span>
+      </button>
+      <div class="faq-answer">
+        <div class="faq-answer-inner">We stock a wide range of tech products including desktop and laptop computers, phone parts (screens, chargers, batteries), printers and ink, TVs and monitors, POS systems, networking equipment, cables and adapters, power supplies and UPS units, and PC components like motherboards, CPUs, RAM, and graphics cards. Browse our full catalogue on the Products page.</div>
+      </div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        Do you offer repair services?
+        <span class="faq-question-icon">&#9660;</span>
+      </button>
+      <div class="faq-answer">
+        <div class="faq-answer-inner">Yes, we offer laptop and phone repairs including screen replacements, battery replacement, charging port repair, virus removal, hardware upgrades, and diagnostics. Most repairs are completed within 24-48 hours, and screen replacements can often be done same-day. All repairs come with a 6-month warranty.</div>
+      </div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        How do I order online?
+        <span class="faq-question-icon">&#9660;</span>
+      </button>
+      <div class="faq-answer">
+        <div class="faq-answer-inner">Browse our Products page, add items to your cart, then generate a quote. You can switch between Purchase and Quote mode in the cart sidebar. After submitting your details and selecting a collection branch, we will prepare your order. Visit your chosen branch to collect and pay. For special orders not listed on our site, contact us via WhatsApp at +264813631483 or email windhoek@netmac.co.za.</div>
+      </div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        Where are your branches?
+        <span class="faq-question-icon">&#9660;</span>
+      </button>
+      <div class="faq-answer">
+        <div class="faq-answer-inner">We have 6 branches across Namibia: Windhoek, Swakopmund, Oshakati, Walvis Bay, Tsumeb, and Grove Mall (Windhoek). Visit our Contact page for addresses and operating hours.</div>
+      </div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        How can I find the right battery or charger for my laptop?
+        <span class="faq-question-icon">&#9660;</span>
+      </button>
+      <div class="faq-answer">
+        <div class="faq-answer-inner">Use our interactive Guides available in the website navigation. The Battery Guide, Charger Guide, Charging Port Guide, and Screen Guide let you search by brand, model number, or specifications to find compatible parts. If you do not see what you need, we can place a special order — just contact us via WhatsApp or email with your laptop model.</div>
+      </div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        What payment methods do you accept?
+        <span class="faq-question-icon">&#9660;</span>
+      </button>
+      <div class="faq-answer">
+        <div class="faq-answer-inner">We accept cash, EFT (electronic funds transfer), and card payments at all branches. Contact our sales team for more information on available options.</div>
+      </div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        How much do laptop batteries cost?
+        <span class="faq-question-icon">&#9660;</span>
+      </button>
+      <div class="faq-answer">
+        <div class="faq-answer-inner">We stock over 130 laptop battery models ranging from N$595 to N$1,995. Most standard 6-cell 11.1V batteries (NTBK-BAT-01 to NTBK-BAT-99 range) are priced between N$595 and N$995. Premium and high-capacity models such as the NTBK-BAT-100 series and certain HP/Dell batteries range from N$1,095 to N$1,995. Prices vary by cell count (3-cell, 6-cell, 9-cell, or 12-cell) and brand compatibility. Browse the Battery Guide or visit our Products page for the full price list.</div>
+      </div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        How can I check if a battery is compatible with my laptop?
+        <span class="faq-question-icon">&#9660;</span>
+      </button>
+      <div class="faq-answer">
+        <div class="faq-answer-inner">Each battery in our catalogue lists its original part numbers and compatible laptop models. For example, NTBK-BAT-01 is compatible with HP Pavilion DV2000/DV6000/DV9000 series and uses original codes like HSTNN-FB40 and 485052-001. You can either search by your laptop brand and model in our Battery Guide, or check the original part number printed on your current battery. If your specific model isn't listed, contact us via WhatsApp at +264813631483 for a special order.</div>
+      </div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        What types of laptop chargers do you stock?
+        <span class="faq-question-icon">&#9660;</span>
+      </button>
+      <div class="faq-answer">
+        <div class="faq-answer-inner">We carry over 20 charger models covering all major brands. Our range includes HP (4.8x1.7mm, 7.4x5.0mm blue tip, 4.5x3.0mm), Lenovo (rectangular slim tip, 4.0x1.7mm, 7.9x5.5mm square, USB-C), Dell (7.4x5.0mm, 4.5x3.0mm), Acer (5.5x2.5mm, 5.5x1.7mm), Asus (4.0x1.35mm), Samsung (5.5x3.0mm, 3.0x1.0mm), Sony (6.0x4.4mm), universal 65W USB-C chargers, and more. Prices range from N$250 to N$795 depending on wattage and connector type. Use our Charger Guide to find the exact match for your laptop.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="footer-brand-body">
+        <div class="footer-brand-name">Royal Computers Namibia</div>
+        <p>Leading the way in digital lifestyle</p>
+        <div style="margin-top:12px;">
+          <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> GF Shop 12 Gustav Voigts Center, Independence Ave, Windhoek</div>
+          <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg> 061228179</div>
+          <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.832-1.438A9.956 9.956 0 0 0 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18c-1.889 0-3.633-.656-5.008-1.756l-.36-.268-3.008.894.894-3.008-.268-.36A7.94 7.94 0 0 1 4 12c0-4.411 3.589-8 8-8s8 3.589 8 8-3.589 8-8 8z"/></svg> +264813631483</div>
+          <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> windhoek@netmac.co.za</div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Pages</h4>
+      <ul>
+        <li><a href="products.html">Products</a></li>
+        <li><a href="Contact-us.html">Contact Us</a></li>
+        <li><a href="About-us.html">About Us</a></li>
+        <li><a href="privacy-policy.html">Privacy Policy</a></li>
+        <li><a href="term&conditions.html">Terms & Conditions</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Branches</h4>
+      <ul>
+        <li><a href="Contact-us.html">Windhoek</a></li>
+        <li><a href="Contact-us.html">Swakopmund</a></li>
+        <li><a href="Contact-us.html">Oshakati</a></li>
+        <li><a href="Contact-us.html">Walvis Bay</a></li>
+        <li><a href="Contact-us.html">Tsumeb</a></li>
+        <li><a href="Contact-us.html">Grove Mall, Windhoek</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Social</h4>
+      <ul>
+        <li><a href="https://www.facebook.com/RoyalComputersNamibia/" target="_blank"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle;margin-right:6px;"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>Facebook</a></li>
+        <li><a href="https://www.instagram.com/royalcomputernam/" target="_blank"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>Instagram</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>Copyright &copy; Royal Computers Namibia</span>
+    <span><a href="term&conditions.html">Terms and conditions</a> apply</span>
+  </div>
+</footer>
+
+<script>
+  function toggleFaq(btn) {
+    var item = btn.parentElement;
+    item.classList.toggle('active');
+  }
+
+  function openCart() {
+    document.getElementById('cartSidebar').classList.add('open');
+    document.getElementById('cartOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeCart() {
+    document.getElementById('cartSidebar').classList.remove('open');
+    document.getElementById('cartOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  document.getElementById('closeCartBtn').addEventListener('click', closeCart);
+  document.getElementById('cartOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closeCart();
+  });
+
+  function closeNewsletter() {
+    document.getElementById('newsletterOverlay').classList.remove('open');
+    var count = parseInt(localStorage.getItem('nl_close_count') || '0', 10) + 1;
+    localStorage.setItem('nl_close_count', String(count));
+    setTimeout(function() {
+      var el = document.getElementById('newsletterOverlay');
+      if (el && !localStorage.getItem('nl_subscribed')) el.classList.add('open');
+    }, count * 30000);
+  }
+  if (!localStorage.getItem('nl_subscribed')) {
+    setTimeout(function() {
+      var el = document.getElementById('newsletterOverlay');
+      if (el) el.classList.add('open');
+    }, 60000);
+  }
+  document.getElementById('newsletterOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closeNewsletter();
+  });
+
+  var header = document.querySelector('header');
+  window.addEventListener('scroll', function() {
+    if (window.scrollY > 20) {
+      header.classList.add('scrolled');
+    } else {
+      header.classList.remove('scrolled');
+    }
+  });
+</script>
+<script defer src="js/main.js"></script>
+<script src="js/cart.js"></script>
+<script defer src="js/quote.js"></script>
+<script src="js/products-data.js"></script>
+<script defer src="js/pages-data.js"></script>
+<script defer src="js/search-engine.js"></script>
+<script defer src="js/search-dropdown.js"></script>
+<script defer src="js/shader-background.js"></script>
+<script defer src="js/branches.js"></script>
+<script defer src="js/cart-ui.js"></script>
+<script defer src="js/cart-badge-sync.js"></script>
+<script defer src="js/animations.js"></script>
+
+<script defer src="js/original-code-map.js"></script>
+<script defer src="js/loader.js"></script>
+<script defer src="js/guides-modal.js"></script>
+<script defer src="js/mobile-nav.js"></script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('js/sw.js')
+        .then(function(reg) { console.log('[SW] Registered, scope:', reg.scope); })
+        .catch(function(err) { console.warn('[SW] Registration failed:', err); });
+    });
+  }
+</script>
+
+<script>
+(function() {
+  var container = document.getElementById('branchSlideshow');
+  if (!container) return;
+  var images = container.querySelectorAll('img');
+  var dotsHtml = '';
+  for (var i = 0; i < images.length; i++) {
+    dotsHtml += '<button class="slide-dot' + (i === 0 ? ' active' : '') + '" data-index="' + i + '"></button>';
+  }
+  var dotsContainer = container.querySelector('.slide-dots');
+  if (dotsContainer) dotsContainer.innerHTML = dotsHtml;
+
+  var currentIndex = 0;
+  var interval;
+
+  function showSlide(index) {
+    if (index === currentIndex) return;
+    for (var i = 0; i < images.length; i++) {
+      images[i].classList.toggle('active', i === index);
+    }
+    var dots = dotsContainer.querySelectorAll('.slide-dot');
+    for (var i = 0; i < dots.length; i++) {
+      dots[i].classList.toggle('active', i === index);
+    }
+    currentIndex = index;
+  }
+
+  function nextSlide() {
+    showSlide((currentIndex + 1) % images.length);
+  }
+
+  function startSlideshow() {
+    interval = setInterval(nextSlide, 4000);
+  }
+
+  function stopSlideshow() {
+    clearInterval(interval);
+  }
+
+  if (dotsContainer) {
+    dotsContainer.addEventListener('click', function(e) {
+      var dot = e.target.closest('.slide-dot');
+      if (!dot) return;
+      stopSlideshow();
+      showSlide(parseInt(dot.dataset.index));
+      startSlideshow();
+    });
+  }
+
+  container.addEventListener('mouseenter', stopSlideshow);
+  container.addEventListener('mouseleave', startSlideshow);
+
+  startSlideshow();
+})();
+</script>
+
+<script src="js/api-config.js"></script>
+<script src="js/newsletter.js"></script>
+<script src="js/offline.js"></script>
+</body>
+</html>

@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Royal Computers</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'DM Sans', sans-serif; background: #f4f4f6; color: #1a1a2e; padding: 32px; }
+    .container { max-width: 800px; margin: 0 auto; }
+    h1 { font-size: 24px; margin-bottom: 4px; }
+    .subtitle { color: #666; margin-bottom: 24px; font-size: 14px; }
+
+    /* Login */
+    .login-box { max-width: 380px; margin: 80px auto 0; background: #fff; padding: 32px; border-radius: 12px; box-shadow: 0 2px 16px rgba(0,0,0,0.08); text-align: center; }
+    .login-box h2 { font-size: 20px; margin-bottom: 20px; }
+    .login-box input { width: 100%; padding: 12px 16px; border: 2px solid #ddd; border-radius: 8px; font-size: 15px; font-family: 'DM Sans', sans-serif; outline: none; transition: border-color .2s; }
+    .login-box input:focus { border-color: #1a1a2e; }
+    .login-box .error { color: #d32f2f; font-size: 13px; margin-top: 12px; min-height: 20px; }
+    .login-btn { width: 100%; margin-top: 16px; padding: 12px; background: #1a1a2e; color: #fff; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+    .login-btn:disabled { opacity: 0.5; cursor: default; }
+
+    /* Admin panel */
+    .admin-panel { display: none; }
+    .admin-panel.visible { display: block; }
+
+    /* Tabs */
+    .tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 2px solid #ddd; }
+    .tab { padding: 10px 20px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; background: none; font-family: 'DM Sans', sans-serif; color: #888; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all .2s; }
+    .tab:hover { color: #1a1a2e; }
+    .tab.active { color: #1a1a2e; border-bottom-color: #1a1a2e; }
+
+    .tab-content { display: none; }
+    .tab-content.visible { display: block; }
+
+    .toolbar { display: flex; gap: 12px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
+    .btn { padding: 10px 20px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: opacity .2s; }
+    .btn:hover { opacity: 0.85; }
+    .btn-word { background: #1a1a2e; color: #fff; }
+    .btn-clear { background: #d32f2f; color: #fff; }
+    .count { font-size: 14px; color: #666; margin-left: auto; }
+    table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+    th, td { padding: 12px 16px; text-align: left; font-size: 14px; }
+    th { background: #1a1a2e; color: #fff; font-weight: 600; }
+    tr:not(:last-child) td { border-bottom: 1px solid #eee; }
+    .empty { text-align: center; padding: 40px; color: #999; font-size: 15px; }
+
+    /* Message card */
+    .msg-card { background: #fff; border-radius: 10px; padding: 16px 20px; margin-bottom: 12px; box-shadow: 0 1px 6px rgba(0,0,0,0.06); }
+    .msg-meta { font-size: 12px; color: #888; margin-bottom: 8px; display: flex; gap: 16px; flex-wrap: wrap; }
+    .msg-meta span { white-space: nowrap; }
+    .msg-subject { display: inline-block; background: #1a1a2e; color: #fff; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+    .msg-body { font-size: 14px; line-height: 1.6; color: #333; margin-top: 6px; padding: 12px; background: #f9f9f9; border-radius: 6px; white-space: pre-wrap; }
+    .back-link { display: inline-block; margin-top: 20px; font-size: 13px; color: #1a1a2e; text-decoration: none; }
+    .back-link:hover { text-decoration: underline; }
+    .badge { background: #d32f2f; color: #fff; font-size: 11px; padding: 1px 8px; border-radius: 20px; margin-left: 6px; }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-box" id="loginBox">
+  <h2>Admin Access</h2>
+  <input type="password" id="passwordInput" placeholder="Enter admin password" autocomplete="off" />
+  <div class="error" id="loginError"></div>
+  <button class="login-btn" id="loginBtn">Unlock</button>
+  <div class="hint" style="color:#888;font-size:12px;margin-top:8px;">Authorized personnel only.</div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div class="admin-panel" id="adminPanel">
+  <div class="container">
+    <h1>Admin Dashboard</h1>
+    <p class="subtitle">Manage newsletter subscribers and contact messages.</p>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="subscribers">Subscribers <span id="subCountBadge" class="badge">0</span></button>
+      <button class="tab" data-tab="messages">Messages <span id="msgCountBadge" class="badge">0</span></button>
+    </div>
+
+    <!-- SUBSCRIBERS TAB -->
+    <div class="tab-content visible" id="tab-subscribers">
+      <div class="toolbar">
+        <button class="btn btn-word" id="downloadBtn">Download Word Document</button>
+        <button class="btn btn-clear" id="clearBtn">Clear All</button>
+        <span class="count" id="subCountLabel">0 subscribers</span>
+      </div>
+      <table>
+        <thead><tr><th>#</th><th>Email</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="subBody"></tbody>
+      </table>
+    </div>
+
+    <!-- MESSAGES TAB -->
+    <div class="tab-content" id="tab-messages">
+      <div class="toolbar">
+        <button class="btn btn-word" id="downloadMsgBtn">Download Word Document</button>
+        <button class="btn btn-clear" id="clearMsgBtn">Clear All</button>
+        <span class="count" id="msgCountLabel">0 messages</span>
+      </div>
+      <div id="msgList"></div>
+    </div>
+
+    <a href="index.html" class="back-link">&larr; Back to website</a>
+  </div>
+</div>
+
+<script src="js/api-config.js"></script>
+<script>
+/* ── Admin state ── */
+var INITIAL_MAX_ATTEMPTS = 5;
+var INITIAL_LOCKOUT_MINUTES = 5;
+var LOCKOUT_ADD_MINUTES = 2;
+var LOCKOUT_KEY = 'admin_lockout';
+var SESSION_PW_KEY = 'admin_session_pw';
+var ADMIN_HASH = 'b9566066d2a1fb5f1be75fd7c302049c155a89343d9dcc06813f427c19211be3';
+
+var cachedSubscribers = [];
+var cachedMessages = [];
+var cachedNotified = [];
+
+function getSessionPassword() {
+  try { return sessionStorage.getItem(SESSION_PW_KEY) || ''; } catch (_) { return ''; }
+}
+
+function setSessionPassword(pw) {
+  try { sessionStorage.setItem(SESSION_PW_KEY, pw); } catch (_) {}
+}
+
+function getLocalData(key) {
+  try { var d = JSON.parse(localStorage.getItem(key)); return Array.isArray(d) ? d : []; }
+  catch (_) { return []; }
+}
+
+function esc(str) {
+  return String(str).replace(/[&<>"']/g, function(m) {
+    return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;' }[m];
+  });
+}
+
+function getLockout() {
+  try { var d = JSON.parse(localStorage.getItem(LOCKOUT_KEY)) || {}; return d; } catch (_) { return {}; }
+}
+
+function saveLockout(data) {
+  try { localStorage.setItem(LOCKOUT_KEY, JSON.stringify(data)); } catch (_) {}
+}
+
+function isLocked() {
+  var lock = getLockout();
+  if (!lock.until) return false;
+  if (Date.now() > lock.until) {
+    saveLockout({ maxAttempts: lock.maxAttempts, lockoutMinutes: lock.lockoutMinutes });
+    return false;
+  }
+  return true;
+}
+
+function getLockoutConfig() {
+  var lock = getLockout();
+  return {
+    maxAttempts: lock.maxAttempts || INITIAL_MAX_ATTEMPTS,
+    lockoutMinutes: lock.lockoutMinutes || INITIAL_LOCKOUT_MINUTES
+  };
+}
+
+async function sha256(str) {
+  var data = new TextEncoder().encode(str);
+  var hash = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(hash)).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+}
+
+/* ── API helpers ── */
+var API_BASE = window.RC_API_BASE || '';
+function apiFetch(path, body) {
+  return fetch(path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  }).then(function (res) {
+    if (!res.ok) return res.json().then(function (err) { throw new Error(err.error || 'Request failed'); });
+    return res.json();
+  });
+}
+
+function fetchFromAPI(password) {
+  return apiFetch(API_BASE + '/api/get-data', { password: password });
+}
+
+function clearFromAPI(password, type) {
+  return apiFetch(API_BASE + '/api/clear-data', { password: password, type: type });
+}
+
+  function loginToAPI(password) {
+    return fetchFromAPI(password).then(function (data) {
+      cachedSubscribers = (data.subscribers || []).map(function (s) { return typeof s === 'string' ? s : (s.email || ''); }).filter(Boolean);
+      cachedMessages = data.messages || [];
+      cachedNotified = data.notified || [];
+      setSessionPassword(password);
+      return true;
+    });
+  }
+
+/* ── Login ── */
+var loginBox = document.getElementById('loginBox');
+var adminPanel = document.getElementById('adminPanel');
+var passwordInput = document.getElementById('passwordInput');
+var loginBtn = document.getElementById('loginBtn');
+var loginError = document.getElementById('loginError');
+
+passwordInput.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') loginBtn.click();
+});
+
+var lockTimer = null;
+
+function startLockoutCountdown() {
+  if (lockTimer) clearInterval(lockTimer);
+  lockTimer = setInterval(function() {
+    var lock = getLockout();
+    if (!lock.until || Date.now() > lock.until) {
+      clearInterval(lockTimer);
+      lockTimer = null;
+      loginError.textContent = '';
+      loginBtn.disabled = false;
+      return;
+    }
+    var diff = Math.max(0, lock.until - Date.now());
+    var min = Math.floor(diff / 60000);
+    var sec = Math.floor((diff % 60000) / 1000);
+    loginError.textContent = 'Too many attempts. Try again in ' + min + 'm ' + String(sec).padStart(2, '0') + 's';
+  }, 1000);
+}
+
+loginBtn.addEventListener('click', async function () {
+  if (isLocked()) {
+    startLockoutCountdown();
+    return;
+  }
+
+  var password = passwordInput.value;
+  if (!password) {
+    loginError.textContent = 'Please enter the admin password.';
+    return;
+  }
+  loginBtn.disabled = true;
+  loginBtn.textContent = 'Verifying...';
+
+  try {
+    var localHash = await sha256(password);
+    if (localHash !== ADMIN_HASH) {
+      throw new Error('Incorrect password');
+    }
+    try {
+      await loginToAPI(password);
+    } catch (_) {
+      cachedSubscribers = getLocalData('newsletter_subscribers');
+      cachedMessages = getLocalData('contact_messages');
+      setSessionPassword(password);
+    }
+    saveLockout({});
+    loginBox.style.display = 'none';
+    adminPanel.classList.add('visible');
+    renderSubscribers();
+    renderMessages();
+    updateBadges();
+  } catch (_) {
+    var cfg = getLockoutConfig();
+    var lock = getLockout();
+    lock.count = (lock.count || 0) + 1;
+    var remaining = cfg.maxAttempts - lock.count;
+    if (remaining <= 0) {
+      var addMinutes = lock.lockoutMinutes ? LOCKOUT_ADD_MINUTES : 0;
+      var newMinutes = (lock.lockoutMinutes || cfg.lockoutMinutes) + addMinutes;
+      var newMaxAttempts = Math.max(1, cfg.maxAttempts - 1);
+      lock.until = Date.now() + newMinutes * 60 * 1000;
+      lock.count = 0;
+      lock.maxAttempts = newMaxAttempts;
+      lock.lockoutMinutes = newMinutes;
+      loginError.textContent = 'Too many incorrect attempts. Locked for ' + newMinutes + ' minutes.';
+    } else {
+      loginError.textContent = 'Incorrect password. ' + remaining + ' attempt' + (remaining > 1 ? 's' : '') + ' remaining.';
+    }
+    saveLockout(lock);
+    passwordInput.value = '';
+  }
+
+  loginBtn.disabled = false;
+  loginBtn.textContent = 'Unlock';
+});
+
+/* ── Auto-login with cached session ── */
+(function tryAutoLogin() {
+  var pw = getSessionPassword();
+  if (!pw) return;
+  sha256(pw).then(function (localHash) {
+    if (localHash !== ADMIN_HASH) {
+      try { sessionStorage.removeItem(SESSION_PW_KEY); } catch (_) {}
+      return;
+    }
+    loginToAPI(pw).then(function () {
+      loginBox.style.display = 'none';
+      adminPanel.classList.add('visible');
+      renderSubscribers();
+      renderMessages();
+      updateBadges();
+    }).catch(function () {
+      cachedSubscribers = getLocalData('newsletter_subscribers');
+      cachedMessages = getLocalData('contact_messages');
+      loginBox.style.display = 'none';
+      adminPanel.classList.add('visible');
+      renderSubscribers();
+      renderMessages();
+      updateBadges();
+    });
+  });
+})();
+
+/* ── Tab switching ── */
+document.querySelectorAll('.tab').forEach(function(tab) {
+  tab.addEventListener('click', function() {
+    document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+    document.querySelectorAll('.tab-content').forEach(function(c) { c.classList.remove('visible'); });
+    tab.classList.add('active');
+    document.getElementById('tab-' + tab.dataset.tab).classList.add('visible');
+  });
+});
+
+/* ── Get combined data (API + local fallback) ── */
+function getSubscribers() {
+  var local = getLocalData('newsletter_subscribers');
+  var merged = cachedSubscribers.slice();
+  local.forEach(function(email) {
+    if (merged.indexOf(email) === -1) merged.push(email);
+  });
+  return merged;
+}
+
+function getMessages() {
+  var local = getLocalData('contact_messages');
+  var merged = cachedMessages.slice();
+  local.forEach(function(msg) {
+    var exists = merged.some(function(m) { return m.date === msg.date && m.email === msg.email; });
+    if (!exists) merged.push(msg);
+  });
+  return merged;
+}
+
+/* ── Render Subscribers ── */
+function renderSubscribers() {
+  var list = getSubscribers();
+  var tbody = document.getElementById('subBody');
+  var label = document.getElementById('subCountLabel');
+  label.textContent = list.length + ' subscriber' + (list.length !== 1 ? 's' : '');
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="4" class="empty">No subscribers yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = list.map(function(email, i) {
+    var notified = cachedNotified.indexOf(email) !== -1;
+    var statusHtml = notified ? '<span style="background:#16a34a;color:#fff;font-size:11px;padding:2px 8px;border-radius:20px;">Notified</span>' : '<span style="background:#888;color:#fff;font-size:11px;padding:2px 8px;border-radius:20px;">Active</span>';
+    return '<tr>' +
+      '<td>' + (i + 1) + '</td>' +
+      '<td>' + esc(email) + '</td>' +
+      '<td>' + statusHtml + '</td>' +
+      '<td style="white-space:nowrap;">' +
+        '<button class="btn-sub-del" data-email="' + esc(email) + '" style="padding:4px 10px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;background:#d32f2f;color:#fff;margin-right:4px;">Delete</button>' +
+        (notified ? '' : '<button class="btn-sub-notify" data-email="' + esc(email) + '" style="padding:4px 10px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;background:#1a1a2e;color:#fff;">Notify</button>') +
+      '</td>' +
+    '</tr>';
+  }).join('');
+  attachSubscriberActions();
+}
+
+/* ── Render Messages ── */
+function renderMessages() {
+  var list = getMessages();
+  var container = document.getElementById('msgList');
+  var label = document.getElementById('msgCountLabel');
+  var subjectLabels = { 'general':'General Enquiry', 'sales':'Sales Enquiry', 'service':'Service / Repair', 'quote':'Request Quote', 'feedback':'Feedback / Complaint' };
+  label.textContent = list.length + ' message' + (list.length !== 1 ? 's' : '');
+  if (!list.length) {
+    container.innerHTML = '<div class="empty">No messages yet.</div>';
+    return;
+  }
+  container.innerHTML = list.slice().reverse().map(function(m) {
+    var date = new Date(m.date);
+    var dateStr = date.toLocaleDateString('en-ZA') + ' ' + date.toLocaleTimeString('en-ZA', { hour:'2-digit', minute:'2-digit' });
+    var subjLabel = subjectLabels[m.subject] || m.subject;
+    return '<div class="msg-card">' +
+      '<div class="msg-meta">' +
+        '<span class="msg-subject">' + esc(subjLabel) + '</span>' +
+        '<span><strong>' + esc(m.name) + '</strong>' + (m.company ? ' — ' + esc(m.company) : '') + '</span>' +
+        '<span>' + esc(m.email) + '</span>' +
+        '<span>' + esc(m.phone) + '</span>' +
+        '<span>' + dateStr + '</span>' +
+      '</div>' +
+      '<div class="msg-body">' + esc(m.message) + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function attachSubscriberActions() {
+  document.querySelectorAll('.btn-sub-del').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var email = this.dataset.email;
+      if (!confirm('Remove "' + email + '" from subscribers?')) return;
+      var pw = getSessionPassword();
+      if (!pw) { alert('Session expired. Please reload and login again.'); return; }
+      apiFetch(window.RC_API_BASE + '/api/delete-subscriber', { password: pw, email: email }).then(function() {
+        var idx = cachedSubscribers.indexOf(email);
+        if (idx !== -1) cachedSubscribers.splice(idx, 1);
+        renderSubscribers();
+        updateBadges();
+      }).catch(function(err) {
+        alert(err.message);
+      });
+    });
+  });
+  document.querySelectorAll('.btn-sub-notify').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var email = this.dataset.email;
+      if (!confirm('Mark "' + email + '" as notified of unsubscription?')) return;
+      var pw = getSessionPassword();
+      if (!pw) { alert('Session expired. Please reload and login again.'); return; }
+      apiFetch(window.RC_API_BASE + '/api/notify-unsubscribe', { password: pw, email: email }).then(function() {
+        if (cachedNotified.indexOf(email) === -1) cachedNotified.push(email);
+        renderSubscribers();
+      }).catch(function(err) {
+        alert(err.message);
+      });
+    });
+  });
+}
+
+function updateBadges() {
+  document.getElementById('subCountBadge').textContent = getSubscribers().length;
+  document.getElementById('msgCountBadge').textContent = getMessages().length;
+}
+
+/* ── Download Subscribers (Word) ── */
+document.getElementById('downloadBtn').addEventListener('click', function () {
+  var list = getSubscribers();
+  if (!list.length) { alert('No subscribers to download.'); return; }
+  var rows = '';
+  list.forEach(function(email, i) {
+    rows += '<tr><td style="border:1px solid #999;padding:6px 10px;font-size:12px;">' + (i+1) + '</td><td style="border:1px solid #999;padding:6px 10px;font-size:12px;">' + esc(email) + '</td></tr>';
+  });
+  var dateStr = new Date().toISOString().split('T')[0];
+  var html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"><title>Newsletter Subscribers</title><!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View></w:WordDocument></xml><![endif]--></head><body><h1>Newsletter Subscribers</h1><p>Exported: ' + dateStr + '</p><p>Total: ' + list.length + '</p><table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;font-family:Arial,sans-serif;"><thead><tr style="background:#1a1a2e;color:#fff;"><th style="border:1px solid #999;padding:8px 10px;font-size:12px;">#</th><th style="border:1px solid #999;padding:8px 10px;font-size:12px;">Email</th></tr></thead><tbody>' + rows + '</tbody></table></body></html>';
+  var blob = new Blob(['\ufeff' + html], { type: 'application/msword' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = 'newsletter-subscribers-' + dateStr + '.doc';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+
+/* ── Download Messages (Word) ── */
+document.getElementById('downloadMsgBtn').addEventListener('click', function () {
+  var list = getMessages();
+  if (!list.length) { alert('No messages to download.'); return; }
+  var subjectLabels = { 'general':'General Enquiry', 'sales':'Sales Enquiry', 'service':'Service / Repair', 'quote':'Request Quote', 'feedback':'Feedback / Complaint' };
+  var items = '';
+  list.forEach(function(m, i) {
+    var date = new Date(m.date).toLocaleDateString('en-ZA') + ' ' + new Date(m.date).toLocaleTimeString('en-ZA', { hour:'2-digit', minute:'2-digit' });
+    var subj = subjectLabels[m.subject] || m.subject;
+    items += '<div style="margin-bottom:20px;border-bottom:1px solid #ccc;padding-bottom:16px;">' +
+      '<p><strong>#' + (i+1) + ' — ' + esc(subj) + '</strong></p>' +
+      '<p><strong>Name:</strong> ' + esc(m.name) + (m.company ? ' (' + esc(m.company) + ')' : '') + '</p>' +
+      '<p><strong>Email:</strong> ' + esc(m.email) + ' | <strong>Phone:</strong> ' + esc(m.phone) + '</p>' +
+      '<p><strong>Date:</strong> ' + date + '</p>' +
+      '<p><strong>Message:</strong></p><p style="background:#f5f5f5;padding:10px;border-radius:4px;">' + esc(m.message).replace(/\n/g,'<br>') + '</p>' +
+    '</div>';
+  });
+  var dateStr = new Date().toISOString().split('T')[0];
+  var html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"><title>Contact Messages</title></head><body><h1>Contact Messages</h1><p>Exported: ' + dateStr + '</p><p>Total: ' + list.length + '</p>' + items + '</body></html>';
+  var blob = new Blob(['\ufeff' + html], { type: 'application/msword' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = 'contact-messages-' + dateStr + '.doc';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+
+/* ── Clear ── */
+function doClear(type) {
+  var pw = getSessionPassword();
+  if (!pw) { alert('Session expired. Please reload and login again.'); return; }
+  clearFromAPI(pw, type).catch(function () {}).then(function () {
+    if (type === 'subscribers') {
+      cachedSubscribers = [];
+      try { localStorage.removeItem('newsletter_subscribers'); } catch (_) {}
+      renderSubscribers();
+    } else {
+      cachedMessages = [];
+      try { localStorage.removeItem('contact_messages'); } catch (_) {}
+      renderMessages();
+    }
+    updateBadges();
+  });
+}
+
+document.getElementById('clearBtn').addEventListener('click', function () {
+  if (!getSubscribers().length) { alert('No subscribers to clear.'); return; }
+  if (confirm('Delete all subscribers? This cannot be undone.')) { doClear('subscribers'); }
+});
+document.getElementById('clearMsgBtn').addEventListener('click', function () {
+  if (!getMessages().length) { alert('No messages to clear.'); return; }
+  if (confirm('Delete all messages? This cannot be undone.')) { doClear('messages'); }
+});
+</script>
+</body>
+</html>
