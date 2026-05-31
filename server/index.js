@@ -29,6 +29,10 @@ app.use(function (req, res, next) {
 
 app.use(express.static(path.join(__dirname, '..')));
 
+app.get('/admin', function (req, res) {
+  res.sendFile(path.join(__dirname, '..', 'admin.html'));
+});
+
 function sha256(str) {
   return crypto.createHash('sha256').update(str).digest('hex');
 }
