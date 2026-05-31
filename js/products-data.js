@@ -172,9 +172,6 @@ window.PRODUCTS_DB = [
     variants:[{label:"USB 3.0 Male to Micro USB 1.8m",price:79,image:"ROYAL PICS/KMX-CBL-29.webp"},{label:"USB Male to USB Female Ext 1.8m",price:35,image:"ROYAL PICS/KMX-CBL-18.webp"}]},
   { id:'cbl12', name:"SATA & Power Cables Internal", category:"Cables", image:"ROYAL PICS/KMX-CBL-14.webp", badge:null, date:'2025-07-08',
     variants:[{label:"SATA Data Cable 0.5m",price:30,image:"ROYAL PICS/KMX-CBL-13.webp"},{label:"Molex to Y SATA Power 0.15m",price:35,image:"ROYAL PICS/KMX-CBL-14.webp"}]},
-  { id:'cbl13', name:"Notebook Screen Cables & Converters", category:"Cables", image:"ROYAL PICS/KMX-CBL-13.webp", badge:null, date:'2025-07-09',
-    variants:[]},
-
   // 017 — UPS
   { id:'UPS-01', name:"AP Series 1800/2000VA UPS", category:"Power", image:"ROYAL PICS/UPS1000.webp", badge:null, date:'2025-07-01', variants:[{label:"Line-interactive",price:3495}]},
   { id:'UPS1000', name:"kStar/Econo 1000/1200VA UPS", category:"Power", image:"ROYAL PICS/UPS1000.webp", badge:null, date:'2025-07-02', variants:[{label:"1000/1200VA",price:2995}]},

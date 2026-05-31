@@ -280,6 +280,18 @@ app.post('/api/send-campaign', function (req, res) {
       '<tr><td style="padding:24px;font-size:15px;line-height:1.6;color:#333;">' +
       html +
       '</td></tr>' +
+      '<tr><td style="padding:0 24px 24px;"><hr style="border:none;border-top:1px solid #ddd;margin:0 0 16px;">' +
+      '<table role="presentation" width="100%" cellpadding="0" cellspacing="0">' +
+      '<tr><td width="60" style="vertical-align:top;padding-right:12px;">' +
+      '<img src="' + baseUrl + '/ROYAL PICS/royal logo.webp" alt="Royal Computers" style="width:50px;height:auto;border-radius:4px;" onerror="this.style.display=\'none\'">' +
+      '</td>' +
+      '<td style="vertical-align:top;font-size:12px;color:#555;line-height:1.5;">' +
+      '<strong style="color:#1a1a2e;font-size:13px;">Royal Computers Namibia</strong><br>' +
+      'Shop 7, Schumann Building, Independence Ave<br>' +
+      'Windhoek, Namibia<br>' +
+      'Tel: +264 61 222 482 | Email: info@royalcomputers.na<br>' +
+      '</td></tr></table>' +
+      '</td></tr>' +
       '<tr><td style="background:#1a1a2e;padding:16px;text-align:center;">' +
       '<p style="color:#fff;font-size:12px;margin:0;">&copy; ' + new Date().getFullYear() + ' Royal Computers Namibia</p>' +
       '<p style="color:#aaa;font-size:11px;margin:4px 0 0;">You received this because you subscribed. <a href="' + baseUrl + '/unsubscribe" style="color:#e5383b;">Unsubscribe</a></p>' +
