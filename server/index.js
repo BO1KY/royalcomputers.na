@@ -298,24 +298,21 @@ app.post('/api/send-campaign', function (req, res) {
       '</td></tr></table></td></tr></table></body></html>';
 
     var adminEmail = process.env.SMTP_USER || '';
-    var sent = 0;
-    var errors = [];
+    var mailOptions = {
+      from: '"Royal Computers Namibia" <' + process.env.SMTP_USER + '>',
+      to: adminEmail,
+      bcc: subscribers.join(', '),
+      subject: subject,
+      html: fullHtml
+    };
 
-    subscribers.forEach(function (email) {
-      var mailOptions = {
-        from: '"Royal Computers Namibia" <' + process.env.SMTP_USER + '>',
-        to: email,
-        subject: subject,
-        html: fullHtml,
-        cc: adminEmail || undefined
-      };
-      t.sendMail(mailOptions, function (err) {
-        if (err) errors.push(email + ': ' + err.message);
-        else sent++;
-      });
+    t.sendMail(mailOptions, function (err) {
+      if (err) {
+        res.status(500).json({ error: err.message || 'Failed to send' });
+      } else {
+        res.json({ success: true, sent: subscribers.length, total: subscribers.length });
+      }
     });
-
-    res.json({ success: true, sent: sent, total: subscribers.length, errors: errors.length > 0 ? errors : undefined });
   } catch (err) {
     res.status(500).json({ error: err.message || 'Server error' });
   }
