@@ -283,13 +283,13 @@ app.post('/api/send-campaign', function (req, res) {
       '<tr><td style="padding:0 24px 24px;"><hr style="border:none;border-top:1px solid #ddd;margin:0 0 16px;">' +
       '<table role="presentation" width="100%" cellpadding="0" cellspacing="0">' +
       '<tr><td width="60" style="vertical-align:top;padding-right:12px;">' +
-      '<img src="' + baseUrl + '/ROYAL PICS/royal logo.webp" alt="Royal Computers" style="width:50px;height:auto;border-radius:4px;" onerror="this.style.display=\'none\'">' +
+      '<img src="' + baseUrl + '/ROYAL PICS/royal logo.png" alt="Royal Computers" style="width:50px;height:auto;border-radius:4px;" onerror="this.style.display=\'none\'">' +
       '</td>' +
       '<td style="vertical-align:top;font-size:12px;color:#555;line-height:1.5;">' +
-      '<strong style="color:#1a1a2e;font-size:13px;">Royal Computers Namibia</strong><br>' +
-      'Shop 7, Schumann Building, Independence Ave<br>' +
-      'Windhoek, Namibia<br>' +
-      'Tel: +264 61 222 482 | Email: info@royalcomputers.na<br>' +
+      '<strong style="color:#1a1a2e;font-size:13px;">ROYAL COMPUTERS</strong><br>' +
+      'GF Shop 12 Gustav Voigts Center, Independence Ave, Windhoek<br>' +
+      'Tel: 061228179 | Email: windhoek@netmac.co.za<br>' +
+      'www.netmac.co.za | Mon-Fri: 08:30-17:30 | Sat: 08:30-13:00 | Sun: 09:00-13:00' +
       '</td></tr></table>' +
       '</td></tr>' +
       '<tr><td style="background:#1a1a2e;padding:16px;text-align:center;">' +
