@@ -126,15 +126,7 @@ window.PRODUCTS_DB = [
     variants:[{label:"Dell Vostro V131",price:499},{label:"Dell P15G/E6420",price:499},{label:"Dell SN8234",price:499},{label:"Samsung R519",price:499},{label:"Samsung NP-P580",price:499},{label:"GB P2532",price:499},{label:"Proline G146GNS",price:499},{label:"MSI / MR W655SR",price:499}]},
 
   // 013 — NOTEBOOKS
-  { id:'KMX-NTBK-01', name:"kMax Notebook 14\"", category:"Notebooks", image:"ROYAL PICS/NTBK-04.webp", badge:"sale", date:'2026-03-01', variants:[{label:"8GB DDR4 / 256GB SSD / Wi-Fi+BT / CPU Fan+Heat Paste / Win11",price:5995}]},
-  { id:'KMX-NTBK-02', name:"kMax Notebook 15.6\"", category:"Notebooks", image:"ROYAL PICS/NTBK-04.webp", badge:null, date:'2026-03-01', variants:[{label:"8GB DDR4 / 512GB SSD / Wi-Fi+BT / CPU Fan+Heat Paste / Win11",price:6695}]},
-  { id:'KMX-NTBK-03', name:"kMax Notebook 15.6\" i3", category:"Notebooks", image:"ROYAL PICS/NTBK-04.webp", badge:null, date:'2026-03-01', variants:[{label:"i3-6100 / 8GB DDR4 / 512GB SSD / Wi-Fi+BT / CPU Fan+Heat Paste / Win11",price:6995}]},
-  { id:'KMX-NTBK-04', name:"kMax Notebook 15.6\" i3", category:"Notebooks", image:"ROYAL PICS/NTBK-04.webp", badge:null, date:'2026-03-01', variants:[{label:"i3-6100 / 16GB DDR4 / 512GB SSD / Wi-Fi+BT / CPU Fan+Heat Paste / Win11",price:7395}]},
-  { id:'NTBK-02', name:"Lenovo IdeaPad 15.6\"", category:"Notebooks", image:"ROYAL PICS/NTBK-04.webp", badge:null, date:'2026-03-01', variants:[{label:"8GB DDR4 / 256GB SSD / Wi-Fi+BT / CPU Fan+Heat Paste / Win11",price:6995}]},
-  { id:'NTBK-05', name:"Asus X515 15.6\"", category:"Notebooks", image:"ROYAL PICS/NTBK-04.webp", badge:null, date:'2026-03-01', variants:[{label:"4GB DDR4 / 256GB SSD / Wi-Fi+BT / CPU Fan+Heat Paste / Win11",price:6595}]},
-  { id:'NTBK-06', name:"Asus E410KA 14\"", category:"Notebooks", image:"ROYAL PICS/NTBK-04.webp", badge:null, date:'2026-03-01', variants:[{label:"N4500 / 4GB DDR4 / 128GB eMMC / Wi-Fi+BT / CPU Fan+Heat Paste",price:5295}]},
-  { id:'NTBK-07', name:"HP 14-CF2733 14\"", category:"Notebooks", image:"ROYAL PICS/NTBK-04.webp", badge:null, date:'2026-03-01', variants:[{label:"N4120 / 4GB DDR4 / 64GB eMMC / Wi-Fi+BT / CPU Fan+Heat Paste",price:5795}]},
-  { id:'NTBK-09', name:"Acer Aspire 3 A314", category:"Notebooks", image:"ROYAL PICS/NTBK-04.webp", badge:null, date:'2026-03-01', variants:[{label:"Core i3 / 8GB DDR4 / 128GB SSD / Wi-Fi+BT / CPU Fan+Heat Paste / Win11",price:7995}]},
+  { id:'KMX-NTBK-01', name:"kMax Notebook 14\"", category:"Notebooks", image:"ROYAL PICS/NTBK-04.webp", badge:"rotate", date:'2026-03-01', variants:[{label:"8GB DDR4 / 256GB SSD / Wi-Fi+BT / CPU Fan+Heat Paste / Win11",price:5995}]},
 
   // 014 — GAMING CENTRE
   { id:'KMX-GRPH-01', name:"GeForce GT 730 Graphics Card 2GB", category:"Graphics", image:"ROYAL PICS/KMX-GRPH-04.webp", badge:null, date:'2026-01-05', variants:[{label:"2GB GDDR5 Afox",price:2295}]},
@@ -181,7 +173,7 @@ window.PRODUCTS_DB = [
   { id:'cbl12', name:"SATA & Power Cables Internal", category:"Cables", image:"ROYAL PICS/KMX-CBL-14.webp", badge:null, date:'2025-07-08',
     variants:[{label:"SATA Data Cable 0.5m",price:30,image:"ROYAL PICS/KMX-CBL-13.webp"},{label:"Molex to Y SATA Power 0.15m",price:35,image:"ROYAL PICS/KMX-CBL-14.webp"}]},
   { id:'cbl13', name:"Notebook Screen Cables & Converters", category:"Cables", image:"ROYAL PICS/KMX-CBL-13.webp", badge:null, date:'2025-07-09',
-    variants:[{label:"Notebook LED Screen Cable Left-Right",price:149,image:"ROYAL PICS/CBL-LED.webp"},{label:"LCD to LED Convertor",price:159,image:"ROYAL PICS/CBL-LED2.webp"}]},
+    variants:[]},
 
   // 017 — UPS
   { id:'UPS-01', name:"AP Series 1800/2000VA UPS", category:"Power", image:"ROYAL PICS/UPS1000.webp", badge:null, date:'2025-07-01', variants:[{label:"Line-interactive",price:3495}]},

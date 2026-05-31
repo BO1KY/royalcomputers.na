@@ -57,6 +57,38 @@
     .back-link { display: inline-block; margin-top: 20px; font-size: 13px; color: #1a1a2e; text-decoration: none; }
     .back-link:hover { text-decoration: underline; }
     .badge { background: #d32f2f; color: #fff; font-size: 11px; padding: 1px 8px; border-radius: 20px; margin-left: 6px; }
+
+    /* ── Campaign tab ── */
+    .campaign-form { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+    .campaign-form label { display: block; font-size: 13px; font-weight: 600; color: #1a1a2e; margin-bottom: 4px; margin-top: 16px; }
+    .campaign-form label:first-child { margin-top: 0; }
+    .campaign-form select,
+    .campaign-form input[type="text"],
+    .campaign-form textarea { width: 100%; padding: 10px 14px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; font-family: 'DM Sans', sans-serif; outline: none; transition: border-color .2s; box-sizing: border-box; }
+    .campaign-form select:focus,
+    .campaign-form input[type="text"]:focus,
+    .campaign-form textarea:focus { border-color: #1a1a2e; }
+    .campaign-form textarea { min-height: 200px; resize: vertical; }
+    .campaign-form .hint { font-size: 12px; color: #888; margin-top: 4px; }
+    .campaign-form .upload-row { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+    .campaign-form .upload-row input[type="file"] { flex: 1; padding: 8px 0; font-size: 13px; }
+    .campaign-form .btn-upload { padding: 8px 16px; background: #1a1a2e; color: #fff; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+    .campaign-form .btn-upload:disabled { opacity: 0.5; cursor: default; }
+    .campaign-form .upload-preview { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+    .campaign-form .upload-preview img { height: 60px; border-radius: 6px; border: 1px solid #ddd; cursor: pointer; }
+    .campaign-form .upload-preview .upl-item { position: relative; }
+    .campaign-form .upload-preview .upl-item .upl-del { position: absolute; top: -6px; right: -6px; background: #d32f2f; color: #fff; border: none; border-radius: 50%; width: 18px; height: 18px; font-size: 11px; cursor: pointer; line-height: 18px; text-align: center; }
+    .campaign-form .btn-send { margin-top: 20px; padding: 12px 32px; background: #e5383b; color: #fff; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: opacity .2s; }
+    .campaign-form .btn-send:hover { opacity: 0.9; }
+    .campaign-form .btn-send:disabled { opacity: 0.5; cursor: default; }
+    .campaign-form .send-status { margin-top: 12px; font-size: 14px; font-weight: 600; }
+    .campaign-form .send-status.success { color: #16a34a; }
+    .campaign-form .send-status.error { color: #d32f2f; }
+
+    /* ── Session timeout banner ── */
+    #sessionBanner { display: none; position: fixed; bottom: 20px; right: 20px; background: #1a1a2e; color: #fff; padding: 14px 20px; border-radius: 10px; font-size: 13px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); z-index: 999; max-width: 320px; }
+    #sessionBanner.visible { display: block; }
+    #sessionBanner strong { display: block; margin-bottom: 4px; }
   </style>
 </head>
 <body>
@@ -79,6 +111,7 @@
     <div class="tabs">
       <button class="tab active" data-tab="subscribers">Subscribers <span id="subCountBadge" class="badge">0</span></button>
       <button class="tab" data-tab="messages">Messages <span id="msgCountBadge" class="badge">0</span></button>
+      <button class="tab" data-tab="campaigns">Campaigns</button>
     </div>
 
     <!-- SUBSCRIBERS TAB -->
@@ -104,8 +137,45 @@
       <div id="msgList"></div>
     </div>
 
+    <!-- CAMPAIGNS TAB -->
+    <div class="tab-content" id="tab-campaigns">
+      <div class="campaign-form">
+        <label>Campaign Type</label>
+        <select id="campType">
+          <option value="promotion">Promotion</option>
+          <option value="sale">Sale</option>
+          <option value="new">New Arrival</option>
+          <option value="general">General Announcement</option>
+        </select>
+
+        <label>Subject Line</label>
+        <input type="text" id="campSubject" placeholder="e.g. New Stock Arrivals This Week" />
+
+        <label>Email Content (HTML supported)</label>
+        <textarea id="campHtml" placeholder="Write your email content here... Use &lt;img src=&quot;/uploads/your-image.webp&quot;&gt; for images."></textarea>
+        <div class="hint">You can use HTML tags: &lt;h2&gt;, &lt;p&gt;, &lt;img&gt;, &lt;a&gt;, &lt;strong&gt;, &lt;em&gt;, etc.</div>
+
+        <label>Upload Images / Files</label>
+        <div class="upload-row">
+          <input type="file" id="fileInput" accept="image/*,video/mp4,.pdf" />
+          <button class="btn-upload" id="uploadBtn">Upload</button>
+        </div>
+        <div class="upload-preview" id="uploadPreview"></div>
+        <div class="hint" id="uploadStatus"></div>
+
+        <button class="btn-send" id="sendCampBtn">Send Campaign to All Subscribers</button>
+        <div class="send-status" id="sendStatus"></div>
+      </div>
+    </div>
+
     <a href="index.html" class="back-link">&larr; Back to website</a>
   </div>
+</div>
+
+<!-- Session timeout banner -->
+<div id="sessionBanner">
+  <strong>Session timeout</strong>
+  <span>Your session expired due to inactivity.</span>
 </div>
 
 <script src="js/api-config.js"></script>
@@ -267,6 +337,8 @@ loginBtn.addEventListener('click', async function () {
     renderSubscribers();
     renderMessages();
     updateBadges();
+    resetActivityTimer();
+    startSessionMonitor();
   } catch (_) {
     var cfg = getLockoutConfig();
     var lock = getLockout();
@@ -307,6 +379,8 @@ loginBtn.addEventListener('click', async function () {
       renderSubscribers();
       renderMessages();
       updateBadges();
+      resetActivityTimer();
+      startSessionMonitor();
     }).catch(function () {
       cachedSubscribers = getLocalData('newsletter_subscribers');
       cachedMessages = getLocalData('contact_messages');
@@ -315,6 +389,8 @@ loginBtn.addEventListener('click', async function () {
       renderSubscribers();
       renderMessages();
       updateBadges();
+      resetActivityTimer();
+      startSessionMonitor();
     });
   });
 })();
@@ -511,6 +587,169 @@ document.getElementById('clearBtn').addEventListener('click', function () {
 document.getElementById('clearMsgBtn').addEventListener('click', function () {
   if (!getMessages().length) { alert('No messages to clear.'); return; }
   if (confirm('Delete all messages? This cannot be undone.')) { doClear('messages'); }
+});
+
+/* ── Session timeout (2 min inactivity) ── */
+var SESSION_TIMEOUT_MS = 120000;
+var lastActivity = Date.now();
+var sessionTimer = null;
+var sessionBanner = document.getElementById('sessionBanner');
+
+function resetActivityTimer() {
+  lastActivity = Date.now();
+  if (sessionBanner) sessionBanner.classList.remove('visible');
+}
+
+function checkSession() {
+  if (!adminPanel.classList.contains('visible')) return;
+  if (Date.now() - lastActivity > SESSION_TIMEOUT_MS) {
+    try { sessionStorage.removeItem(SESSION_PW_KEY); } catch (_) {}
+    if (sessionBanner) sessionBanner.classList.add('visible');
+    adminPanel.classList.remove('visible');
+    loginBox.style.display = 'block';
+    passwordInput.value = '';
+    loginError.textContent = 'Session expired due to inactivity. Please login again.';
+    if (sessionTimer) { clearInterval(sessionTimer); sessionTimer = null; }
+  }
+}
+
+['mousemove', 'mousedown', 'click', 'keydown', 'scroll', 'touchstart'].forEach(function(ev) {
+  document.addEventListener(ev, resetActivityTimer);
+});
+
+function startSessionMonitor() {
+  if (sessionTimer) clearInterval(sessionTimer);
+  sessionTimer = setInterval(checkSession, 1000);
+}
+
+/* ── Campaigns ── */
+var uploadedUrls = [];
+
+document.getElementById('uploadBtn').addEventListener('click', function() {
+  var fileInput = document.getElementById('fileInput');
+  var file = fileInput.files[0];
+  if (!file) { document.getElementById('uploadStatus').textContent = 'Select a file first.'; return; }
+
+  var btn = this;
+  btn.disabled = true;
+  btn.textContent = 'Uploading...';
+  document.getElementById('uploadStatus').textContent = '';
+
+  var pw = getSessionPassword();
+  if (!pw) { alert('Session expired. Please reload and login again.'); btn.disabled = false; btn.textContent = 'Upload'; return; }
+
+  var formData = new FormData();
+  formData.append('file', file);
+  formData.append('password', pw);
+
+  fetch(API_BASE + '/api/upload', { method: 'POST', body: formData })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.error) { throw new Error(data.error); }
+      uploadedUrls.push(data.url);
+      renderUploadPreview(data.url, data.filename);
+      document.getElementById('uploadStatus').textContent = 'Uploaded: ' + data.filename + ' — click image to insert into content';
+      fileInput.value = '';
+      btn.disabled = false;
+      btn.textContent = 'Upload';
+    })
+    .catch(function(err) {
+      document.getElementById('uploadStatus').textContent = 'Upload failed: ' + err.message;
+      btn.disabled = false;
+      btn.textContent = 'Upload';
+    });
+});
+
+function renderUploadPreview(url, filename) {
+  var container = document.getElementById('uploadPreview');
+  var div = document.createElement('div');
+  div.className = 'upl-item';
+  var ext = filename.split('.').pop().toLowerCase();
+  if (['jpg','jpeg','png','gif','webp','avif'].indexOf(ext) !== -1) {
+    var img = document.createElement('img');
+    img.src = url;
+    img.title = 'Click to insert: ' + filename;
+    img.style.cursor = 'pointer';
+    img.addEventListener('click', function() { insertAtCursor(url); });
+    div.appendChild(img);
+  } else {
+    var link = document.createElement('div');
+    link.textContent = filename;
+    link.style.cssText = 'padding:8px 12px;background:#f4f4f6;border-radius:6px;font-size:12px;cursor:pointer;';
+    link.title = 'Click to insert link';
+    link.addEventListener('click', function() { insertAtCursor(url); });
+    div.appendChild(link);
+  }
+  var del = document.createElement('button');
+  del.className = 'upl-del';
+  del.textContent = 'x';
+  del.addEventListener('click', function() {
+    div.remove();
+    uploadedUrls = uploadedUrls.filter(function(u) { return u !== url; });
+  });
+  div.appendChild(del);
+  container.appendChild(div);
+}
+
+function insertAtCursor(url) {
+  var ta = document.getElementById('campHtml');
+  var ext = url.split('.').pop().toLowerCase();
+  var tag;
+  if (['jpg','jpeg','png','gif','webp','avif'].indexOf(ext) !== -1) {
+    tag = '<img src="' + url + '" alt="" style="max-width:100%;height:auto;">';
+  } else if (ext === 'mp4') {
+    tag = '<video controls style="max-width:100%;"><source src="' + url + '" type="video/mp4"></video>';
+  } else {
+    tag = '<a href="' + url + '">View attachment</a>';
+  }
+  var start = ta.selectionStart;
+  var end = ta.selectionEnd;
+  ta.value = ta.value.substring(0, start) + tag + ta.value.substring(end);
+  ta.selectionStart = ta.selectionEnd = start + tag.length;
+  ta.focus();
+}
+
+document.getElementById('sendCampBtn').addEventListener('click', function() {
+  var btn = this;
+  var statusEl = document.getElementById('sendStatus');
+  var type = document.getElementById('campType').value;
+  var subject = document.getElementById('campSubject').value.trim();
+  var html = document.getElementById('campHtml').value.trim();
+  var pw = getSessionPassword();
+
+  if (!pw) { alert('Session expired. Please reload and login again.'); return; }
+  if (!subject) { alert('Please enter a subject line.'); return; }
+  if (!html) { alert('Please enter email content.'); return; }
+
+  if (!confirm('Send "' + subject + '" to all subscribers?\n\nThis cannot be undone.')) return;
+
+  btn.disabled = true;
+  btn.textContent = 'Sending...';
+  statusEl.className = 'send-status';
+  statusEl.textContent = '';
+
+  apiFetch(API_BASE + '/api/send-campaign', {
+    password: pw,
+    type: type,
+    subject: subject,
+    html: html,
+    baseUrl: window.location.origin
+  }).then(function(data) {
+    if (data.sent > 0) {
+      statusEl.className = 'send-status success';
+      statusEl.textContent = 'Sent to ' + data.sent + ' of ' + data.total + ' subscribers' + (data.errors ? ' (' + data.errors.length + ' errors)' : '');
+    } else {
+      statusEl.className = 'send-status error';
+      statusEl.textContent = 'Failed to send. Check SMTP configuration.';
+    }
+    btn.disabled = false;
+    btn.textContent = 'Send Campaign to All Subscribers';
+  }).catch(function(err) {
+    statusEl.className = 'send-status error';
+    statusEl.textContent = err.message;
+    btn.disabled = false;
+    btn.textContent = 'Send Campaign to All Subscribers';
+  });
 });
 </script>
 </body>

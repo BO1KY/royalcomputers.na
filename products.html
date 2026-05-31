@@ -822,8 +822,8 @@
       pageInfo.textContent = 'Page ' + uiState.page + ' of ' + totalPages + ' (' + totalItems + ' products)';
     }
 
-    function goToPrevPage() { if (uiState.page > 1) { uiState.page--; updateURLState(); persistState(); render(); } }
-    function goToNextPage() { var totalPages = Math.ceil(filteredGroups.length / ITEMS_PER_PAGE) || 1; if (uiState.page < totalPages) { uiState.page++; updateURLState(); persistState(); render(); } }
+    function goToPrevPage() { if (uiState.page > 1) { uiState.page--; updateURLState(); persistState(); render(); window.scrollTo(0, 0); } }
+    function goToNextPage() { var totalPages = Math.ceil(filteredGroups.length / ITEMS_PER_PAGE) || 1; if (uiState.page < totalPages) { uiState.page++; updateURLState(); persistState(); render(); window.scrollTo(0, 0); } }
 
     function handleSearchInput() {
       uiState.query = searchInput.value.trim();
@@ -1250,14 +1250,15 @@
     var relatedHtml = '';
     if (window.PRODUCTS_DB) {
       var pool = window.PRODUCTS_DB.filter(function(p) { return p.id !== group.id; });
-      // Prioritise same-category products
-      var sameCat = pool.filter(function(p) { return p.category === group.category; });
-      var other = pool.filter(function(p) { return p.category !== group.category; });
-      // Shuffle the "other" array for variety
-      for (var i = other.length - 1; i > 0; i--) {
+      // Shuffle all products for rotating related suggestions
+      var pool2 = pool.slice();
+      for (var i = pool2.length - 1; i > 0; i--) {
         var j = Math.floor(Math.random() * (i + 1));
-        var tmp = other[i]; other[i] = other[j]; other[j] = tmp;
+        var tmp = pool2[i]; pool2[i] = pool2[j]; pool2[j] = tmp;
       }
+      // Prioritise same-category products but keep shuffled order within each group
+      var sameCat = pool2.filter(function(p) { return p.category === group.category; });
+      var other = pool2.filter(function(p) { return p.category !== group.category; });
       var related = sameCat.concat(other).slice(0, 6);
       related.forEach(function(r) {
         var minPrice = Math.min.apply(null, (r.variants || []).map(function(v) { return v.price; }));
