@@ -59,8 +59,7 @@ body {
         position: fixed;
         inset: 0;
         background: var(--white);
-        z-index: 998;
-        /* below the header bar (z-index 999) */
+        z-index: 9999;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -94,18 +93,7 @@ body {
     }
 
     header nav .nav-close {
-        display: block;
-        position: absolute;
-        top: 16px;
-        right: 16px;
-        background: none;
-        border: none;
-        font-size: 32px;
-        color: var(--text);
-        cursor: pointer;
-        line-height: 1;
-        padding: 4px 8px;
-        z-index: 1000;
+        display: none;
     }
 
     /* Nav dropdown on mobile — show inline (stacked), not floating */
