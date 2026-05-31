@@ -29,8 +29,13 @@ app.use(function (req, res, next) {
 
 app.use(express.static(path.join(__dirname, '..')));
 
-app.get('/admin', function (req, res) {
-  res.sendFile(path.join(__dirname, '..', 'admin.html'));
+app.get('*', function (req, res, next) {
+  if (req.path.indexOf('.') !== -1 || req.path === '/') return next();
+  var htmlPath = path.join(__dirname, '..', req.path + '.html');
+  try {
+    if (require('fs').existsSync(htmlPath)) return res.sendFile(htmlPath);
+  } catch (_) {}
+  next();
 });
 
 function sha256(str) {
