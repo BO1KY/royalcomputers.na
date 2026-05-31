@@ -33,50 +33,8 @@
   <link rel="manifest" href="js/manifest.json" />
   <link rel="apple-touch-icon" href="ROYAL PICS/royal logo.webp" />
   <style>
-    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; margin-bottom: 48px; }
-    .about-image { border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--border); background: var(--dark-card); position: relative; width: 100%; padding-top: 75%; }
-    .about-image img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; object-fit: cover; opacity: 0; transition: opacity 0.8s ease; }
-    .about-image img.active { opacity: 1; }
-    .about-text-block h2 { font-size: 26px; font-weight: 700; color: var(--text-on-dark); margin-bottom: 16px; letter-spacing: -0.5px; }
-    .about-text-block p { font-size: 15px; color: var(--text); line-height: 1.7; margin-bottom: 14px; }
-    .about-text-block p strong { color: var(--text); }
-    .highlight-red { color: var(--red); font-weight: 600; }
-    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 48px; }
-    .stat-card { background: var(--dark-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 32px 20px; text-align: center; transition: all var(--transition); }
-    .stat-card:hover { border-color: var(--border-red); transform: translateY(-4px); box-shadow: var(--shadow-lg); }
-    .stat-number { font-size: 36px; font-weight: 800; color: var(--red); font-family: 'DM Mono', monospace; margin-bottom: 6px; }
-    .stat-label { font-size: 13px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-    .values-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 48px; }
-    .value-card { background: var(--dark-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 28px 24px; transition: all var(--transition); position: relative; overflow: hidden; }
-    .value-card::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, var(--red-glow), transparent); opacity: 0; transition: opacity var(--transition); border-radius: inherit; }
-    .value-card:hover { border-color: var(--border-red); transform: translateY(-4px); box-shadow: var(--shadow-lg); }
-    .value-card:hover::before { opacity: 1; }
-    .value-card > * { position: relative; }
-    .value-icon { font-size: 32px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; }
-    .value-img { width: 48px; height: 48px; object-fit: cover; border-radius: 50%; border: 2px solid var(--border); }
-    .value-card h3 { font-size: 16px; font-weight: 700; color: var(--text-on-dark); margin-bottom: 8px; }
-    .value-card p { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
-    .faq-wrapper { max-width: 800px; margin: 0 auto; }
-    .faq-section-title { text-align: center; font-size: 28px; font-weight: 700; color: var(--text-on-dark); margin-bottom: 40px; letter-spacing: -0.5px; position: relative; }
-    .faq-section-title::after { content: ''; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); width: 50px; height: 3px; background: var(--red); border-radius: 2px; }
-    .about-container { max-width: 1200px; margin: 0 auto; padding: 0 28px 80px; }
-    .page-header { padding: 40px 28px; text-align: center; border-bottom: 2px solid var(--border); margin-bottom: 32px; background: linear-gradient(180deg, var(--red-glow) 0%, transparent 100%); }
-    .page-header h1 { font-size: 30px; font-weight: 700; color: var(--text-on-dark); letter-spacing: -0.5px; }
-    .page-header p { font-size: 14px; color: var(--text-muted); margin-top: 8px; }
-    .breadcrumb { display: flex; gap: 6px; align-items: center; font-size: 13px; color: var(--text-muted); padding: 16px 28px; max-width: 1200px; margin: 0 auto; }
-    .breadcrumb a { color: var(--text-muted); transition: color var(--transition); }
-    .breadcrumb a:hover { color: var(--red); }
-    .breadcrumb span { color: var(--text); font-weight: 600; }
-    @media (max-width: 960px) { .about-grid { grid-template-columns: 1fr; gap: 32px; } .stats-grid { grid-template-columns: repeat(3, 1fr); } .values-grid { grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width: 768px) { .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; } .values-grid { grid-template-columns: 1fr; } .about-text-block h2 { font-size: 22px; } .stat-number { font-size: 28px; } }
-    @media (max-width: 480px) { .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; } }
-    .slide-dots { display: flex; justify-content: center; gap: 8px; margin-top: 10px; }
-    .slide-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--gray-200); border: none; cursor: pointer; padding: 0; transition: background 0.3s; }
-    .slide-dot.active { background: var(--red); }
-  </style>
-<style>
-.page-loader{position:fixed!important;inset:0!important;z-index:99999!important;background:#0d0d1a!important;display:flex!important;align-items:center!important;justify-content:center!important}
-.loader-spinner{width:48px;height:48px;border:4px solid #2a2a3e;border-top-color:#e5383b;border-radius:50%;animation:loaderSpin .8s linear infinite}
+.page-loader{position:fixed!important;inset:0!important;z-index:99999!important;background:#ffffff!important;display:flex!important;align-items:center!important;justify-content:center!important}
+.loader-spinner{width:48px;height:48px;border:4px solid #ddd;border-top-color:#e5383b;border-radius:50%;animation:loaderSpin .8s linear infinite}
 @keyframes loaderSpin{to{transform:rotate(360deg)}}
 </style>
 </head>
