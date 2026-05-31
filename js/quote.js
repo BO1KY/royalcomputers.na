@@ -166,6 +166,43 @@ window.QUOTE = (function () {
         ${customer.notes ? `<strong>Notes:</strong> ${esc(customer.notes)}` : ''}
       </div>` : '';
 
+    var branchName = esc(branch.name || '');
+    var branchAddr = esc(branch.address || '');
+    var bankSectionHtml = `
+          <div class="bank-section" style="font-family: Arial, sans-serif; font-size: 11px;">
+            <p style="font-family: Arial, sans-serif; font-size: 11px;"><strong style="font-family: Arial, sans-serif; font-size: 11px;">${branchName}</strong></p>
+            <p style="font-family: Arial, sans-serif; font-size: 11px;">${branchAddr}</p>
+            <p style="font-family: Arial, sans-serif; font-size: 11px;">Bank: Windhoek</p>
+            <p style="font-family: Arial, sans-serif; font-size: 11px;">A/C#8001836801 Code: 486372</p>
+          </div>`;
+
+    var totalsHtml = `
+          <div class="totals-container">
+            <div></div>
+            <div class="totals-right">
+              <div class="totals-row" style="font-family: Arial, sans-serif; font-size: 11px;">
+                <span class="totals-label" style="font-family: Arial, sans-serif; font-size: 11px;">Sub Total</span>
+                <span class="totals-value" style="font-family: Arial, sans-serif; font-size: 11px;">N$${formatPrice(quote.subtotal)}</span>
+              </div>
+              <div class="totals-row" style="font-family: Arial, sans-serif; font-size: 11px;">
+                <span class="totals-label" style="font-family: Arial, sans-serif; font-size: 11px;">Discount @ 0.00%</span>
+                <span class="totals-value" style="font-family: Arial, sans-serif; font-size: 11px;">-N$0.00</span>
+              </div>
+              <div class="totals-row" style="font-family: Arial, sans-serif; font-size: 11px;">
+                <span class="totals-label" style="font-family: Arial, sans-serif; font-size: 11px;">VAT (Exclusive.)</span>
+                <span class="totals-value" style="font-family: Arial, sans-serif; font-size: 11px;">${formatPrice(quote.tax)}</span>
+              </div>
+              <div class="totals-row" style="font-family: Arial, sans-serif; font-size: 11px;">
+                <span class="totals-label" style="font-family: Arial, sans-serif; font-size: 11px;">TAX </span>
+                <span class="totals-value" style="font-family: Arial, sans-serif; font-size: 11px;">${formatPrice(quote.subtotal - quote.tax)}</span>
+              </div>
+              <div class="totals-row totals-total" style="font-family: Arial, sans-serif; font-size: 11px;">
+                <span style="font-family: Arial, sans-serif; font-size: 11px;">TOTAL</span>
+                <span class="totals-value" style="font-weight: bold; font-family: Arial, sans-serif; font-size: 11px;">N$${formatPrice(quote.total)}</span>
+              </div>
+            </div>
+          </div>`;
+
     return `
  <!DOCTYPE html>
       <html lang="en">
@@ -176,7 +213,7 @@ window.QUOTE = (function () {
         <style>
           * { margin: 0; padding: 0; box-sizing: border-box; }
           html, body { font-family: Arial, sans-serif; color: #333; background: white; font-size: 11px; }
-          .page { max-width: 210mm; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif; }
+          .page { max-width: 210mm; margin: 0 auto; padding: 20px 20px 160px; font-family: Arial, sans-serif; min-height: 100vh; position: relative; }
           .header-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 25px; }
           .company-box { border: 2px solid #333; padding: 15px; font-family: Arial, sans-serif; }
           .company-logo { font-size: 14px; font-weight: bold; margin-bottom: 10px; font-family: Arial, sans-serif; }
@@ -197,20 +234,42 @@ window.QUOTE = (function () {
           table { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-family: Arial, sans-serif; }
           table th { background: #f5f5f5; padding: 8px; text-align: left; border: 1px solid #999; font-weight: bold; font-size: 11px; font-family: Arial, sans-serif; }
           table td { padding: 8px; border: 1px solid #ddd; font-size: 11px; font-family: Arial, sans-serif; }
-          .totals-container { display: grid; grid-template-columns: 1fr 220px; gap: 20px; margin-bottom: 20px; }
+          thead { display: table-header-group; }
+          .totals-container { display: grid; grid-template-columns: 1fr 220px; gap: 20px; margin-bottom: 20px; page-break-inside: avoid; }
           .totals-right { padding-right: 10px; font-family: Arial, sans-serif; }
           .totals-row { display: flex; justify-content: space-between; margin-bottom: 3px; font-size: 11px; font-family: Arial, sans-serif; }
           .totals-label { font-weight: bold; font-family: Arial, sans-serif; font-size: 11px; }
           .totals-value { text-align: right; border-bottom: 1px solid #999; padding-bottom: 3px; min-width: 90px; font-family: Arial, sans-serif; font-size: 11px; }
           .totals-total { font-weight: bold; font-size: 11px; border-top: 2px solid #333; padding-top: 5px; margin-top: 5px; font-family: Arial, sans-serif; }
-          .bank-section { border-top: 2px solid #999; padding: 15px 0; margin: 20px 0; font-size: 11px; font-family: Arial, sans-serif; }
-          .bank-section p { margin: 3px 0; font-family: Arial, sans-serif; font-size: 11px; }
-          .signature-section { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 40px; }
+          .signature-section { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 40px; page-break-inside: avoid; }
           .signature-area { font-size: 11px; font-family: Arial, sans-serif; }
           .sig-line { border-top: 1px solid #333; padding-top: 30px; }
-          .footer { text-align: center; font-size: 9px; color: #666; margin-top: 20px; border-top: 1px solid #ddd; padding-top: 10px; font-family: Arial, sans-serif; }
           .logo-img { max-width: 120px; height: auto; margin-bottom: 10px; }
-          @media print { body { margin: 0; padding: 0; font-family: Arial, sans-serif; } .page { margin: 0; padding: 10px; height: auto; font-family: Arial, sans-serif; } }
+          .page-footer { display: none; }
+          @media screen and (max-width: 700px) {
+            .page { padding: 10px 10px 140px; }
+            .header-grid { grid-template-columns: 1fr; gap: 15px; }
+            .customer-grid { grid-template-columns: 1fr; gap: 12px; }
+            .account-info { grid-template-columns: repeat(3, 1fr); gap: 8px; font-size: 10px; }
+            .totals-container { grid-template-columns: 1fr; }
+            .totals-right { padding-right: 0; }
+            table { font-size: 10px; }
+            table th, table td { padding: 5px; font-size: 10px; }
+            .company-box { padding: 10px; }
+            .invoice-box { padding: 10px; }
+            .customer-box { padding: 8px; min-height: auto; }
+            .signature-section { grid-template-columns: 1fr; gap: 20px; margin-top: 20px; }
+          }
+          @media print {
+            @page { margin: 12mm 8mm 22mm 8mm; }
+            @page { @bottom-center { content: "Page " counter(page) " of " counter(pages); font-size: 9px; font-family: Arial, sans-serif; color: #666; } }
+            body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
+            .page { margin: 0; padding: 0 10px 120px; max-width: none; min-height: auto; }
+            thead { display: table-header-group; }
+            .bank-section { position: fixed; bottom: 14px; left: 10mm; right: 10mm; background: white; border-top: 2px solid #999; padding: 8px 0; margin: 0; }
+            .totals-container { page-break-inside: avoid; }
+            .signature-section { page-break-inside: avoid; }
+          }
         </style>
       </head>
       <body>
@@ -219,8 +278,8 @@ window.QUOTE = (function () {
             <div class="company-box">
               <img src="ROYAL PICS/royal logo.png" alt="Royal Computers" class="logo-img" onerror="this.style.display='none';">
               <div class="company-details">
-                <p style="font-family: Arial, sans-serif; font-size: 11px; font-weight: bold;">${esc(branch.name || "Royal Computers")}</p>
-                <p style="font-family: Arial, sans-serif; font-size: 11px;">${esc(branch.address || '')}</p>
+                <p style="font-family: Arial, sans-serif; font-size: 11px; font-weight: bold;">${branchName}</p>
+                <p style="font-family: Arial, sans-serif; font-size: 11px;">${branchAddr}</p>
                 <p style="font-family: Arial, sans-serif; font-size: 11px;">${branch.phone ? `Tel: ${esc(branch.phone)}` : ''}</p>
                 <p style="font-family: Arial, sans-serif; font-size: 11px;">${branch.email ? `Email: ${esc(branch.email)}` : ''}</p>
               </div>
@@ -230,7 +289,6 @@ window.QUOTE = (function () {
               <div class="invoice-detail" style="font-family: Arial, sans-serif; font-size: 11px;"><span class="invoice-detail-label" style="font-family: Arial, sans-serif; font-size: 11px;">Document No:</span><span style="font-family: Arial, sans-serif; font-size: 11px;">${esc(quote.number)}</span></div>
               <div class="invoice-detail" style="font-family: Arial, sans-serif; font-size: 11px;"><span class="invoice-detail-label" style="font-family: Arial, sans-serif; font-size: 11px;">Date:</span><span style="font-family: Arial, sans-serif; font-size: 11px;">${dateFormatted}</span></div>
               <div class="invoice-detail" style="font-family: Arial, sans-serif; font-size: 11px;"><span class="invoice-detail-label" style="font-family: Arial, sans-serif; font-size: 11px;">Expiry:</span><span style="font-family: Arial, sans-serif; font-size: 11px;">${validFormatted}</span></div>
-              <div class="invoice-detail" style="font-family: Arial, sans-serif; font-size: 11px;"><span class="invoice-detail-label" style="font-family: Arial, sans-serif; font-size: 11px;">Page:</span><span style="font-family: Arial, sans-serif; font-size: 11px;">1 of 1</span></div>
             </div>
           </div>
           <div class="customer-grid">
@@ -268,39 +326,7 @@ window.QUOTE = (function () {
               ${rows}
             </tbody>
           </table>
-          <div class="totals-container">
-            <div></div>
-            <div class="totals-right">
-              <div class="totals-row" style="font-family: Arial, sans-serif; font-size: 11px;">
-                <span class="totals-label" style="font-family: Arial, sans-serif; font-size: 11px;">Sub Total</span>
-                <span class="totals-value" style="font-family: Arial, sans-serif; font-size: 11px;">N$${formatPrice(quote.subtotal)}</span>
-              </div>
-              <div class="totals-row" style="font-family: Arial, sans-serif; font-size: 11px;">
-                <span class="totals-label" style="font-family: Arial, sans-serif; font-size: 11px;">Discount @ 0.00%</span>
-                <span class="totals-value" style="font-family: Arial, sans-serif; font-size: 11px;">-N$0.00</span>
-              </div>
-              
-              <div class="totals-row" style="font-family: Arial, sans-serif; font-size: 11px;">
-                <span class="totals-label" style="font-family: Arial, sans-serif; font-size: 11px;">VAT (Exclusive.)</span>
-                <span class="totals-value" style="font-family: Arial, sans-serif; font-size: 11px;">${formatPrice(quote.tax)}</span>
-              </div>
-
-              <div class="totals-row" style="font-family: Arial, sans-serif; font-size: 11px;">
-                <span class="totals-label" style="font-family: Arial, sans-serif; font-size: 11px;">TAX </span>
-                <span class="totals-value" style="font-family: Arial, sans-serif; font-size: 11px;">${formatPrice(quote.subtotal - quote.tax)}</span>
-              </div>
-
-              <div class="totals-row totals-total" style="font-family: Arial, sans-serif; font-size: 11px;">
-                <span style="font-family: Arial, sans-serif; font-size: 11px;">TOTAL</span>
-                <span class="totals-value" style="font-weight: bold; font-family: Arial, sans-serif; font-size: 11px;">N$${formatPrice(quote.total)}</span>
-              </div>
-            </div>
-          </div>
-          <div class="bank-section" style="font-family: Arial, sans-serif; font-size: 11px;">
-            <p style="font-family: Arial, sans-serif; font-size: 11px;"><strong style="font-family: Arial, sans-serif; font-size: 11px;">${esc(branch.name || '')}</strong></p>
-            <p style="font-family: Arial, sans-serif; font-size: 11px;">Bank: Windhoek</p>
-            <p style="font-family: Arial, sans-serif; font-size: 11px;">A/C#8001836801 Code: 486372</p>
-          </div>
+          ${totalsHtml}
           <div class="signature-section">
             <div class="signature-area" style="font-family: Arial, sans-serif; font-size: 11px;">
               <div style="font-family: Arial, sans-serif; font-size: 11px;"><strong style="font-family: Arial, sans-serif; font-size: 11px;">Received in good order</strong></div>
@@ -313,9 +339,9 @@ window.QUOTE = (function () {
               <div style="text-align: center; font-size: 10px; font-family: Arial, sans-serif;">Authorized</div>
             </div>
           </div>
-          <div class="footer" style="font-family: Arial, sans-serif; font-size: 9px;">
-            <p style="font-family: Arial, sans-serif; font-size: 9px;">&copy; Royal Computers (Pty) Ltd | Web Quote Valid for 7 Days</p>
-          </div>
+        </div>
+        <div class="page-footer">
+          ${bankSectionHtml}
         </div>
       </body>
       </html>

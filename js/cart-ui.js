@@ -473,26 +473,26 @@ document.addEventListener('DOMContentLoaded', function () {
     bar.id = 'quoteActionBar';
     bar.style.cssText =
       "position:sticky;top:0;z-index:10;display:flex;align-items:center;" +
-      "gap:10px;padding:10px 20px;background:#1a1a2e;color:#fff;" +
+      "gap:8px;padding:8px 12px;background:#1a1a2e;color:#fff;" +
       "box-shadow:0 2px 8px rgba(0,0,0,0.3);flex-shrink:0;flex-wrap:wrap;";
     bar.innerHTML =
-      '<span style="font-weight:700;font-size:14px;flex:1;min-width:120px;">' +
-        '&#128203; Quote Preview' +
+      '<span style="font-weight:700;font-size:14px;flex:1;min-width:80px;">' +
+        'Quote Preview' +
       '</span>' +
       '<button onclick="printQuoteAsPDF()" style="' +
-        'padding:8px 18px;background:#e5383b;color:#fff;border:none;' +
-        'border-radius:6px;font-weight:700;cursor:pointer;font-size:13px;">' +
-        '&#128229; Save / Print PDF' +
+        'padding:7px 12px;background:#e5383b;color:#fff;border:none;' +
+        'border-radius:6px;font-weight:600;cursor:pointer;font-size:12px;white-space:nowrap;">' +
+        'Save PDF' +
       '</button>' +
       '<button onclick="handleModifyQuote()" style="' +
-        'padding:8px 18px;background:#444;color:#fff;border:none;' +
-        'border-radius:6px;font-weight:700;cursor:pointer;font-size:13px;">' +
-        '&#9998; Modify Order' +
+        'padding:7px 12px;background:#444;color:#fff;border:none;' +
+        'border-radius:6px;font-weight:600;cursor:pointer;font-size:12px;white-space:nowrap;">' +
+        'Modify' +
       '</button>' +
       '<button onclick="(function(){var m=document.getElementById(\'quoteModal\');if(m)m.style.display=\'none\';})()" style="' +
-        'padding:8px 14px;background:transparent;color:#fff;' +
+        'padding:4px 10px;background:transparent;color:#fff;' +
         'border:1px solid rgba(255,255,255,0.4);' +
-        'border-radius:6px;font-weight:700;cursor:pointer;font-size:18px;line-height:1;" ' +
+        'border-radius:6px;font-weight:700;cursor:pointer;font-size:16px;line-height:1;" ' +
         'title="Close">&times;</button>';
 
     if (modalContent) {
@@ -516,6 +516,10 @@ document.addEventListener('DOMContentLoaded', function () {
         quoteContent.appendChild(wrap);
       }
     }
+
+    var style = document.createElement('style');
+    style.textContent = '@media screen and (max-width:700px){#quoteContent{padding:10px 8px 40px!important}}';
+    quoteModal.appendChild(style);
 
     quoteModal.style.display = 'flex';
   }
