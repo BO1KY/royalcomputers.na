@@ -6,7 +6,7 @@ var fs = require('fs');
 var Database = require('better-sqlite3');
 var nodemailer = require('nodemailer');
 var multer = require('multer');
-require('dotenv').config();
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 var app = express();
 var PORT = process.env.PORT || 3000;
