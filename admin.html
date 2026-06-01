@@ -191,7 +191,7 @@
 
 <script src="js/api-config.js"></script>
 <script>
-document.getElementById('pageLoader').style.display = 'none';
+var pl = document.getElementById('pageLoader'); if (pl) pl.remove();
 
 /* ── Admin state ── */
 var INITIAL_MAX_ATTEMPTS = 5;
@@ -738,7 +738,7 @@ document.getElementById('sendCampBtn').addEventListener('click', function() {
     subject: subject,
     html: html,
     baseUrl: window.location.origin
-  }).then(function(data) {
+  })).then(function(data) {
     if (data.sent > 0) {
       statusEl.className = 'send-status success';
       statusEl.textContent = 'Sent to ' + data.sent + ' of ' + data.total + ' subscribers' + (data.errors ? ' (' + data.errors.length + ' errors)' : '');
