@@ -366,7 +366,9 @@ window.CART = (function() {
     `;
 
     if (type === 'success') {
-      toast.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><polyline points="20 6 9 17 4 12"/></svg>${message}`;
+      var icon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><polyline points="20 6 9 17 4 12"/></svg>';
+      toast.innerHTML = icon;
+      toast.appendChild(document.createTextNode(' ' + message));
     }
 
     document.body.appendChild(toast);

@@ -758,12 +758,18 @@ body {
 ───────────────────────────────────────── */
 @media (max-width: 768px) {
     .contact-page {
-        padding: 0 14px;
+        padding: 0 14px 40px;
         gap: 28px;
     }
 
     .contact-form-card {
-        padding: 22px 16px;
+        padding: 24px 18px;
+        border-radius: 12px;
+    }
+
+    .contact-form-card h2 {
+        font-size: 18px;
+        margin-bottom: 20px;
     }
 
     .contact-form-card .form-input,
@@ -788,9 +794,13 @@ body {
 }
 
 /* ─────────────────────────────────────────
-  14. ABOUT PAGE
+   14. ABOUT PAGE
 ───────────────────────────────────────── */
 @media (max-width: 768px) {
+    .about-container {
+        gap: 36px;
+    }
+
     .about-grid {
         grid-template-columns: 1fr;
         gap: 28px;
@@ -811,15 +821,19 @@ body {
 
     .values-grid {
         grid-template-columns: 1fr;
-        gap: 12px;
+        gap: 14px;
     }
 
     .stat-card {
-        padding: 20px 14px;
+        padding: 24px 14px;
     }
 
     .stat-number {
         font-size: 28px;
+    }
+
+    .value-card {
+        padding: 22px 18px;
     }
 }
 
@@ -830,7 +844,7 @@ body {
     }
 
     .stat-card {
-        padding: 16px 10px;
+        padding: 18px 10px;
     }
 
     .stat-number {

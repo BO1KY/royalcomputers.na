@@ -9,7 +9,7 @@ window.INFINITY_SCROLL = (function () {
 
   const CONTAINER_ID = 'infinityScrollContainer';
   const LOADING_ID = 'loadingIndicator';
-  const DISPLAY_COUNT = 8;
+  const DISPLAY_COUNT = 10;
   const REFRESH_INTERVAL = 240000; // 4 minutes
 
   let container = null;

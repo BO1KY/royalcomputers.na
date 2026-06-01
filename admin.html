@@ -7,20 +7,26 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/design-tokens.css">
+  <link rel="stylesheet" href="css/royal-theme.css" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="css/mobile.css" media="print" onload="this.media='all'">
   <style>
+.page-loader{position:fixed!important;inset:0!important;z-index:99999!important;background:#ffffff!important;display:flex!important;align-items:center!important;justify-content:center!important}
+.loader-spinner{width:48px;height:48px;border:4px solid #ddd;border-top-color:#e5383b;border-radius:50%;animation:loaderSpin .8s linear infinite}
+@keyframes loaderSpin{to{transform:rotate(360deg)}}
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'DM Sans', sans-serif; background: #f4f4f6; color: #1a1a2e; padding: 32px; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg, #f5f3f4); color: var(--text, #1a1a2e); padding: 32px; }
     .container { max-width: 800px; margin: 0 auto; }
     h1 { font-size: 24px; margin-bottom: 4px; }
-    .subtitle { color: #666; margin-bottom: 24px; font-size: 14px; }
+    .subtitle { color: var(--text-dim, #666); margin-bottom: 24px; font-size: 14px; }
 
     /* Login */
-    .login-box { max-width: 380px; margin: 80px auto 0; background: #fff; padding: 32px; border-radius: 12px; box-shadow: 0 2px 16px rgba(0,0,0,0.08); text-align: center; }
+    .login-box { max-width: 380px; margin: 80px auto 0; background: var(--white, #fff); padding: 32px; border-radius: 12px; box-shadow: 0 2px 16px rgba(0,0,0,0.08); text-align: center; }
     .login-box h2 { font-size: 20px; margin-bottom: 20px; }
-    .login-box input { width: 100%; padding: 12px 16px; border: 2px solid #ddd; border-radius: 8px; font-size: 15px; font-family: 'DM Sans', sans-serif; outline: none; transition: border-color .2s; }
-    .login-box input:focus { border-color: #1a1a2e; }
-    .login-box .error { color: #d32f2f; font-size: 13px; margin-top: 12px; min-height: 20px; }
-    .login-btn { width: 100%; margin-top: 16px; padding: 12px; background: #1a1a2e; color: #fff; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+    .login-box input { width: 100%; padding: 12px 16px; border: 2px solid var(--border, #ddd); border-radius: 8px; font-size: 15px; font-family: 'DM Sans', sans-serif; outline: none; transition: border-color .2s; }
+    .login-box input:focus { border-color: var(--text, #1a1a2e); }
+    .login-box .error { color: var(--red, #d32f2f); font-size: 13px; margin-top: 12px; min-height: 20px; }
+    .login-btn { width: 100%; margin-top: 16px; padding: 12px; background: var(--text, #1a1a2e); color: #fff; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; }
     .login-btn:disabled { opacity: 0.5; cursor: default; }
 
     /* Admin panel */
@@ -28,10 +34,10 @@
     .admin-panel.visible { display: block; }
 
     /* Tabs */
-    .tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 2px solid #ddd; }
-    .tab { padding: 10px 20px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; background: none; font-family: 'DM Sans', sans-serif; color: #888; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all .2s; }
-    .tab:hover { color: #1a1a2e; }
-    .tab.active { color: #1a1a2e; border-bottom-color: #1a1a2e; }
+    .tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 2px solid var(--border, #ddd); }
+    .tab { padding: 10px 20px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; background: none; font-family: 'DM Sans', sans-serif; color: var(--text-dim, #888); border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all .2s; }
+    .tab:hover { color: var(--text, #1a1a2e); }
+    .tab.active { color: var(--text, #1a1a2e); border-bottom-color: var(--red, #e5383b); }
 
     .tab-content { display: none; }
     .tab-content.visible { display: block; }
@@ -39,59 +45,64 @@
     .toolbar { display: flex; gap: 12px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
     .btn { padding: 10px 20px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: opacity .2s; }
     .btn:hover { opacity: 0.85; }
-    .btn-word { background: #1a1a2e; color: #fff; }
-    .btn-clear { background: #d32f2f; color: #fff; }
-    .count { font-size: 14px; color: #666; margin-left: auto; }
-    table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+    .btn-word { background: var(--text, #1a1a2e); color: #fff; }
+    .btn-clear { background: var(--red, #d32f2f); color: #fff; }
+    .count { font-size: 14px; color: var(--text-dim, #666); margin-left: auto; }
+    table { width: 100%; border-collapse: collapse; background: var(--white, #fff); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
     th, td { padding: 12px 16px; text-align: left; font-size: 14px; }
-    th { background: #1a1a2e; color: #fff; font-weight: 600; }
-    tr:not(:last-child) td { border-bottom: 1px solid #eee; }
-    .empty { text-align: center; padding: 40px; color: #999; font-size: 15px; }
+    th { background: var(--text, #1a1a2e); color: #fff; font-weight: 600; }
+    tr:not(:last-child) td { border-bottom: 1px solid var(--border, #eee); }
+    .empty { text-align: center; padding: 40px; color: var(--text-dim, #999); font-size: 15px; }
 
     /* Message card */
-    .msg-card { background: #fff; border-radius: 10px; padding: 16px 20px; margin-bottom: 12px; box-shadow: 0 1px 6px rgba(0,0,0,0.06); }
-    .msg-meta { font-size: 12px; color: #888; margin-bottom: 8px; display: flex; gap: 16px; flex-wrap: wrap; }
+    .msg-card { background: var(--white, #fff); border-radius: 10px; padding: 16px 20px; margin-bottom: 12px; box-shadow: 0 1px 6px rgba(0,0,0,0.06); }
+    .msg-meta { font-size: 12px; color: var(--text-dim, #888); margin-bottom: 8px; display: flex; gap: 16px; flex-wrap: wrap; }
     .msg-meta span { white-space: nowrap; }
-    .msg-subject { display: inline-block; background: #1a1a2e; color: #fff; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
-    .msg-body { font-size: 14px; line-height: 1.6; color: #333; margin-top: 6px; padding: 12px; background: #f9f9f9; border-radius: 6px; white-space: pre-wrap; }
-    .back-link { display: inline-block; margin-top: 20px; font-size: 13px; color: #1a1a2e; text-decoration: none; }
+    .msg-subject { display: inline-block; background: var(--text, #1a1a2e); color: #fff; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+    .msg-body { font-size: 14px; line-height: 1.6; color: var(--text, #333); margin-top: 6px; padding: 12px; background: var(--bg, #f9f9f9); border-radius: 6px; white-space: pre-wrap; }
+    .back-link { display: inline-block; margin-top: 20px; font-size: 13px; color: var(--text, #1a1a2e); text-decoration: none; }
     .back-link:hover { text-decoration: underline; }
-    .badge { background: #d32f2f; color: #fff; font-size: 11px; padding: 1px 8px; border-radius: 20px; margin-left: 6px; }
+    .badge { background: var(--red, #d32f2f); color: #fff; font-size: 11px; padding: 1px 8px; border-radius: 20px; margin-left: 6px; }
 
     /* ── Campaign tab ── */
-    .campaign-form { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
-    .campaign-form label { display: block; font-size: 13px; font-weight: 600; color: #1a1a2e; margin-bottom: 4px; margin-top: 16px; }
+    .campaign-form { background: var(--white, #fff); border-radius: 12px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+    .campaign-form label { display: block; font-size: 13px; font-weight: 600; color: var(--text, #1a1a2e); margin-bottom: 4px; margin-top: 16px; }
     .campaign-form label:first-child { margin-top: 0; }
     .campaign-form select,
     .campaign-form input[type="text"],
-    .campaign-form textarea { width: 100%; padding: 10px 14px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; font-family: 'DM Sans', sans-serif; outline: none; transition: border-color .2s; box-sizing: border-box; }
+    .campaign-form textarea { width: 100%; padding: 10px 14px; border: 2px solid var(--border, #ddd); border-radius: 8px; font-size: 14px; font-family: 'DM Sans', sans-serif; outline: none; transition: border-color .2s; box-sizing: border-box; }
     .campaign-form select:focus,
     .campaign-form input[type="text"]:focus,
-    .campaign-form textarea:focus { border-color: #1a1a2e; }
+    .campaign-form textarea:focus { border-color: var(--text, #1a1a2e); }
     .campaign-form textarea { min-height: 200px; resize: vertical; }
-    .campaign-form .hint { font-size: 12px; color: #888; margin-top: 4px; }
+    .campaign-form .hint { font-size: 12px; color: var(--text-dim, #888); margin-top: 4px; }
     .campaign-form .upload-row { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
     .campaign-form .upload-row input[type="file"] { flex: 1; padding: 8px 0; font-size: 13px; }
-    .campaign-form .btn-upload { padding: 8px 16px; background: #1a1a2e; color: #fff; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+    .campaign-form .btn-upload { padding: 8px 16px; background: var(--text, #1a1a2e); color: #fff; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; }
     .campaign-form .btn-upload:disabled { opacity: 0.5; cursor: default; }
     .campaign-form .upload-preview { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
-    .campaign-form .upload-preview img { height: 60px; border-radius: 6px; border: 1px solid #ddd; cursor: pointer; }
+    .campaign-form .upload-preview img { height: 60px; border-radius: 6px; border: 1px solid var(--border, #ddd); cursor: pointer; }
     .campaign-form .upload-preview .upl-item { position: relative; }
-    .campaign-form .upload-preview .upl-item .upl-del { position: absolute; top: -6px; right: -6px; background: #d32f2f; color: #fff; border: none; border-radius: 50%; width: 18px; height: 18px; font-size: 11px; cursor: pointer; line-height: 18px; text-align: center; }
-    .campaign-form .btn-send { margin-top: 20px; padding: 12px 32px; background: #e5383b; color: #fff; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: opacity .2s; }
+    .campaign-form .upload-preview .upl-item .upl-del { position: absolute; top: -6px; right: -6px; background: var(--red, #d32f2f); color: #fff; border: none; border-radius: 50%; width: 18px; height: 18px; font-size: 11px; cursor: pointer; line-height: 18px; text-align: center; }
+    .campaign-form .btn-send { margin-top: 20px; padding: 12px 32px; background: var(--red, #e5383b); color: #fff; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: opacity .2s; }
     .campaign-form .btn-send:hover { opacity: 0.9; }
     .campaign-form .btn-send:disabled { opacity: 0.5; cursor: default; }
     .campaign-form .send-status { margin-top: 12px; font-size: 14px; font-weight: 600; }
     .campaign-form .send-status.success { color: #16a34a; }
-    .campaign-form .send-status.error { color: #d32f2f; }
+    .campaign-form .send-status.error { color: var(--red, #d32f2f); }
 
     /* ── Session timeout banner ── */
-    #sessionBanner { display: none; position: fixed; bottom: 20px; right: 20px; background: #1a1a2e; color: #fff; padding: 14px 20px; border-radius: 10px; font-size: 13px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); z-index: 999; max-width: 320px; }
+    #sessionBanner { display: none; position: fixed; bottom: 20px; right: 20px; background: var(--text, #1a1a2e); color: #fff; padding: 14px 20px; border-radius: 10px; font-size: 13px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); z-index: 999; max-width: 320px; }
     #sessionBanner.visible { display: block; }
     #sessionBanner strong { display: block; margin-bottom: 4px; }
   </style>
 </head>
 <body>
+
+<div class="page-loader" id="pageLoader">
+  <div class="loader-spinner"></div>
+  <div class="loader-text">Loading…</div>
+</div>
 
 <!-- LOGIN -->
 <div class="login-box" id="loginBox">
@@ -185,19 +196,22 @@ var INITIAL_MAX_ATTEMPTS = 5;
 var INITIAL_LOCKOUT_MINUTES = 5;
 var LOCKOUT_ADD_MINUTES = 2;
 var LOCKOUT_KEY = 'admin_lockout';
-var SESSION_PW_KEY = 'admin_session_pw';
-var ADMIN_HASH = 'b9566066d2a1fb5f1be75fd7c302049c155a89343d9dcc06813f427c19211be3';
+var SESSION_TOKEN_KEY = 'admin_session_token';
 
 var cachedSubscribers = [];
 var cachedMessages = [];
 var cachedNotified = [];
 
-function getSessionPassword() {
-  try { return sessionStorage.getItem(SESSION_PW_KEY) || ''; } catch (_) { return ''; }
+function getSessionToken() {
+  try { return sessionStorage.getItem(SESSION_TOKEN_KEY) || ''; } catch (_) { return ''; }
 }
 
-function setSessionPassword(pw) {
-  try { sessionStorage.setItem(SESSION_PW_KEY, pw); } catch (_) {}
+function setSessionToken(t) {
+  try { sessionStorage.setItem(SESSION_TOKEN_KEY, t); } catch (_) {}
+}
+
+function clearSession() {
+  try { sessionStorage.removeItem(SESSION_TOKEN_KEY); } catch (_) {}
 }
 
 function getLocalData(key) {
@@ -256,21 +270,28 @@ function apiFetch(path, body) {
   });
 }
 
-function fetchFromAPI(password) {
-  return apiFetch(API_BASE + '/api/get-data', { password: password });
+function addToken(body) {
+  body.token = getSessionToken();
+  return body;
 }
 
-function clearFromAPI(password, type) {
-  return apiFetch(API_BASE + '/api/clear-data', { password: password, type: type });
+function fetchFromAPI() {
+  return apiFetch(API_BASE + '/api/get-data', addToken({}));
+}
+
+function clearFromAPI(type) {
+  return apiFetch(API_BASE + '/api/clear-data', addToken({ type: type }));
 }
 
   function loginToAPI(password) {
-    return fetchFromAPI(password).then(function (data) {
-      cachedSubscribers = (data.subscribers || []).map(function (s) { return typeof s === 'string' ? s : (s.email || ''); }).filter(Boolean);
-      cachedMessages = data.messages || [];
-      cachedNotified = data.notified || [];
-      setSessionPassword(password);
-      return true;
+    return apiFetch(API_BASE + '/api/admin/login', { password: password }).then(function (data) {
+      setSessionToken(data.token);
+      return fetchFromAPI().then(function (data) {
+        cachedSubscribers = (data.subscribers || []).map(function (s) { return typeof s === 'string' ? s : (s.email || ''); }).filter(Boolean);
+        cachedMessages = data.messages || [];
+        cachedNotified = data.notified || [];
+        return true;
+      });
     });
   }
 
@@ -320,16 +341,12 @@ loginBtn.addEventListener('click', async function () {
   loginBtn.textContent = 'Verifying...';
 
   try {
-    var localHash = await sha256(password);
-    if (localHash !== ADMIN_HASH) {
-      throw new Error('Incorrect password');
-    }
     try {
       await loginToAPI(password);
     } catch (_) {
       cachedSubscribers = getLocalData('newsletter_subscribers');
       cachedMessages = getLocalData('contact_messages');
-      setSessionPassword(password);
+      throw new Error('Incorrect password');
     }
     saveLockout({});
     loginBox.style.display = 'none';
@@ -364,34 +381,23 @@ loginBtn.addEventListener('click', async function () {
   loginBtn.textContent = 'Unlock';
 });
 
-/* ── Auto-login with cached session ── */
+/* ── Auto-login with cached session token ── */
 (function tryAutoLogin() {
-  var pw = getSessionPassword();
-  if (!pw) return;
-  sha256(pw).then(function (localHash) {
-    if (localHash !== ADMIN_HASH) {
-      try { sessionStorage.removeItem(SESSION_PW_KEY); } catch (_) {}
-      return;
-    }
-    loginToAPI(pw).then(function () {
-      loginBox.style.display = 'none';
-      adminPanel.classList.add('visible');
-      renderSubscribers();
-      renderMessages();
-      updateBadges();
-      resetActivityTimer();
-      startSessionMonitor();
-    }).catch(function () {
-      cachedSubscribers = getLocalData('newsletter_subscribers');
-      cachedMessages = getLocalData('contact_messages');
-      loginBox.style.display = 'none';
-      adminPanel.classList.add('visible');
-      renderSubscribers();
-      renderMessages();
-      updateBadges();
-      resetActivityTimer();
-      startSessionMonitor();
-    });
+  var token = getSessionToken();
+  if (!token) return;
+  fetchFromAPI().then(function (data) {
+    cachedSubscribers = (data.subscribers || []).map(function (s) { return typeof s === 'string' ? s : (s.email || ''); }).filter(Boolean);
+    cachedMessages = data.messages || [];
+    cachedNotified = data.notified || [];
+    loginBox.style.display = 'none';
+    adminPanel.classList.add('visible');
+    renderSubscribers();
+    renderMessages();
+    updateBadges();
+    resetActivityTimer();
+    startSessionMonitor();
+  }).catch(function () {
+    clearSession();
   });
 })();
 
@@ -484,9 +490,8 @@ function attachSubscriberActions() {
     btn.addEventListener('click', function() {
       var email = this.dataset.email;
       if (!confirm('Remove "' + email + '" from subscribers?')) return;
-      var pw = getSessionPassword();
-      if (!pw) { alert('Session expired. Please reload and login again.'); return; }
-      apiFetch(window.RC_API_BASE + '/api/delete-subscriber', { password: pw, email: email }).then(function() {
+      if (!getSessionToken()) { alert('Session expired. Please reload and login again.'); return; }
+      apiFetch(window.RC_API_BASE + '/api/delete-subscriber', addToken({ email: email })).then(function() {
         var idx = cachedSubscribers.indexOf(email);
         if (idx !== -1) cachedSubscribers.splice(idx, 1);
         renderSubscribers();
@@ -500,9 +505,8 @@ function attachSubscriberActions() {
     btn.addEventListener('click', function() {
       var email = this.dataset.email;
       if (!confirm('Mark "' + email + '" as notified of unsubscription?')) return;
-      var pw = getSessionPassword();
-      if (!pw) { alert('Session expired. Please reload and login again.'); return; }
-      apiFetch(window.RC_API_BASE + '/api/notify-unsubscribe', { password: pw, email: email }).then(function() {
+      if (!getSessionToken()) { alert('Session expired. Please reload and login again.'); return; }
+      apiFetch(window.RC_API_BASE + '/api/notify-unsubscribe', addToken({ email: email })).then(function() {
         if (cachedNotified.indexOf(email) === -1) cachedNotified.push(email);
         renderSubscribers();
       }).catch(function(err) {
@@ -564,9 +568,8 @@ document.getElementById('downloadMsgBtn').addEventListener('click', function () 
 
 /* ── Clear ── */
 function doClear(type) {
-  var pw = getSessionPassword();
-  if (!pw) { alert('Session expired. Please reload and login again.'); return; }
-  clearFromAPI(pw, type).catch(function () {}).then(function () {
+  if (!getSessionToken()) { alert('Session expired. Please reload and login again.'); return; }
+  clearFromAPI(type).catch(function () {}).then(function () {
     if (type === 'subscribers') {
       cachedSubscribers = [];
       try { localStorage.removeItem('newsletter_subscribers'); } catch (_) {}
@@ -603,7 +606,7 @@ function resetActivityTimer() {
 function checkSession() {
   if (!adminPanel.classList.contains('visible')) return;
   if (Date.now() - lastActivity > SESSION_TIMEOUT_MS) {
-    try { sessionStorage.removeItem(SESSION_PW_KEY); } catch (_) {}
+    clearSession();
     if (sessionBanner) sessionBanner.classList.add('visible');
     adminPanel.classList.remove('visible');
     loginBox.style.display = 'block';
@@ -635,12 +638,12 @@ document.getElementById('uploadBtn').addEventListener('click', function() {
   btn.textContent = 'Uploading...';
   document.getElementById('uploadStatus').textContent = '';
 
-  var pw = getSessionPassword();
-  if (!pw) { alert('Session expired. Please reload and login again.'); btn.disabled = false; btn.textContent = 'Upload'; return; }
+  var token = getSessionToken();
+  if (!token) { alert('Session expired. Please reload and login again.'); btn.disabled = false; btn.textContent = 'Upload'; return; }
 
   var formData = new FormData();
   formData.append('file', file);
-  formData.append('password', pw);
+  formData.append('token', token);
 
   fetch(API_BASE + '/api/upload', { method: 'POST', body: formData })
     .then(function(r) { return r.json(); })
@@ -715,9 +718,9 @@ document.getElementById('sendCampBtn').addEventListener('click', function() {
   var type = document.getElementById('campType').value;
   var subject = document.getElementById('campSubject').value.trim();
   var html = document.getElementById('campHtml').value.trim();
-  var pw = getSessionPassword();
+  var token = getSessionToken();
 
-  if (!pw) { alert('Session expired. Please reload and login again.'); return; }
+  if (!token) { alert('Session expired. Please reload and login again.'); return; }
   if (!subject) { alert('Please enter a subject line.'); return; }
   if (!html) { alert('Please enter email content.'); return; }
 
@@ -728,8 +731,7 @@ document.getElementById('sendCampBtn').addEventListener('click', function() {
   statusEl.className = 'send-status';
   statusEl.textContent = '';
 
-  apiFetch(API_BASE + '/api/send-campaign', {
-    password: pw,
+  apiFetch(API_BASE + '/api/send-campaign', addToken({
     type: type,
     subject: subject,
     html: html,
@@ -752,5 +754,7 @@ document.getElementById('sendCampBtn').addEventListener('click', function() {
   });
 });
 </script>
+<script defer src="js/loader.js"></script>
+<script defer src="js/offline.js"></script>
 </body>
 </html>

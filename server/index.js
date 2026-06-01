@@ -13,6 +13,16 @@ var PORT = process.env.PORT || 3000;
 var ADMIN_HASH = process.env.ADMIN_PASSWORD_HASH;
 var DB_PATH = path.join(__dirname, 'data.db');
 
+var sessions = new Map();
+var SESSION_TTL = 120 * 60 * 1000;
+
+setInterval(function () {
+  var now = Date.now();
+  for (var key of sessions.keys()) {
+    if (now > sessions.get(key).expires) sessions.delete(key);
+  }
+}, 60000);
+
 var db = new Database(DB_PATH);
 db.pragma('journal_mode = WAL');
 
@@ -27,7 +37,7 @@ var storage = multer.diskStorage({
   destination: function (req, file, cb) { cb(null, UPLOADS_DIR); },
   filename: function (req, file, cb) {
     var ext = path.extname(file.originalname);
-    cb(null, Date.now() + '-' + Math.round(Math.random() * 1E9) + ext);
+    cb(null, Date.now() + '-' + crypto.randomBytes(6).toString('hex') + ext);
   }
 });
 var upload = multer({ storage: storage, limits: { fileSize: 50 * 1024 * 1024 } });
@@ -51,7 +61,8 @@ app.use(express.json({ limit: '10mb' }));
 app.use('/uploads', express.static(UPLOADS_DIR));
 
 app.use(function (req, res, next) {
-  if (req.path === '/server/data' || req.path.startsWith('/server/data/') || req.path.startsWith('/server/.env')) {
+  var blocked = ['/server/data', '/server/data.db', '/server/data.db-shm', '/server/data.db-wal', '/server/.env'];
+  if (blocked.indexOf(req.path) !== -1 || req.path.startsWith('/server/data/')) {
     return res.status(403).send('Forbidden');
   }
   next();
@@ -72,9 +83,30 @@ function sha256(str) {
   return crypto.createHash('sha256').update(str).digest('hex');
 }
 
-function authorize(password) {
-  return password && ADMIN_HASH && sha256(password) === ADMIN_HASH;
+function authorize(body) {
+  if (body && body.token && sessions.has(body.token)) {
+    var s = sessions.get(body.token);
+    if (Date.now() < s.expires) {
+      s.expires = Date.now() + SESSION_TTL;
+      return true;
+    }
+    sessions.delete(body.token);
+  }
+  return body && body.password && ADMIN_HASH && sha256(body.password) === ADMIN_HASH;
 }
+
+app.post('/api/admin/login', function (req, res) {
+  try {
+    if (!authorize(req.body)) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    var token = crypto.randomBytes(32).toString('hex');
+    sessions.set(token, { expires: Date.now() + SESSION_TTL });
+    res.json({ success: true, token: token });
+  } catch (err) {
+    res.status(500).json({ error: err.message || 'Server error' });
+  }
+});
 
 app.post('/api/subscribe', function (req, res) {
   try {
@@ -108,6 +140,9 @@ app.post('/api/contact', function (req, res) {
     if (!name || !phone || !email || !subject || !message) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ error: 'Invalid email format' });
+    }
 
     db.prepare("INSERT INTO messages (name, phone, email, company, subject, message, date) VALUES (?, ?, ?, ?, ?, ?, ?)")
       .run(name, phone, email, company, subject, message, date);
@@ -120,7 +155,7 @@ app.post('/api/contact', function (req, res) {
 
 app.post('/api/get-data', function (req, res) {
   try {
-    if (!authorize(req.body.password)) {
+    if (!authorize(req.body)) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
@@ -168,7 +203,7 @@ app.post('/api/unsubscribe', function (req, res) {
 
 app.post('/api/delete-subscriber', function (req, res) {
   try {
-    if (!authorize(req.body.password)) {
+    if (!authorize(req.body)) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
@@ -190,7 +225,7 @@ app.post('/api/delete-subscriber', function (req, res) {
 
 app.post('/api/notify-unsubscribe', function (req, res) {
   try {
-    if (!authorize(req.body.password)) {
+    if (!authorize(req.body)) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
@@ -209,7 +244,7 @@ app.post('/api/notify-unsubscribe', function (req, res) {
 
 app.post('/api/clear-data', function (req, res) {
   try {
-    if (!authorize(req.body.password)) {
+    if (!authorize(req.body)) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
@@ -231,7 +266,7 @@ app.post('/api/clear-data', function (req, res) {
 app.post('/api/upload', function (req, res) {
   upload.single('file')(req, res, function (err) {
     if (err) return res.status(400).json({ error: err.message });
-    if (!req.body || !authorize(req.body.password)) {
+    if (!req.body || !authorize(req.body)) {
       if (req.file) fs.unlinkSync(req.file.path);
       return res.status(401).json({ error: 'Unauthorized' });
     }
@@ -243,7 +278,7 @@ app.post('/api/upload', function (req, res) {
 
 app.post('/api/send-campaign', function (req, res) {
   try {
-    if (!authorize(req.body.password)) {
+    if (!authorize(req.body)) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 

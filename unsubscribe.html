@@ -10,13 +10,46 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/design-tokens.css">
+  <link rel="stylesheet" href="css/royal-theme.css" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="css/mobile.css" media="print" onload="this.media='all'">
   <style>
 .page-loader{position:fixed!important;inset:0!important;z-index:99999!important;background:#ffffff!important;display:flex!important;align-items:center!important;justify-content:center!important}
 .loader-spinner{width:48px;height:48px;border:4px solid #ddd;border-top-color:#e5383b;border-radius:50%;animation:loaderSpin .8s linear infinite}
 @keyframes loaderSpin{to{transform:rotate(360deg)}}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg,#f5f3f4);color:var(--text,#1a1a2e);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.card{background:var(--white,#fff);border-radius:var(--radius-xl,16px);padding:40px 36px;max-width:460px;width:100%;box-shadow:0 8px 40px rgba(0,0,0,0.08);text-align:center}
+.card .logo{width:140px;height:auto;margin-bottom:16px}
+.card h1{font-size:22px;font-weight:700;margin-bottom:6px}
+.card>p{font-size:14px;color:var(--text-dim,#666);margin-bottom:24px;line-height:1.5}
+.step{display:none}
+.step.active{display:block}
+.step p{font-size:14px;color:var(--text-dim,#666);margin-bottom:16px;line-height:1.5}
+.step input{width:100%;padding:12px 16px;border:2px solid var(--border,#ddd);border-radius:8px;font-size:15px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s;margin-bottom:12px}
+.step input:focus{border-color:var(--red,#e5383b)}
+.email-display{background:var(--bg,#f5f3f4);border:1px solid var(--border,#ddd);border-radius:8px;padding:12px 16px;font-size:15px;font-weight:600;color:var(--text,#1a1a2e);margin-bottom:16px;word-break:break-all}
+.btn-primary,.btn-danger,.btn-secondary{width:100%;padding:12px;border:none;border-radius:8px;font-size:15px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:opacity .2s;margin-bottom:8px}
+.btn-primary{background:var(--red,#e5383b);color:#fff}
+.btn-primary:hover{opacity:.9}
+.btn-primary:disabled{opacity:.5;cursor:default}
+.btn-danger{background:var(--red,#e5383b);color:#fff}
+.btn-danger:hover{opacity:.9}
+.btn-secondary{background:var(--bg,#f5f3f4);color:var(--text,#1a1a2e);border:2px solid var(--border,#ddd)}
+.btn-secondary:hover{border-color:var(--red,#e5383b);color:var(--red,#e5383b)}
+.message{font-size:13px;margin-bottom:12px;min-height:20px}
+.message.error{color:var(--red,#e5383b)}
+.message.success{color:#16a34a}
+.back{display:inline-block;margin-top:12px;font-size:13px;color:var(--text-dim,#666);text-decoration:none}
+.back:hover{color:var(--red,#e5383b)}
+@media(max-width:480px){.card{padding:28px 20px;border-radius:12px}}
 </style>
 </head>
 <body>
+  <div class="page-loader" id="pageLoader">
+    <div class="loader-spinner"></div>
+    <div class="loader-text">Loading…</div>
+  </div>
   <div class="card">
     <img src="ROYAL PICS/royal logo.webp" alt="Royal Computers Namibia" class="logo" />
     <h1>Unsubscribe</h1>
@@ -33,7 +66,7 @@
     <div class="step" id="step2">
       <p>You are currently subscribed with:</p>
       <div class="email-display" id="confirmedEmail"></div>
-      <p style="font-size:13px;color:#f87171;margin-bottom:16px;">This action cannot be undone. You will no longer receive newsletters from Royal Computers Namibia.</p>
+      <p style="font-size:13px;color:var(--red, #e5383b);opacity:.8;margin-bottom:16px;">This action cannot be undone. You will no longer receive newsletters from Royal Computers Namibia.</p>
       <div class="message" id="step2Message"></div>
       <button class="btn-danger" id="confirmUnsubBtn">Yes, Unsubscribe Me</button>
       <button class="btn-secondary" id="cancelBtn">Cancel</button>
@@ -41,8 +74,8 @@
 
     <!-- STEP 3: Done -->
     <div class="step" id="step3">
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:16px;"><polyline points="20 6 9 17 4 12"/></svg>
-      <h1 style="color:#4ade80;">Unsubscribed</h1>
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:16px;"><polyline points="20 6 9 17 4 12"/></svg>
+      <h1 style="color:#16a34a;">Unsubscribed</h1>
       <p id="successMessage">You have been successfully unsubscribed from the Royal Computers Namibia newsletter.</p>
       <a href="index.html" class="back" style="margin-top:12px;">&larr; Back to Home</a>
     </div>
@@ -155,5 +188,8 @@
       verifiedEmail = '';
     });
   </script>
+  <script defer src="js/loader.js"></script>
+  <script defer src="js/api-config.js"></script>
+  <script defer src="js/offline.js"></script>
 </body>
 </html>
