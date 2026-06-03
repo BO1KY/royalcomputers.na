@@ -291,7 +291,6 @@
 <script defer src="js/cart-ui.js"></script>
 <script defer src="js/cart-badge-sync.js"></script>
 <script defer src="js/animations.js"></script>
-<script defer src="js/original-code-map.js"></script>
 <script defer src="js/loader.js"></script>
 <script defer src="js/guides-modal.js"></script>
 <script defer src="js/mobile-nav.js"></script>
@@ -355,41 +354,9 @@
   }
 
   document.addEventListener('DOMContentLoaded', function() {
-    window.SALES.load(function(sales) {
-      var db = (window.PRODUCTS_DB || []).slice();
-      // Fetch custom products & overrides to filter hidden
-      Promise.all([
-        fetch('/api/custom-products').then(function(r) { return r.json().then(function(d) { return (d && d.products) || []; }).catch(function() { return []; }); }),
-        fetch('/api/product-overrides').then(function(r) { return r.json().then(function(d) { return (d && d.overrides) || []; }).catch(function() { return []; }); })
-      ]).then(function(results) {
-        var customProducts = results[0];
-        var overrides = results[1];
-        // Merge custom products
-        customProducts.forEach(function(cp) {
-          var variants = [];
-          try { variants = JSON.parse(cp.variants_json || '[]'); } catch(e) { variants = [{label:'Default',price:0}]; }
-          var p = {
-            id: cp.id, name: cp.name, category: cp.category || 'Uncategorized',
-            image: cp.image || '', badge: cp.badge || null, date: cp.date || null,
-            description: cp.description || '', compatibility: cp.compatibility || '', specs: cp.specs || '',
-            variants: variants
-          };
-          var idx = db.findIndex(function(x) { return x.id === cp.id; });
-          if (idx >= 0) { db[idx] = p; } else { db.push(p); }
-        });
-        // Filter hidden
-        // Filter out hidden products
-        var hiddenIds = {};
-        overrides.forEach(function(ov) { if (ov.hidden) hiddenIds[ov.product_id] = true; });
-        var removed = 0;
-        while (removed < db.length) {
-          if (hiddenIds[db[removed].id]) { db.splice(removed, 1); }
-          else { removed++; }
-        }
-        renderDeals(db, sales || []);
-      }).catch(function() {
-        renderDeals(db, sales || []);
-      });
+    window.SALES.loadAll(function(data) {
+      var db = window.PRODUCTS_DB || [];
+      renderDeals(db, data.sales || []);
     });
   });
 </script>
