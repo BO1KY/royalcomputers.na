@@ -378,6 +378,7 @@
     <line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="12" y2="14"/>
   </svg>
 </div>
+<style>.tawk-min-container{display:none!important}</style>
 <!--Start of Tawk.to Script-->
 <script type="text/javascript">
   var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
@@ -386,24 +387,25 @@
     s1.async = true;
     s1.src = 'https://embed.tawk.to/67b9bbae798cea190ff5230e/1il9r4rf0';
     s1.charset = 'UTF-8';
-    s1.setAttribute('crossorigin', '*');
+    s1.setAttribute('crossorigin', 'anonymous');
     s0.parentNode.insertBefore(s1, s0);
   })();
-  Tawk_API.onLoad = function() { Tawk_API.hideWidget(); };
 </script>
 <!--End of Tawk.to Script-->
 <script>
 function openTawkChat() {
-  if (typeof Tawk_API !== 'undefined') {
-    if (typeof Tawk_API.toggle === 'function') { Tawk_API.toggle(); return; }
-    if (typeof Tawk_API.maximize === 'function') { Tawk_API.maximize(); return; }
-    if (typeof Tawk_API.showWidget === 'function') { Tawk_API.showWidget(); return; }
+  var ta = typeof Tawk_API !== 'undefined' ? Tawk_API : null;
+  if (ta) {
+    if (typeof ta.maximize === 'function') { ta.maximize(); return; }
+    if (typeof ta.toggle === 'function') { ta.toggle(); return; }
+    if (typeof ta.showWidget === 'function') { ta.showWidget(); return; }
   }
   var checkReady = setInterval(function() {
     if (typeof Tawk_API !== 'undefined') {
-      if (typeof Tawk_API.toggle === 'function') { Tawk_API.toggle(); clearInterval(checkReady); return; }
-      if (typeof Tawk_API.maximize === 'function') { Tawk_API.maximize(); clearInterval(checkReady); return; }
-      if (typeof Tawk_API.showWidget === 'function') { Tawk_API.showWidget(); clearInterval(checkReady); return; }
+      var api = Tawk_API;
+      if (typeof api.maximize === 'function') { api.maximize(); clearInterval(checkReady); return; }
+      if (typeof api.toggle === 'function') { api.toggle(); clearInterval(checkReady); return; }
+      if (typeof api.showWidget === 'function') { api.showWidget(); clearInterval(checkReady); return; }
     }
   }, 200);
   setTimeout(function() {

@@ -3,18 +3,19 @@
   var CHAT_URL = 'https://tawk.to/chat/' + WIDGET_ID;
 
   window.Tawk_API = window.Tawk_API || {};
-  window.Tawk_API.onLoad = function() { window.Tawk_API.hideWidget(); };
   window.Tawk_LoadStart = new Date();
 
-  (function() {
-    var s1 = document.createElement('script'),
-        s0 = document.getElementsByTagName('script')[0];
-    s1.async = true;
-    s1.src = 'https://embed.tawk.to/' + WIDGET_ID;
-    s1.charset = 'UTF-8';
-    s1.setAttribute('crossorigin', '*');
-    s0.parentNode.insertBefore(s1, s0);
-  })();
+  var s1 = document.createElement('script'),
+      s0 = document.getElementsByTagName('script')[0];
+  s1.async = true;
+  s1.src = 'https://embed.tawk.to/' + WIDGET_ID;
+  s1.charset = 'UTF-8';
+  s1.setAttribute('crossorigin', 'anonymous');
+  s0.parentNode.insertBefore(s1, s0);
+
+  var style = document.createElement('style');
+  style.textContent = '.tawk-min-container{display:none!important}';
+  document.head.appendChild(style);
 
   var btn = document.createElement('div');
   btn.id = 'chatButton';
@@ -25,15 +26,15 @@
   btn.onclick = function() {
     var ta = window.Tawk_API;
     if (typeof ta !== 'undefined') {
-      if (typeof ta.toggle === 'function') { ta.toggle(); return; }
       if (typeof ta.maximize === 'function') { ta.maximize(); return; }
+      if (typeof ta.toggle === 'function') { ta.toggle(); return; }
       if (typeof ta.showWidget === 'function') { ta.showWidget(); return; }
     }
     var checkReady = setInterval(function() {
       if (typeof window.Tawk_API !== 'undefined') {
         var api = window.Tawk_API;
-        if (typeof api.toggle === 'function') { api.toggle(); clearInterval(checkReady); return; }
         if (typeof api.maximize === 'function') { api.maximize(); clearInterval(checkReady); return; }
+        if (typeof api.toggle === 'function') { api.toggle(); clearInterval(checkReady); return; }
         if (typeof api.showWidget === 'function') { api.showWidget(); clearInterval(checkReady); return; }
       }
     }, 200);
