@@ -703,7 +703,7 @@ nav > ul > li.dropdown-open .nav-arrow {
   position: fixed;
   inset: 0;
   z-index: 99999;
-  background: #ffffff;
+  background: var(--bg-backdrop);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1444,60 +1444,23 @@ nav > ul > li.dropdown-open .nav-arrow {
 }
 
 .add-to-cart-btn-scroll {
-  all: unset;
-  padding: 10px 16px;
+  width: 100%;
+  height: 38px;
+  background: var(--red);
+  color: #fff;
+  border: none;
   font-size: 12px;
   font-weight: 700;
-  font-family: 'DM Sans', sans-serif;
-  color: #f0f0f0;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
   cursor: pointer;
-  margin-top: 8px;
-  position: relative;
-  z-index: 1;
-  user-select: none;
-  -webkit-user-select: none;
-  touch-action: manipulation;
+  border-radius: var(--radius-sm);
+  transition: background var(--transition), box-shadow var(--transition);
+  font-family: 'DM Sans', sans-serif;
 }
-.add-to-cart-btn-scroll::after,
-.add-to-cart-btn-scroll::before {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  z-index: -99999;
-  transition: all .4s;
-}
-.add-to-cart-btn-scroll::before {
-  transform: translate(0%, 0%);
-  width: 100%;
-  height: 100%;
-  background: var(--red);
-  border-radius: 10px;
-}
-.add-to-cart-btn-scroll::after {
-  transform: translate(8px, 8px);
-  width: 30px;
-  height: 30px;
-  background: #ffffff15;
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
-  border-radius: 50px;
-}
-.add-to-cart-btn-scroll:hover::before {
+.add-to-cart-btn-scroll:hover {
   background: var(--red-dark);
-  transform: translate(5%, 20%);
-  width: 110%;
-  height: 110%;
-}
-.add-to-cart-btn-scroll:hover::after {
-  border-radius: 10px;
-  transform: translate(0, 0);
-  width: 100%;
-  height: 100%;
-}
-.add-to-cart-btn-scroll:active::after {
-  transition: 0s;
-  transform: translate(0, 5%);
+  box-shadow: 0 4px 16px var(--red-glow);
 }
 
 #loadingIndicator {

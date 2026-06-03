@@ -11,7 +11,7 @@ require('dotenv').config({ path: path.join(__dirname, '.env') });
 var app = express();
 var PORT = process.env.PORT || 3000;
 var ADMIN_HASH = process.env.ADMIN_PASSWORD_HASH;
-var DB_PATH = path.join(__dirname, 'data.db');
+var DB_PATH = process.env.DB_PATH || path.join(__dirname, 'data.db');
 
 var sessions = new Map();
 var SESSION_TTL = 120 * 60 * 1000;
@@ -56,9 +56,21 @@ function getTransporter() {
   return transporter;
 }
 
-app.use(cors());
+var ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '').split(',').filter(Boolean);
+app.use(cors({
+  origin: ALLOWED_ORIGINS.length ? ALLOWED_ORIGINS : true,
+  credentials: true
+}));
 app.use(express.json({ limit: '10mb' }));
 app.use('/uploads', express.static(UPLOADS_DIR));
+
+app.use(function (req, res, next) {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
 
 app.use(function (req, res, next) {
   var blocked = ['/server/data', '/server/data.db', '/server/data.db-shm', '/server/data.db-wal', '/server/.env'];

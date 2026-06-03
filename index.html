@@ -38,10 +38,16 @@
   <link rel="stylesheet" href="css/ecommerce-features.css" media="print" onload="this.media='all'">
   <link rel="stylesheet" href="css/mobile.css" media="print" onload="this.media='all'">
   <style>
-.page-loader{position:fixed!important;inset:0!important;z-index:99999!important;background:#ffffff!important;display:flex!important;align-items:center!important;justify-content:center!important}
+.page-loader{position:fixed!important;inset:0!important;z-index:99999!important;background:var(--bg-backdrop)!important;display:flex!important;align-items:center!important;justify-content:center!important}
 .loader-spinner{width:48px;height:48px;border:4px solid #ddd;border-top-color:#e5383b;border-radius:50%;animation:loaderSpin .8s linear infinite}
 @keyframes loaderSpin{to{transform:rotate(360deg)}}
 .product-image-scroll{background:transparent!important}
+
+/* Hero image rotator */
+.hero{position:relative;overflow:hidden;min-height:420px;display:flex;align-items:center;background:transparent;z-index:0}
+.hero-bg{position:absolute;inset:0;z-index:0;background-size:cover;background-position:center;opacity:0;transition:opacity 1.2s ease}
+.hero-bg.active{opacity:1}
+.hero-inner{position:relative;z-index:1;width:100%}
 </style>
 </head>
 <body>
