@@ -54,7 +54,13 @@ var storage = multer.diskStorage({
     cb(null, Date.now() + '-' + crypto.randomBytes(6).toString('hex') + ext);
   }
 });
-var upload = multer({ storage: storage, limits: { fileSize: 50 * 1024 * 1024 } });
+function imageFilter(req, file, cb) {
+  var allowed = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.svg'];
+  var ext = path.extname(file.originalname).toLowerCase();
+  if (allowed.indexOf(ext) >= 0) { cb(null, true); }
+  else { cb(new Error('Only image files are allowed (jpg, jpeg, png, gif, webp, bmp, svg).')); }
+}
+var upload = multer({ storage: storage, limits: { fileSize: 50 * 1024 * 1024 }, fileFilter: imageFilter });
 
 var transporter = null;
 function getTransporter() {

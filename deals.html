@@ -102,33 +102,84 @@
 <div class="modal-overlay" id="checkoutModal">
   <div class="modal-content" style="overflow-y:auto; max-width:720px;">
     <button class="modal-close" id="closeCheckoutBtn">&times;</button>
-    <div id="checkoutBody"></div>
-  </div>
-</div>
-
-<!-- QUOTE INFO MODAL -->
-<div class="modal-overlay" id="quoteInfoModal">
-  <div class="modal-content" style="max-width:500px;">
-    <button class="modal-close" onclick="closeQuoteInfo()">&times;</button>
-    <h2 style="margin-top:0">Request a Quote</h2>
-    <p>Complete your cart and fill in your details, then submit to receive a formal quote via email or WhatsApp.</p>
-    <div id="quoteInfoBody"></div>
-  </div>
-</div>
-
-<!-- QUOTE PREVIEW MODAL -->
-<div class="modal-overlay" id="quotePreviewModal">
-  <div class="modal-content" style="max-width:700px;">
-    <div class="modal-close" onclick="closeQuotePreview()">&times;</div>
-    <div id="quotePreviewBody"></div>
+    <div id="checkoutProgress" class="checkout-progress"></div>
+    <div class="checkout-form">
+      <h2>Order Information</h2>
+      <form id="checkoutFormElement">
+        <div class="checkout-step" data-step="1">
+          <div class="form-group">
+            <label class="form-label" for="emailInput">Email Address *</label>
+            <input type="email" id="emailInput" class="form-input" placeholder="your@email.com" required>
+            <div class="form-error" id="emailError"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="phoneInput">Phone Number *</label>
+            <input type="tel" id="phoneInput" class="form-input" placeholder="+264 61 234 5678" required>
+            <div class="form-error" id="phoneError"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="nameInput">Full Name</label>
+            <input type="text" id="nameInput" class="form-input" placeholder="Your name">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="companyInput">Company (Optional)</label>
+            <input type="text" id="companyInput" class="form-input" placeholder="Your company name">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="addressInput">Address (Optional)</label>
+            <textarea id="addressInput" placeholder="Your street address..."></textarea>
+          </div>
+          <div class="checkout-actions">
+            <button type="button" class="btn-cancel" onclick="handleCheckoutClose()">Cancel</button>
+            <button type="button" class="btn-generate" data-next-step="2">Next</button>
+          </div>
+        </div>
+        <div class="checkout-step" data-step="2" style="display:none;">
+          <div class="form-group">
+            <label class="form-label" for="branchSelect">Collection Branch *</label>
+            <select id="branchSelect" class="form-input" style="appearance: none; background: var(--dark-3); padding-right: 36px;" required>
+              <option value="branch-001" selected>Gustav Voigts Centre, Windhoek</option>
+              <option value="branch-002">Swakopmund</option>
+              <option value="branch-003">Oshakati</option>
+              <option value="branch-004">Walvis Bay</option>
+              <option value="branch-005">Tsumeb</option>
+              <option value="branch-006">Grove Mall, Windhoek</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="notesInput">Special Requests / Notes</label>
+            <textarea id="notesInput" placeholder="Any special notes for your order..."></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="additionalDetailsInput">Additional Customer Details</label>
+            <textarea id="additionalDetailsInput" placeholder="Add any additional information you'd like included on the quote (ID number, reference, etc.)..."></textarea>
+          </div>
+          <div class="checkout-actions">
+            <button type="button" class="btn-cancel" data-prev-step="1">Back</button>
+            <button type="submit" class="btn-generate" id="generateQuoteBtn">Generate Quote</button>
+          </div>
+        </div>
+        <div class="checkout-step" data-step="3" style="display:none;">
+          <div id="reviewSummary"></div>
+          <div class="checkout-actions">
+            <button type="button" class="btn-cancel" data-prev-step="2">Back</button>
+            <button type="submit" class="btn-generate">Generate Quote</button>
+          </div>
+        </div>
+        <div class="form-group form-checkbox" style="margin-top:12px;">
+          <input type="checkbox" id="termsCheckbox">
+          <label for="termsCheckbox" style="margin:0;font-size:13px;">I agree to the terms and conditions</label>
+        </div>
+      </form>
+    </div>
   </div>
 </div>
 
 <!-- QUOTE MODAL -->
 <div class="modal-overlay" id="quoteModal">
-  <div class="modal-content" style="max-width:650px;">
-    <button class="modal-close" onclick="closeQuote()">&times;</button>
-    <div id="quoteBody"></div>
+  <div class="modal-content">
+    <button class="modal-close" id="closeQuoteBtn">&times;</button>
+    <div class="quote-display" id="quoteContent"></div>
   </div>
 </div>
 

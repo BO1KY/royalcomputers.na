@@ -291,7 +291,7 @@
 <div class="modal-overlay" id="quotationViewModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;overflow-y:auto;">
   <div style="background:#fff;border-radius:12px;max-width:900px;width:95%;margin:20px auto;padding:20px;box-shadow:0 8px 32px rgba(0,0,0,0.15);position:relative;max-height:90vh;overflow-y:auto;">
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-bottom:12px;position:sticky;top:0;background:#fff;padding-bottom:8px;z-index:1;">
-      <button onclick="downloadQuotationHTML()" class="btn btn-word" style="font-size:12px;padding:6px 14px;">Download HTML</button>
+      <button onclick="downloadQuotationPDF()" class="btn btn-word" style="font-size:12px;padding:6px 14px;">Download PDF</button>
       <button onclick="printQuotationView()" class="btn" style="background:#2563eb;color:#fff;font-size:12px;padding:6px 14px;">Print</button>
       <button onclick="closeQuotationViewModal()" style="background:var(--dark-3);color:var(--text);border:1px solid var(--border);border-radius:6px;font-weight:500;cursor:pointer;font-size:12px;padding:6px 14px;">Close</button>
     </div>
@@ -1578,18 +1578,26 @@ document.addEventListener('click', function(e) {
   if (modal && modal.style.display === 'flex' && e.target === modal) closeQuotationViewModal();
 });
 
-function downloadQuotationHTML() {
+function downloadQuotationPDF() {
   if (!currentViewQuote) return;
   var content = document.getElementById('quotationViewContent').innerHTML;
-  var fullHtml = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Quotation ' + esc(currentViewQuote.doc_number) + '</title>' +
-    '<style>body{font-family:Arial,sans-serif;margin:20px;color:#333;}table{width:100%;border-collapse:collapse;}th,td{padding:7px 9px;border:1px solid #ddd;font-size:11px;}th{background:#f0f0f0;font-weight:bold;}</style>' +
-    '</head><body>' + content + '</body></html>';
-  var blob = new Blob([fullHtml], { type: 'text/html' });
-  var a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'quotation-' + currentViewQuote.doc_number + '.html';
-  a.click();
-  URL.revokeObjectURL(a.href);
+  var w = window.open('', '', 'width=900,height=700');
+  w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Quotation ' + esc(currentViewQuote.doc_number) + '</title>' +
+    '<style>' +
+    '@page{size:A4;margin:12mm 10mm}' +
+    'body{font-family:Arial,sans-serif;margin:0;padding:20px;color:#333;font-size:11px}' +
+    'table{width:100%;border-collapse:collapse;margin-top:10px}' +
+    'th,td{padding:7px 9px;border:1px solid #ddd;font-size:11px;text-align:left}' +
+    'th{background:#f0f0f0;font-weight:bold}' +
+    '.totals{margin-top:16px;text-align:right}' +
+    '.totals strong{font-size:14px}' +
+    '</style>' +
+    '</head><body>' + content +
+    '<script>' +
+    'setTimeout(function(){window.focus();window.print();},400);' +
+    '<\/script>' +
+    '</body></html>');
+  w.document.close();
 }
 
 function printQuotationView() {

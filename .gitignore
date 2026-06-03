@@ -5,3 +5,5 @@ server/data.db-shm
 server/data.db-wal
 server/.env
 .env
+
+uploads/

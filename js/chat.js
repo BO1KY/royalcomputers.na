@@ -44,10 +44,6 @@
   };
   btn.innerHTML = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="12" y2="14"/></svg>';
 
-  var style = document.createElement('style');
-  style.textContent = '.tawk-min-container,.tawk-button,.tawk-custom-color{display:none!important}';
-  document.head.appendChild(style);
-
   var appInterval = setInterval(function() {
     if (document.body) { document.body.appendChild(btn); clearInterval(appInterval); }
   }, 50);
