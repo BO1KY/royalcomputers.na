@@ -16,7 +16,7 @@
 @keyframes loaderSpin{to{transform:rotate(360deg)}}
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'DM Sans', sans-serif; background: var(--bg, #f5f3f4); color: var(--text, #1a1a2e); padding: 32px; }
-    .container { max-width: 800px; margin: 0 auto; }
+    .container { max-width: 1200px; margin: 0 auto; }
     h1 { font-size: 24px; margin-bottom: 4px; }
     .subtitle { color: var(--text-dim, #666); margin-bottom: 24px; font-size: 14px; }
 
@@ -62,6 +62,13 @@
     .msg-body { font-size: 14px; line-height: 1.6; color: var(--text, #333); margin-top: 6px; padding: 12px; background: var(--bg, #f9f9f9); border-radius: 6px; white-space: pre-wrap; }
     .back-link { display: inline-block; margin-top: 20px; font-size: 13px; color: var(--text, #1a1a2e); text-decoration: none; }
     .back-link:hover { text-decoration: underline; }
+    .header-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+    .btn-logout { padding: 8px 18px; background: var(--red, #d32f2f); color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: opacity .2s; }
+    .btn-logout:hover { opacity: 0.85; }
+    .btn-view { background: #2563eb; color: #fff; }
+    .btn-edit-q { background: #16a34a; color: #fff; }
+    .search-input { padding: 8px 14px; border: 2px solid var(--border, #ddd); border-radius: 8px; font-size: 14px; font-family: 'DM Sans', sans-serif; outline: none; transition: border-color .2s; width: 280px; max-width: 100%; }
+    .search-input:focus { border-color: var(--text, #1a1a2e); }
     .badge { background: var(--red, #d32f2f); color: #fff; font-size: 11px; padding: 1px 8px; border-radius: 20px; margin-left: 6px; }
 
     /* ── Campaign tab ── */
@@ -107,7 +114,8 @@
 <!-- LOGIN -->
 <div class="login-box" id="loginBox">
   <h2>Admin Access</h2>
-  <input type="password" id="passwordInput" placeholder="Enter admin password" autocomplete="off" />
+  <input type="text" id="usernameInput" placeholder="Username" autocomplete="username" style="width:100%;padding:12px 16px;border:2px solid var(--border,#ddd);border-radius:8px;font-size:15px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s;margin-bottom:8px;" />
+  <input type="password" id="passwordInput" placeholder="Password" autocomplete="current-password" />
   <div class="error" id="loginError"></div>
   <button class="login-btn" id="loginBtn">Unlock</button>
   <div class="hint" style="color:#888;font-size:12px;margin-top:8px;">Authorized personnel only.</div>
@@ -116,13 +124,23 @@
 <!-- ADMIN PANEL -->
 <div class="admin-panel" id="adminPanel">
   <div class="container">
-    <h1>Admin Dashboard</h1>
-    <p class="subtitle">Manage newsletter subscribers and contact messages.</p>
+    <div class="header-row">
+      <div>
+        <h1>Admin Dashboard</h1>
+        <p class="subtitle" id="welcomeMsg">Manage newsletter subscribers and contact messages.</p>
+      </div>
+      <button class="btn-logout" onclick="handleLogout()">Logout</button>
+    </div>
 
-    <div class="tabs">
+    <div class="tabs" id="tabBar">
       <button class="tab active" data-tab="subscribers">Subscribers <span id="subCountBadge" class="badge">0</span></button>
       <button class="tab" data-tab="messages">Messages <span id="msgCountBadge" class="badge">0</span></button>
       <button class="tab" data-tab="campaigns">Campaigns</button>
+      <button class="tab" data-tab="products">Products</button>
+      <button class="tab" data-tab="sales">Sales</button>
+      <button class="tab" data-tab="quotations">Quotations</button>
+      <button class="tab" data-tab="users">Users</button>
+      <button class="tab" data-tab="livechat">Live Chat</button>
     </div>
 
     <!-- SUBSCRIBERS TAB -->
@@ -179,6 +197,77 @@
       </div>
     </div>
 
+    <!-- PRODUCTS TAB -->
+    <div class="tab-content" id="tab-products">
+      <div class="toolbar">
+        <input type="text" id="productSearchInput" placeholder="Search products by name, ID or category..." style="flex:1;max-width:400px;padding:8px 12px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;background:var(--white);color:var(--text);">
+        <button class="btn" id="addProductBtn" style="background:var(--red);color:#fff;border:none;padding:8px 18px;border-radius:6px;font-weight:600;cursor:pointer;">+ Add Product</button>
+        <span class="count" id="productCountLabel">0 products</span>
+      </div>
+      <div id="productFormContainer" style="display:none;background:var(--dark-3);border:1px solid var(--border);border-radius:8px;padding:20px;margin-bottom:16px;"></div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead><tr><th>ID</th><th>Name</th><th>Category</th><th>Price Range</th><th>Variants (Code — Label)</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="productBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SALES TAB -->
+    <div class="tab-content" id="tab-sales">
+      <div class="toolbar">
+        <button class="btn btn-primary" id="newSaleBtn" style="background:var(--red);color:#fff;border:none;padding:8px 18px;border-radius:6px;font-weight:600;cursor:pointer;">+ New Sale</button>
+        <span class="count" id="saleCountLabel">0 active sales</span>
+      </div>
+      <div id="saleFormContainer" style="display:none;background:var(--dark-3);border:1px solid var(--border);border-radius:8px;padding:20px;margin-bottom:16px;"></div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead><tr><th>Product ID</th><th>Sale Price</th><th>Old Price</th><th>Start</th><th>End</th><th>Label</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="saleBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- QUOTATIONS TAB -->
+    <div class="tab-content" id="tab-quotations">
+      <div class="toolbar">
+        <input type="text" id="quotationSearchInput" class="search-input" placeholder="Search by document number...">
+        <span class="count" id="quotationCountLabel">0 quotations</span>
+      </div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead><tr><th>Doc #</th><th>Customer</th><th>Items</th><th>Total</th><th>Date</th><th>Actions</th></tr></thead>
+          <tbody id="quotationBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- USERS TAB -->
+    <div class="tab-content" id="tab-users">
+      <div class="toolbar">
+        <button class="btn" id="addUserBtn" style="background:var(--red);color:#fff;border:none;padding:8px 18px;border-radius:6px;font-weight:600;cursor:pointer;">+ Add User</button>
+        <span class="count" id="userCountLabel">0 users</span>
+      </div>
+      <div id="userFormContainer" style="display:none;background:var(--dark-3);border:1px solid var(--border);border-radius:8px;padding:20px;margin-bottom:16px;"></div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead><tr><th>ID</th><th>Username</th><th>Name</th><th>Permissions</th><th>Created</th><th>Actions</th></tr></thead>
+          <tbody id="userBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- LIVE CHAT TAB -->
+    <div class="tab-content" id="tab-livechat">
+      <div style="margin-bottom:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+        <span style="font-size:14px;color:var(--text-dim);">Tawk.to Agent Dashboard</span>
+        <a href="https://dashboard.tawk.to/#/chat" target="_blank" style="font-size:12px;color:var(--red);text-decoration:none;font-weight:500;">Open in new tab &nearr;</a>
+      </div>
+      <div style="background:var(--white);border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.06);">
+        <iframe src="https://dashboard.tawk.to/#/chat" width="100%" height="700" style="border:none;display:block;" allow="camera;microphone" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+      </div>
+    </div>
+
     <a href="index.html" class="back-link">&larr; Back to website</a>
   </div>
 </div>
@@ -187,6 +276,27 @@
 <div id="sessionBanner">
   <strong>Session timeout</strong>
   <span>Your session expired due to inactivity.</span>
+</div>
+
+<!-- Product Edit Modal -->
+<div class="modal-overlay" id="productModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;overflow-y:auto;">
+  <div style="background:var(--white,#fff);border-radius:12px;max-width:700px;width:90%;margin:40px auto;padding:28px;box-shadow:0 8px 32px rgba(0,0,0,0.15);position:relative;">
+    <button onclick="closeProductModal()" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:24px;cursor:pointer;color:var(--text-dim);">&times;</button>
+    <h3 id="productModalTitle" style="margin:0 0 16px;font-size:18px;"></h3>
+    <div id="productModalBody"></div>
+  </div>
+</div>
+
+<!-- Quotation View Modal -->
+<div class="modal-overlay" id="quotationViewModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;overflow-y:auto;">
+  <div style="background:#fff;border-radius:12px;max-width:900px;width:95%;margin:20px auto;padding:20px;box-shadow:0 8px 32px rgba(0,0,0,0.15);position:relative;max-height:90vh;overflow-y:auto;">
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-bottom:12px;position:sticky;top:0;background:#fff;padding-bottom:8px;z-index:1;">
+      <button onclick="downloadQuotationHTML()" class="btn btn-word" style="font-size:12px;padding:6px 14px;">Download HTML</button>
+      <button onclick="printQuotationView()" class="btn" style="background:#2563eb;color:#fff;font-size:12px;padding:6px 14px;">Print</button>
+      <button onclick="closeQuotationViewModal()" style="background:var(--dark-3);color:var(--text);border:1px solid var(--border);border-radius:6px;font-weight:500;cursor:pointer;font-size:12px;padding:6px 14px;">Close</button>
+    </div>
+    <div id="quotationViewContent"></div>
+  </div>
 </div>
 
 <script src="js/api-config.js"></script>
@@ -214,6 +324,11 @@ function setSessionToken(t) {
 
 function clearSession() {
   try { sessionStorage.removeItem(SESSION_TOKEN_KEY); } catch (_) {}
+}
+
+function handleLogout() {
+  clearSession();
+  location.reload();
 }
 
 function getLocalData(key) {
@@ -261,11 +376,11 @@ async function sha256(str) {
 
 /* ── API helpers ── */
 var API_BASE = window.RC_API_BASE || '';
-function apiFetch(path, body) {
+function apiFetch(path, body, method) {
   return fetch(path, {
-    method: 'POST',
+    method: method || 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
+    body: body ? JSON.stringify(body) : undefined,
   }).then(function (res) {
     if (!res.ok) return res.json().then(function (err) { throw new Error(err.error || 'Request failed'); });
     return res.json();
@@ -285,15 +400,32 @@ function clearFromAPI(type) {
   return apiFetch(API_BASE + '/api/clear-data', addToken({ type: type }));
 }
 
-  function loginToAPI(password) {
-    return apiFetch(API_BASE + '/api/admin/login', { password: password }).then(function (data) {
+  var _currentUser = null;
+
+  function loginToAPI(username, password) {
+    return apiFetch(API_BASE + '/api/admin/login', { username: username, password: password }).then(function (data) {
       setSessionToken(data.token);
+      _currentUser = data.user || null;
       return fetchFromAPI().then(function (data) {
         cachedSubscribers = (data.subscribers || []).map(function (s) { return typeof s === 'string' ? s : (s.email || ''); }).filter(Boolean);
         cachedMessages = data.messages || [];
         cachedNotified = data.notified || [];
         return true;
       });
+    });
+  }
+
+  function applyPermissions(user) {
+    if (!user) return;
+    var perm = user.permissions || {};
+    // Show welcome message
+    var welcomeEl = document.getElementById('welcomeMsg');
+    if (welcomeEl) welcomeEl.textContent = 'Welcome, ' + user.name + '!';
+    // Hide tabs based on permissions
+    document.querySelectorAll('#tabBar .tab').forEach(function(tab) {
+      var tabName = tab.dataset.tab;
+      if (tabName === 'users' && !perm.users) { tab.style.display = 'none'; return; }
+      if (tabName !== 'users' && perm[tabName] === false) { tab.style.display = 'none'; }
     });
   }
 
@@ -312,6 +444,7 @@ var lockTimer = null;
 
 function startLockoutCountdown() {
   if (lockTimer) clearInterval(lockTimer);
+  loginBtn.disabled = true;
   lockTimer = setInterval(function() {
     var lock = getLockout();
     if (!lock.until || Date.now() > lock.until) {
@@ -328,15 +461,19 @@ function startLockoutCountdown() {
   }, 1000);
 }
 
+// Check lockout on page load
+if (isLocked()) startLockoutCountdown();
+
 loginBtn.addEventListener('click', async function () {
   if (isLocked()) {
     startLockoutCountdown();
     return;
   }
 
+  var username = document.getElementById('usernameInput').value.trim();
   var password = passwordInput.value;
-  if (!password) {
-    loginError.textContent = 'Please enter the admin password.';
+  if (!username || !password) {
+    loginError.textContent = 'Please enter your username and password.';
     return;
   }
   loginBtn.disabled = true;
@@ -344,18 +481,22 @@ loginBtn.addEventListener('click', async function () {
 
   try {
     try {
-      await loginToAPI(password);
+      await loginToAPI(username, password);
     } catch (_) {
       cachedSubscribers = getLocalData('newsletter_subscribers');
       cachedMessages = getLocalData('contact_messages');
-      throw new Error('Incorrect password');
+      throw new Error('Incorrect credentials');
     }
     saveLockout({});
     loginBox.style.display = 'none';
     adminPanel.classList.add('visible');
+    applyPermissions(_currentUser);
     renderSubscribers();
     renderMessages();
     updateBadges();
+    loadAdminProducts();
+    loadAdminSales();
+    loadAdminUsers();
     resetActivityTimer();
     startSessionMonitor();
   } catch (_) {
@@ -373,21 +514,30 @@ loginBtn.addEventListener('click', async function () {
       lock.lockoutMinutes = newMinutes;
       loginError.textContent = 'Too many incorrect attempts. Locked for ' + newMinutes + ' minutes.';
     } else {
-      loginError.textContent = 'Incorrect password. ' + remaining + ' attempt' + (remaining > 1 ? 's' : '') + ' remaining.';
+      loginError.textContent = 'Incorrect username or password. ' + remaining + ' attempt' + (remaining > 1 ? 's' : '') + ' remaining.';
     }
     saveLockout(lock);
     passwordInput.value = '';
   }
 
-  loginBtn.disabled = false;
-  loginBtn.textContent = 'Unlock';
+  if (!isLocked()) {
+    loginBtn.disabled = false;
+    loginBtn.textContent = 'Unlock';
+  }
 });
 
 /* ── Auto-login with cached session token ── */
 (function tryAutoLogin() {
   var token = getSessionToken();
   if (!token) return;
-  fetchFromAPI().then(function (data) {
+  // Fetch user info first
+  fetch(API_BASE + '/api/admin/me?token=' + encodeURIComponent(token)).then(function(r) { return r.json(); }).then(function(data) {
+    if (data && data.user) {
+      _currentUser = data.user;
+      applyPermissions(_currentUser);
+    }
+    return fetchFromAPI();
+  }).then(function (data) {
     cachedSubscribers = (data.subscribers || []).map(function (s) { return typeof s === 'string' ? s : (s.email || ''); }).filter(Boolean);
     cachedMessages = data.messages || [];
     cachedNotified = data.notified || [];
@@ -396,6 +546,9 @@ loginBtn.addEventListener('click', async function () {
     renderSubscribers();
     renderMessages();
     updateBadges();
+    loadAdminProducts();
+    loadAdminSales();
+    loadAdminUsers();
     resetActivityTimer();
     startSessionMonitor();
   }).catch(function () {
@@ -758,5 +911,849 @@ document.getElementById('sendCampBtn').addEventListener('click', function() {
 </script>
 <script defer src="js/loader.js"></script>
 <script defer src="js/offline.js"></script>
+<script src="js/chat.js"></script>
+<script src="js/products-data.js"></script>
+<script>
+/* ─── Products Management ─── */
+var adminProducts = [];
+
+function loadAdminProducts() {
+  adminProducts = (window.PRODUCTS_DB || []).slice();
+  // Fetch overrides from server (public GET endpoint, no auth needed)
+  Promise.all([
+    fetch(API_BASE + '/api/product-overrides').then(function(r) { return r.json(); }).catch(function() { return {}; }),
+    fetch(API_BASE + '/api/custom-products').then(function(r) { return r.json(); }).catch(function() { return {}; })
+  ]).then(function(results) {
+    var data = results[0];
+    var customData = results[1];
+    if (data && data.overrides) {
+      window._overrides = {};
+      data.overrides.forEach(function(o) { window._overrides[o.product_id] = o; });
+    }
+    // Merge custom products
+    if (customData && customData.products && customData.products.length) {
+      customData.products.forEach(function(cp) {
+        var variants = [];
+        try { variants = JSON.parse(cp.variants_json || '[]'); } catch(e) { variants = [{label:'Default',price:0}]; }
+        var p = {
+          id: cp.id,
+          name: cp.name,
+          category: cp.category || 'Uncategorized',
+          image: cp.image || '',
+          badge: cp.badge || null,
+          date: cp.date || null,
+          description: cp.description || '',
+          compatibility: cp.compatibility || '',
+          specs: cp.specs || '',
+          variants: variants,
+          _custom: true,
+          _customHidden: cp.hidden ? true : false
+        };
+        // Replace existing PRODUCTS_DB entry with same id, or add new
+        var existing = adminProducts.findIndex(function(ap) { return ap.id === cp.id; });
+        if (existing >= 0) { adminProducts[existing] = p; }
+        else { adminProducts.push(p); }
+      });
+    }
+    renderAdminProducts();
+  }).catch(function() { renderAdminProducts(); });
+}
+
+function renderAdminProducts() {
+  var search = (document.getElementById('productSearchInput') || {}).value || '';
+  var list = adminProducts;
+  if (search) {
+    var q = search.toLowerCase();
+    list = list.filter(function(p) {
+      return p.id.toLowerCase().indexOf(q) !== -1 || p.name.toLowerCase().indexOf(q) !== -1 || p.category.toLowerCase().indexOf(q) !== -1;
+    });
+  }
+  var el = document.getElementById('productBody');
+  if (!el) return;
+  document.getElementById('productCountLabel').textContent = (list.length) + ' products';
+  if (!list.length) { el.innerHTML = '<tr><td colspan="7" class="empty">No products found.</td></tr>'; return; }
+  el.innerHTML = list.map(function(p) {
+    var minP = Math.min.apply(null, p.variants.map(function(v) { return v.price; }));
+    var maxP = Math.max.apply(null, p.variants.map(function(v) { return v.price; }));
+    var priceRange = minP === maxP ? 'N$' + minP.toFixed(2) : 'N$' + minP.toFixed(2) + ' – N$' + maxP.toFixed(2);
+    var ov = (window._overrides || {})[p.id];
+    var isHidden = (ov && ov.hidden) || p._customHidden;
+    var isCustom = p._custom;
+    var statusBadge = isHidden
+      ? '<span style="background:#6b7280;color:#fff;font-size:11px;padding:2px 8px;border-radius:20px;">Archived</span>'
+      : '<span style="background:#16a34a;color:#fff;font-size:11px;padding:2px 8px;border-radius:20px;">Visible</span>';
+    return '<tr>' +
+      '<td><code>' + esc(p.id) + '</code>' + (isCustom ? ' <span style="font-size:10px;color:var(--accent);">custom</span>' : '') + '</td>' +
+      '<td><strong>' + esc(p.name) + '</strong>' + (ov && !isHidden ? ' <span style="font-size:10px;color:#2563eb;">edited</span>' : '') + '</td>' +
+      '<td>' + esc(p.category) + '</td>' +
+      '<td>' + priceRange + '</td>' +
+      '<td><div style="font-size:12px;line-height:1.5;">' + p.variants.map(function(v) { return '<span style="display:block;">' + esc(v.code || '') + ' — ' + esc(v.label) + '</span>'; }).join('') + '</div></td>' +
+      '<td>' + statusBadge + '</td>' +
+      '<td style="white-space:nowrap;">' +
+        (isCustom
+          ? '<button class="btn-edit-custom" data-id="' + esc(p.id) + '" style="padding:4px 10px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;background:#2563eb;color:#fff;margin-right:4px;">Edit</button>'
+          : '<button class="btn-edit-product" data-id="' + esc(p.id) + '" style="padding:4px 10px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;background:#2563eb;color:#fff;margin-right:4px;">Edit</button>') +
+        (isHidden
+          ? '<button class="btn-unhide-product" data-id="' + esc(p.id) + '" style="padding:4px 10px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;background:#16a34a;color:#fff;margin-right:4px;">Show</button>'
+          : '<button class="btn-hide-product" data-id="' + esc(p.id) + '" style="padding:4px 10px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;background:#d97706;color:#fff;margin-right:4px;">Hide</button>') +
+        (isCustom ? '<button class="btn-del-product" data-id="' + esc(p.id) + '" style="padding:4px 10px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;background:#d32f2f;color:#fff;">Delete</button>' : '') +
+      '</td>' +
+    '</tr>';
+  }).join('');
+  
+  // Attach static product edit (opens modal)
+  el.querySelectorAll('.btn-edit-product').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var pid = this.dataset.id;
+      var product = adminProducts.find(function(p) { return p.id === pid; });
+      if (product) showProductForm(product, 'override');
+    });
+  });
+  // Attach hide handlers
+  el.querySelectorAll('.btn-hide-product').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      if (!confirm('Hide/archive this product? It will no longer appear on the store.')) return;
+      apiFetch(API_BASE + '/api/product-overrides/' + encodeURIComponent(this.dataset.id), addToken({ hidden: 1 }), 'PUT').then(function() {
+        loadAdminProducts();
+      });
+    });
+  });
+  el.querySelectorAll('.btn-unhide-product').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      apiFetch(API_BASE + '/api/product-overrides/' + encodeURIComponent(this.dataset.id), addToken({ hidden: 0 }), 'PUT').then(function() {
+        loadAdminProducts();
+      });
+    });
+  });
+  // Attach delete (custom products only)
+  el.querySelectorAll('.btn-del-product').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      if (!confirm('Permanently delete this custom product? This cannot be undone.')) return;
+      apiFetch(API_BASE + '/api/custom-products/' + encodeURIComponent(this.dataset.id), addToken({}), 'DELETE').then(function() {
+        loadAdminProducts();
+      });
+    });
+  });
+  // Attach custom product edit (opens full form)
+  el.querySelectorAll('.btn-edit-custom').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var pid = this.dataset.id;
+      var product = adminProducts.find(function(p) { return p.id === pid; });
+      if (product) showProductForm(product, 'custom');
+    });
+  });
+}
+
+var _editMode = null; // 'custom', 'override', or null for new
+
+function closeProductModal() {
+  document.getElementById('productModal').style.display = 'none';
+  document.getElementById('productModalBody').innerHTML = '';
+  _editMode = null;
+}
+
+function showProductForm(product, mode) {
+  _editMode = mode;
+  var isOverride = mode === 'override';
+  var isCustom = mode === 'custom';
+  var isNew = !mode;
+  var ov = isOverride ? ((window._overrides || {})[product.id] || {}) : {};
+  var modalBody = document.getElementById('productModalBody');
+  document.getElementById('productModalTitle').textContent = isNew ? 'New Product' : 'Edit Product';
+  document.getElementById('productModal').style.display = 'flex';
+
+  // Collect existing categories
+  var allCats = [];
+  adminProducts.forEach(function(p) { if (p.category && allCats.indexOf(p.category) === -1) allCats.push(p.category); });
+  allCats.sort();
+  var catOptions = allCats.map(function(c) {
+    return '<option value="' + esc(c) + '"' + (product && product.category === c ? ' selected' : '') + '>' + esc(c) + '</option>';
+  }).join('');
+  catOptions += '<option value="__new__"' + (product && allCats.indexOf(product.category) === -1 ? ' selected' : '') + '>— Create new category —</option>';
+
+  var prodId = product ? product.id : '';
+  var prodName = product ? (isOverride && ov.name ? ov.name : product.name) : '';
+  var prodCat = product ? product.category : '';
+  var prodImage = product ? (isOverride && ov.image ? ov.image : product.image || '') : '';
+  var prodDesc = product ? (isOverride && ov.description ? ov.description : product.description || '') : '';
+  var prodCompat = product ? (isOverride && ov.compatibility ? ov.compatibility : product.compatibility || '') : '';
+  var prodSpecs = product ? (isOverride && ov.specs ? ov.specs : product.specs || '') : '';
+  var prodVariants = product ? (isOverride && ov.variants_json ? JSON.parse(ov.variants_json) : product.variants) : [{label:'Default',price:0}];
+  // For override, use override price if set (flat price for all variants)
+  var overridePrice = isOverride && ov.price ? ov.price : null;
+
+  modalBody.innerHTML =
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">' +
+      '<label style="font-size:12px;font-weight:600;color:var(--text-dim);">Product ID<br><input type="text" id="pfId" value="' + esc(prodId) + '" placeholder="e.g. MY-PROD-001" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;background:var(--white);color:var(--text);margin-top:4px;"></label>' +
+      '<label style="font-size:12px;font-weight:600;color:var(--text-dim);">Product Name<br><input type="text" id="pfName" value="' + esc(prodName) + '" placeholder="e.g. Wireless Keyboard" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;background:var(--white);color:var(--text);margin-top:4px;"></label>' +
+      '<label style="font-size:12px;font-weight:600;color:var(--text-dim);">Category<br><select id="pfCategory" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;background:var(--white);color:var(--text);margin-top:4px;" onchange="document.getElementById(\'pfCategoryNew\').style.display=this.value===\'__new__\'?\'block\':\'none\'">' + catOptions + '</select><input type="text" id="pfCategoryNew" placeholder="Type new category name" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;background:var(--white);color:var(--text);margin-top:4px;display:' + (product && allCats.indexOf(product.category) === -1 ? 'block' : 'none') + ';" value="' + (product && allCats.indexOf(product.category) === -1 ? esc(product.category) : '') + '"></label>' +
+      '<label style="font-size:12px;font-weight:600;color:var(--text-dim);">Image<br><div id="pfDropZone" style="width:100%;min-height:100px;border:2px dashed var(--border);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;background:var(--dark-3);margin-top:4px;padding:12px;transition:border-color .2s,background .2s;position:relative;">' +
+        (prodImage ? '<img id="pfImagePreview" src="' + prodImage + '" style="max-height:100px;max-width:100%;object-fit:contain;border-radius:4px;margin-bottom:6px;">' : '') +
+        '<span id="pfDropText" style="font-size:12px;color:var(--text-dim);text-align:center;">' + (prodImage ? 'Drop new image or click to replace' : 'Drop image here or click to upload') + '</span>' +
+        '<input type="file" id="pfFileInput" accept="image/*" style="display:none;">' +
+        '<input type="hidden" id="pfImage" value="' + prodImage + '">' +
+        (prodImage ? '<button type="button" id="pfRemoveImage" style="position:absolute;top:4px;right:4px;background:var(--red);color:#fff;border:none;border-radius:50%;width:22px;height:22px;font-size:14px;line-height:22px;text-align:center;cursor:pointer;padding:0;">×</button>' : '') +
+      '</div></label>' +
+    '</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">' +
+      '<label style="font-size:12px;font-weight:600;color:var(--text-dim);">Description<br><textarea id="pfDescription" rows="3" placeholder="Product description…" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;background:var(--white);color:var(--text);margin-top:4px;">' + esc(prodDesc) + '</textarea></label>' +
+      '<label style="font-size:12px;font-weight:600;color:var(--text-dim);">Compatibility / Specs<br><textarea id="pfCompatibility" rows="3" placeholder="Compatible models, connectors…" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;background:var(--white);color:var(--text);margin-top:4px;">' + esc(prodCompat) + '</textarea></label>' +
+    '</div>' +
+    '<div style="margin-top:12px;">' +
+      '<label style="font-size:12px;font-weight:600;color:var(--text-dim);display:block;margin-bottom:6px;">Prices / Variants</label>' +
+      '<table style="width:100%;border-collapse:collapse;" id="pfVariantsTable">' +
+        '<thead><tr><th style="text-align:left;padding:6px 8px;font-size:12px;color:var(--text-dim);border-bottom:1px solid var(--border);">Label</th><th style="text-align:left;padding:6px 8px;font-size:12px;color:var(--text-dim);border-bottom:1px solid var(--border);">Code</th><th style="text-align:left;padding:6px 8px;font-size:12px;color:var(--text-dim);border-bottom:1px solid var(--border);">Image</th><th style="text-align:left;padding:6px 8px;font-size:12px;color:var(--text-dim);border-bottom:1px solid var(--border);">Price (N$)</th><th style="border-bottom:1px solid var(--border);"></th></tr></thead>' +
+        '<tbody id="pfVariantsBody"></tbody>' +
+      '</table>' +
+      '<button type="button" id="pfAddVariant" style="margin-top:6px;padding:6px 14px;border:1.5px dashed var(--border);border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;background:transparent;color:var(--text-dim);">+ Add variant</button>' +
+    '</div>' +
+    '<div style="display:flex;gap:8px;margin-top:16px;">' +
+      '<button id="saveProductBtn" style="flex:1;padding:12px 24px;background:var(--red);color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:14px;">' + (isNew ? 'Create Product' : 'Save Changes') + '</button>' +
+      '<button onclick="closeProductModal()" style="padding:12px 24px;background:var(--dark-3);color:var(--text);border:1px solid var(--border);border-radius:6px;font-weight:500;cursor:pointer;font-size:14px;">Cancel</button>' +
+    '</div>';
+
+  // ── Populate variants table ──
+  var variantsBody = document.getElementById('pfVariantsBody');
+  var initialVariants = prodVariants.slice();
+  if (isOverride && overridePrice !== null) {
+    initialVariants.forEach(function(v) { v.price = overridePrice; });
+  }
+
+  function buildVariantRowHtml(v, showRemove) {
+    var hasImg = !!(v.image);
+    var imgHtml = '<div class="pf-var-img" style="width:44px;height:44px;border-radius:4px;overflow:hidden;cursor:pointer;border:1.5px dashed var(--border);display:flex;align-items:center;justify-content:center;background:var(--dark-3);position:relative;" title="Click to change image">' +
+      (hasImg ? '<img src="' + esc(v.image) + '" style="max-width:100%;max-height:100%;object-fit:contain;">' : '<span style="font-size:18px;color:var(--text-dim);line-height:1;">+</span>') +
+      '<input type="file" class="pf-var-file" accept="image/*" style="display:none;">' +
+      '<input type="hidden" class="pf-var-image" value="' + esc(v.image || '') + '">' +
+    '</div>';
+    return '<tr>' +
+      '<td style="padding:4px;"><input type="text" class="pf-v-label" value="' + esc(v.label) + '" placeholder="e.g. Black, 8GB, 500W" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;background:var(--white);color:var(--text);"></td>' +
+      '<td style="padding:4px;"><input type="text" class="pf-v-code" value="' + esc(v.code || '') + '" placeholder="e.g. PROD-001" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;background:var(--white);color:var(--text);"></td>' +
+      '<td style="padding:4px;">' + imgHtml + '</td>' +
+      '<td style="padding:4px;"><input type="number" step="0.01" class="pf-v-price" value="' + v.price + '" placeholder="0.00" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;background:var(--white);color:var(--text);"></td>' +
+      '<td style="padding:4px;text-align:center;">' + (showRemove ? '<button type="button" class="pf-remove-variant" style="background:none;border:none;color:var(--red);font-size:18px;cursor:pointer;padding:4px;">×</button>' : '') + '</td>' +
+    '</tr>';
+  }
+
+  function collectVariantsData() {
+    var data = [];
+    variantsBody.querySelectorAll('tr').forEach(function(r) {
+      data.push({
+        label: r.querySelector('.pf-v-label').value,
+        code: r.querySelector('.pf-v-code').value,
+        price: parseFloat(r.querySelector('.pf-v-price').value) || 0,
+        image: r.querySelector('.pf-var-image') ? r.querySelector('.pf-var-image').value : ''
+      });
+    });
+    return data;
+  }
+
+  function renderVariantRows() {
+    var data = collectVariantsData();
+    variantsBody.innerHTML = data.map(function(v, i) {
+      return buildVariantRowHtml(v, data.length > 1);
+    }).join('');
+  }
+
+  // Attach delegated click handler for variant image uploads
+  variantsBody.addEventListener('click', function(e) {
+    var imgDiv = e.target.closest('.pf-var-img');
+    if (!imgDiv) return;
+    var fileInput = imgDiv.querySelector('.pf-var-file');
+    if (fileInput) fileInput.click();
+  });
+  variantsBody.addEventListener('change', function(e) {
+    var fileInput = e.target.closest('.pf-var-file');
+    if (!fileInput || !fileInput.files.length) return;
+    var file = fileInput.files[0];
+    if (!file.type.startsWith('image/')) { alert('Please select an image file.'); return; }
+    var imgDiv = fileInput.closest('.pf-var-img');
+    var formData = new FormData();
+    formData.append('file', file);
+    formData.append('token', getSessionToken());
+    fetch(API_BASE + '/api/upload', { method: 'POST', body: formData }).then(function(r) { return r.json(); }).then(function(data) {
+      if (data && data.url) {
+        imgDiv.querySelector('.pf-var-image').value = data.url;
+        // Update thumbnail
+        var existingImg = imgDiv.querySelector('img');
+        if (existingImg) { existingImg.src = data.url; }
+        else {
+          var span = imgDiv.querySelector('span');
+          if (span) span.remove();
+          var img = document.createElement('img');
+          img.style.cssText = 'max-width:100%;max-height:100%;object-fit:contain;';
+          img.src = data.url;
+          imgDiv.insertBefore(img, fileInput);
+        }
+      }
+    }).catch(function() { alert('Upload failed.'); });
+  });
+  // Delegated click handler for remove variant button
+  variantsBody.addEventListener('click', function(e) {
+    var btn = e.target.closest('.pf-remove-variant');
+    if (!btn) return;
+    btn.closest('tr').remove();
+  });
+
+  // Populate initial rows
+  initialVariants.forEach(function(v) {
+    variantsBody.innerHTML += buildVariantRowHtml(v, false);
+  });
+
+  document.getElementById('pfAddVariant').addEventListener('click', function() {
+    var data = collectVariantsData();
+    data.push({ label: '', code: '', price: 0, image: '' });
+    variantsBody.innerHTML = data.map(function(v, i) {
+      return buildVariantRowHtml(v, data.length > 1);
+    }).join('');
+  });
+
+  // ── Image drag-and-drop ──
+  var dropZone = document.getElementById('pfDropZone');
+  var fileInput = document.getElementById('pfFileInput');
+  var imageHidden = document.getElementById('pfImage');
+  dropZone.addEventListener('click', function() { fileInput.click(); });
+  dropZone.addEventListener('dragover', function(e) { e.preventDefault(); dropZone.style.borderColor = 'var(--red)'; dropZone.style.background = 'var(--red-glow)'; });
+  dropZone.addEventListener('dragleave', function() { dropZone.style.borderColor = 'var(--border)'; dropZone.style.background = 'var(--dark-3)'; });
+  dropZone.addEventListener('drop', function(e) {
+    e.preventDefault();
+    dropZone.style.borderColor = 'var(--border)';
+    dropZone.style.background = 'var(--dark-3)';
+    if (e.dataTransfer.files.length) fileInput.files = e.dataTransfer.files;
+    handleFile(fileInput.files[0]);
+  });
+  fileInput.addEventListener('change', function() {
+    if (this.files.length) handleFile(this.files[0]);
+  });
+  function handleFile(file) {
+    if (!file || !file.type.startsWith('image/')) { alert('Please select an image file.'); return; }
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      dropZone.innerHTML =
+        '<img id="pfImagePreview" src="' + e.target.result + '" style="max-height:100px;max-width:100%;object-fit:contain;border-radius:4px;margin-bottom:6px;">' +
+        '<span style="font-size:11px;color:var(--text-dim);">' + file.name + '</span>' +
+        '<input type="file" id="pfFileInput" accept="image/*" style="display:none;">' +
+        '<input type="hidden" id="pfImage" value="">' +
+        '<button type="button" id="pfRemoveImage" style="position:absolute;top:4px;right:4px;background:var(--red);color:#fff;border:none;border-radius:50%;width:22px;height:22px;font-size:14px;line-height:22px;text-align:center;cursor:pointer;padding:0;">×</button>';
+      document.getElementById('pfFileInput').addEventListener('change', function() { if (this.files.length) handleFile(this.files[0]); });
+      document.getElementById('pfRemoveImage').addEventListener('click', function(e) { e.stopPropagation(); clearImage(); });
+      var formData = new FormData();
+      formData.append('file', file);
+      formData.append('token', getSessionToken());
+      fetch(API_BASE + '/api/upload', { method: 'POST', body: formData }).then(function(r) { return r.json(); }).then(function(data) {
+        if (data && data.url) document.getElementById('pfImage').value = data.url;
+      }).catch(function() { alert('Upload failed. The image will not be saved.'); });
+    };
+    reader.readAsDataURL(file);
+  }
+  function clearImage() {
+    dropZone.innerHTML =
+      '<span id="pfDropText" style="font-size:12px;color:var(--text-dim);text-align:center;">Drop image here or click to upload</span>' +
+      '<input type="file" id="pfFileInput" accept="image/*" style="display:none;">' +
+      '<input type="hidden" id="pfImage" value="">';
+    document.getElementById('pfFileInput').addEventListener('change', function() { if (this.files.length) handleFile(this.files[0]); });
+    dropZone.addEventListener('click', function() { document.getElementById('pfFileInput').click(); });
+  }
+  var removeBtn = document.getElementById('pfRemoveImage');
+  if (removeBtn) removeBtn.addEventListener('click', function(e) { e.stopPropagation(); clearImage(); });
+
+  // ── Save handler ──
+  document.getElementById('saveProductBtn').addEventListener('click', function() {
+    var id = document.getElementById('pfId').value.trim();
+    var name = document.getElementById('pfName').value.trim();
+    var catSelect = document.getElementById('pfCategory');
+    var category = catSelect.value === '__new__' ? document.getElementById('pfCategoryNew').value.trim() : catSelect.value;
+    var image = document.getElementById('pfImage').value.trim();
+    var description = document.getElementById('pfDescription').value.trim();
+    var compatibility = document.getElementById('pfCompatibility').value.trim();
+    if (!id || !name) { alert('Product ID and Name are required.'); return; }
+    if (!category) { alert('Please select or enter a category.'); return; }
+    var variants = [];
+    document.getElementById('pfVariantsBody').querySelectorAll('tr').forEach(function(r) {
+      var label = r.querySelector('.pf-v-label').value.trim();
+      var code = r.querySelector('.pf-v-code').value.trim();
+      var price = parseFloat(r.querySelector('.pf-v-price').value);
+      var image = r.querySelector('.pf-var-image') ? r.querySelector('.pf-var-image').value.trim() : '';
+      if (label && !isNaN(price)) {
+        var v = { label: label, price: price };
+        if (code) v.code = code;
+        if (image) v.image = image;
+        variants.push(v);
+      }
+    });
+    if (!variants.length) { alert('At least one variant with a label and price is required.'); return; }
+
+    if (isOverride) {
+      var body = {};
+      body.name = name;
+      body.variants_json = JSON.stringify(variants);
+      body.image = image;
+      body.description = description;
+      body.compatibility = compatibility;
+      var saveUrl = API_BASE + '/api/product-overrides/' + encodeURIComponent(id);
+      if (id !== product.id) {
+        // ID changed: delete old override first, then save new one
+        apiFetch(API_BASE + '/api/product-overrides/' + encodeURIComponent(product.id), addToken({}), 'DELETE').then(function() {
+          apiFetch(saveUrl, addToken(body), 'PUT').then(function() {
+            closeProductModal();
+            loadAdminProducts();
+          });
+        });
+      } else {
+        apiFetch(saveUrl, addToken(body), 'PUT').then(function() {
+          closeProductModal();
+          loadAdminProducts();
+        });
+      }
+    } else if (isCustom) {
+      // Update custom product
+      var body = { id: id, name: name, category: category, image: image, description: description, compatibility: compatibility, variants_json: JSON.stringify(variants) };
+      if (id !== product.id) {
+        apiFetch(API_BASE + '/api/custom-products/' + encodeURIComponent(product.id), addToken({}), 'DELETE').then(function() {
+          apiFetch(API_BASE + '/api/custom-products', addToken(body), 'POST').then(function() {
+            closeProductModal();
+            loadAdminProducts();
+          });
+        });
+      } else {
+        apiFetch(API_BASE + '/api/custom-products/' + encodeURIComponent(id), addToken(body), 'PUT').then(function() {
+          closeProductModal();
+          loadAdminProducts();
+        });
+      }
+    } else {
+      // Create new custom product
+      var body = { id: id, name: name, category: category, image: image, description: description, compatibility: compatibility, variants_json: JSON.stringify(variants) };
+      apiFetch(API_BASE + '/api/custom-products', addToken(body), 'POST').then(function() {
+        closeProductModal();
+        loadAdminProducts();
+      });
+    }
+  });
+}
+
+/* ─── Sales Management ─── */
+var adminSales = [];
+
+function loadAdminSales() {
+  var token = getSessionToken();
+  fetch(API_BASE + '/api/sales/all?token=' + encodeURIComponent(token)).then(function(r) { return r.json(); }).then(function(data) {
+    adminSales = (data && data.sales) || [];
+    renderAdminSales();
+  }).catch(function() { adminSales = []; renderAdminSales(); });
+}
+
+function renderAdminSales() {
+  var el = document.getElementById('saleBody');
+  if (!el) return;
+  var now = new Date();
+  var active = adminSales.filter(function(s) { return s.active && new Date(s.start_date) <= now && new Date(s.end_date) >= now; });
+  document.getElementById('saleCountLabel').textContent = active.length + ' active sales';
+  if (!adminSales.length) { el.innerHTML = '<tr><td colspan="8" class="empty">No sales created yet.</td></tr>'; return; }
+  el.innerHTML = adminSales.map(function(s) {
+    var isActive = s.active && new Date(s.start_date) <= now && new Date(s.end_date) >= now;
+    var status = isActive ? '<span style="background:#16a34a;color:#fff;font-size:11px;padding:2px 8px;border-radius:20px;">Active</span>' :
+                 !s.active ? '<span style="background:#6b7280;color:#fff;font-size:11px;padding:2px 8px;border-radius:20px;">Disabled</span>' :
+                 '<span style="background:#d97706;color:#fff;font-size:11px;padding:2px 8px;border-radius:20px;">Expired</span>';
+    return '<tr>' +
+      '<td><code>' + esc(s.product_id) + '</code></td>' +
+      '<td><strong>N$' + Number(s.sale_price).toFixed(2) + '</strong></td>' +
+      '<td>' + (s.old_price ? 'N$' + Number(s.old_price).toFixed(2) : '-') + '</td>' +
+      '<td>' + (s.start_date || '-').split('T')[0] + '</td>' +
+      '<td>' + (s.end_date || '-').split('T')[0] + '</td>' +
+      '<td>' + esc(s.label || 'sale') + '</td>' +
+      '<td>' + status + '</td>' +
+      '<td>' +
+        '<button class="btn-edit-sale" data-id="' + s.id + '" style="padding:4px 10px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;background:#2563eb;color:#fff;margin-right:4px;">Edit</button>' +
+        '<button class="btn-del-sale" data-id="' + s.id + '" style="padding:4px 10px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;background:#d32f2f;color:#fff;">Delete</button>' +
+      '</td>' +
+    '</tr>';
+  }).join('');
+  
+  el.querySelectorAll('.btn-edit-sale').forEach(function(btn) {
+    btn.addEventListener('click', function() { showSaleForm(parseInt(this.dataset.id)); });
+  });
+  el.querySelectorAll('.btn-del-sale').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      if (!confirm('Delete this sale?')) return;
+      apiFetch(API_BASE + '/api/sales/' + this.dataset.id, addToken({}), 'DELETE').then(function() { loadAdminSales(); });
+    });
+  });
+}
+
+function showSaleForm(saleId) {
+  var container = document.getElementById('saleFormContainer');
+  var sale = saleId ? adminSales.find(function(s) { return s.id === saleId; }) : null;
+  container.style.display = 'block';
+  var productOptions = adminProducts.length
+    ? adminProducts.map(function(p) { return '<option value="' + esc(p.id) + '"' + (sale && sale.product_id === p.id ? ' selected' : '') + '>' + esc(p.id) + ' — ' + esc(p.name) + '</option>'; }).join('')
+    : '<option value="">Loading products…</option>';
+  container.innerHTML =
+    '<h3 style="margin:0 0 12px;font-size:16px;">' + (sale ? 'Edit Sale' : 'New Sale') + '</h3>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">' +
+      '<label style="font-size:12px;font-weight:600;color:var(--text-dim);">Product<br><select id="saleProductId" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;background:var(--white);color:var(--text);margin-top:4px;"><option value="">— Select a product —</option>' + productOptions + '</select></label>' +
+      '<label style="font-size:12px;font-weight:600;color:var(--text-dim);">Sale Price (N$)<br><input type="number" step="0.01" id="salePrice" value="' + (sale ? sale.sale_price : '') + '" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;background:var(--white);color:var(--text);margin-top:4px;"></label>' +
+      '<label style="font-size:12px;font-weight:600;color:var(--text-dim);">Old/Original Price (N$, optional)<br><input type="number" step="0.01" id="saleOldPrice" value="' + (sale && sale.old_price ? sale.old_price : '') + '" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;background:var(--white);color:var(--text);margin-top:4px;"></label>' +
+      '<label style="font-size:12px;font-weight:600;color:var(--text-dim);">Label (badge)<br><select id="saleLabel" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;background:var(--white);color:var(--text);margin-top:4px;">' +
+        '<option value="sale"' + (sale && sale.label === 'sale' ? ' selected' : '') + '>Sale</option>' +
+        '<option value="hot"' + (sale && sale.label === 'hot' ? ' selected' : '') + '>Hot</option>' +
+        '<option value="new"' + (sale && sale.label === 'new' ? ' selected' : '') + '>New</option>' +
+      '</select></label>' +
+      '<label style="font-size:12px;font-weight:600;color:var(--text-dim);">Start Date<br><input type="date" id="saleStart" value="' + (sale && sale.start_date ? sale.start_date.split('T')[0] : '') + '" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;background:var(--white);color:var(--text);margin-top:4px;"></label>' +
+      '<label style="font-size:12px;font-weight:600;color:var(--text-dim);">End Date<br><input type="date" id="saleEnd" value="' + (sale && sale.end_date ? sale.end_date.split('T')[0] : '') + '" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;background:var(--white);color:var(--text);margin-top:4px;"></label>' +
+      '<label style="font-size:12px;font-weight:600;color:var(--text-dim);">Ad Image URL (optional)<br><input type="text" id="saleAdImage" value="' + esc(sale && sale.ad_image ? sale.ad_image : '') + '" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;background:var(--white);color:var(--text);margin-top:4px;"></label>' +
+      '<label style="font-size:12px;font-weight:600;color:var(--text-dim);">Active<br><select id="saleActive" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;background:var(--white);color:var(--text);margin-top:4px;">' +
+        '<option value="1"' + (!sale || sale.active ? ' selected' : '') + '>Yes</option>' +
+        '<option value="0"' + (sale && !sale.active ? ' selected' : '') + '>No</option>' +
+      '</select></label>' +
+    '</div>' +
+    '<label style="font-size:12px;font-weight:600;color:var(--text-dim);margin-top:8px;display:block;">Description (optional)<br><textarea id="saleDescription" rows="2" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;background:var(--white);color:var(--text);margin-top:4px;">' + esc(sale && sale.description ? sale.description : '') + '</textarea></label>' +
+    '<div style="display:flex;gap:8px;margin-top:12px;">' +
+      '<button id="saveSaleBtn" style="padding:10px 24px;background:var(--red);color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;">' + (sale ? 'Update Sale' : 'Create Sale') + '</button>' +
+      '<button onclick="document.getElementById(\'saleFormContainer\').style.display=\'none\'" style="padding:10px 24px;background:var(--dark-3);color:var(--text);border:1px solid var(--border);border-radius:6px;font-weight:500;cursor:pointer;">Cancel</button>' +
+    '</div>';
+
+  document.getElementById('saleProductId').addEventListener('change', function() {
+    var pid = this.value;
+    if (!pid) return;
+    var p = adminProducts.find(function(x) { return x.id === pid; });
+    if (p && p.variants && p.variants[0]) {
+      var oldPriceField = document.getElementById('saleOldPrice');
+      if (!oldPriceField.value) {
+        oldPriceField.value = p.variants[0].price;
+      }
+    }
+  });
+
+  document.getElementById('saveSaleBtn').addEventListener('click', function() {
+    var data = {
+      product_id: document.getElementById('saleProductId').value.trim(),
+      sale_price: parseFloat(document.getElementById('salePrice').value),
+      old_price: parseFloat(document.getElementById('saleOldPrice').value) || null,
+      label: document.getElementById('saleLabel').value,
+      start_date: document.getElementById('saleStart').value,
+      end_date: document.getElementById('saleEnd').value,
+      ad_image: document.getElementById('saleAdImage').value.trim() || null,
+      description: document.getElementById('saleDescription').value.trim() || null,
+      active: parseInt(document.getElementById('saleActive').value)
+    };
+    if (!data.product_id || isNaN(data.sale_price) || !data.start_date || !data.end_date) {
+      alert('Product ID, Sale Price, Start Date, and End Date are required.');
+      return;
+    }
+    if (sale) {
+      apiFetch(API_BASE + '/api/sales/' + sale.id, addToken(data), 'PUT').then(function() {
+        document.getElementById('saleFormContainer').style.display = 'none';
+        loadAdminSales();
+      });
+    } else {
+      apiFetch(API_BASE + '/api/sales', addToken(data)).then(function() {
+        document.getElementById('saleFormContainer').style.display = 'none';
+        loadAdminSales();
+      });
+    }
+  });
+}
+
+/* ─── Quotations Management ─── */
+var adminQuotations = [];
+var currentViewQuote = null;
+
+function loadAdminQuotations(search) {
+  var token = getSessionToken();
+  if (!token) return;
+  var url = API_BASE + '/api/quotations?token=' + encodeURIComponent(token);
+  if (search) url += '&search=' + encodeURIComponent(search);
+  fetch(url).then(function(r) { return r.json(); }).then(function(data) {
+    adminQuotations = (data && data.quotations) || [];
+    renderAdminQuotations();
+  }).catch(function() { adminQuotations = []; renderAdminQuotations(); });
+}
+
+function renderAdminQuotations() {
+  var el = document.getElementById('quotationBody');
+  if (!el) return;
+  document.getElementById('quotationCountLabel').textContent = adminQuotations.length + ' quotations';
+  if (!adminQuotations.length) { el.innerHTML = '<tr><td colspan="6" class="empty">No quotations found.</td></tr>'; return; }
+  el.innerHTML = adminQuotations.map(function(q) {
+    var customerInfo = {};
+    try { customerInfo = JSON.parse(q.customer_info || '{}'); } catch(_) {}
+    var items = [];
+    try { items = JSON.parse(q.items || '[]'); } catch(_) {}
+    var customerName = customerInfo.name || customerInfo.guestName || '-';
+    var total = 'N$' + Number(q.total || 0).toFixed(2);
+    var date = (q.created_at || '').split('T')[0];
+    var itemCount = items.length;
+    return '<tr>' +
+      '<td><code>' + esc(q.doc_number) + '</code></td>' +
+      '<td>' + esc(customerName) + '</td>' +
+      '<td>' + itemCount + ' items</td>' +
+      '<td><strong>' + total + '</strong></td>' +
+      '<td>' + date + '</td>' +
+      '<td>' +
+        '<button class="btn btn-view" data-doc="' + esc(q.doc_number) + '" style="padding:4px 12px;font-size:12px;margin-right:4px;">View</button>' +
+        '<button class="btn btn-edit-q" data-doc="' + esc(q.doc_number) + '" style="padding:4px 12px;font-size:12px;margin-right:4px;">Edit</button>' +
+        '<button class="btn btn-clear" data-doc="' + esc(q.doc_number) + '" style="padding:4px 12px;font-size:12px;">Delete</button>' +
+      '</td>' +
+    '</tr>';
+  }).join('');
+
+  el.querySelectorAll('.btn-view').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var doc = this.dataset.doc;
+      var q = adminQuotations.find(function(x) { return x.doc_number === doc; });
+      if (q) viewQuotation(q);
+    });
+  });
+  el.querySelectorAll('.btn-edit-q').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var q = adminQuotations.find(function(x) { return x.doc_number === this.dataset.doc; }.bind(this));
+      if (q) editQuotation(q);
+    });
+  });
+  el.querySelectorAll('.btn-clear').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      if (!confirm('Delete quotation ' + this.dataset.doc + '?')) return;
+      apiFetch(API_BASE + '/api/quotations/' + encodeURIComponent(this.dataset.doc), addToken({}), 'DELETE').then(function() { loadAdminQuotations(); });
+    });
+  });
+}
+
+function viewQuotation(q) {
+  currentViewQuote = q;
+  var customerInfo = {};
+  try { customerInfo = JSON.parse(q.customer_info || '{}'); } catch(_) {}
+  var items = [];
+  try { items = JSON.parse(q.items || '[]'); } catch(_) {}
+  var date = (q.created_at || '').split('T')[0];
+
+  var rows = items.map(function(item, i) {
+    var lineTotal = item.lineTotal || (item.price || 0) * (item.quantity || 1);
+    return '<tr>' +
+      '<td style="padding:7px 9px;border:1px solid #ddd;font-size:11px;">' + esc(item.name || '') + (item.variantLabel ? '<br><span style="font-size:10px;color:#555;">' + esc(item.variantLabel) + '</span>' : '') + '</td>' +
+      '<td style="padding:7px 9px;border:1px solid #ddd;font-size:11px;text-align:center;">' + (item.quantity || 0) + '</td>' +
+      '<td style="padding:7px 9px;border:1px solid #ddd;font-size:11px;text-align:right;">N$' + Number(item.price || 0).toFixed(2) + '</td>' +
+      '<td style="padding:7px 9px;border:1px solid #ddd;font-size:11px;text-align:right;">N$' + Number(lineTotal).toFixed(2) + '</td>' +
+    '</tr>';
+  }).join('');
+
+  var html =
+    '<div style="font-family:Arial,sans-serif;padding:10px;">' +
+      '<div style="display:flex;justify-content:space-between;margin-bottom:20px;border-bottom:2px solid #333;padding-bottom:12px;">' +
+        '<div><strong style="font-size:16px;">Royal Computers</strong><br><span style="font-size:11px;">Proforma Invoice</span></div>' +
+        '<div style="text-align:right;font-size:11px;"><strong>Document No:</strong> ' + esc(q.doc_number) + '<br><strong>Date:</strong> ' + date + '</div>' +
+      '</div>' +
+      '<div style="margin-bottom:16px;font-size:11px;">' +
+        '<strong>Customer:</strong> ' + esc(customerInfo.name || customerInfo.guestName || '-') + '<br>' +
+        (customerInfo.email ? '<strong>Email:</strong> ' + esc(customerInfo.email) + '<br>' : '') +
+        (customerInfo.phone ? '<strong>Phone:</strong> ' + esc(customerInfo.phone) + '<br>' : '') +
+        (customerInfo.company ? '<strong>Company:</strong> ' + esc(customerInfo.company) : '') +
+      '</div>' +
+      '<table style="width:100%;border-collapse:collapse;margin-bottom:16px;">' +
+        '<thead><tr>' +
+          '<th style="padding:7px 9px;border:1px solid #bbb;background:#f0f0f0;font-size:11px;font-weight:bold;text-align:left;">Description</th>' +
+          '<th style="padding:7px 9px;border:1px solid #bbb;background:#f0f0f0;font-size:11px;font-weight:bold;text-align:center;">Qty</th>' +
+          '<th style="padding:7px 9px;border:1px solid #bbb;background:#f0f0f0;font-size:11px;font-weight:bold;text-align:right;">Unit Price</th>' +
+          '<th style="padding:7px 9px;border:1px solid #bbb;background:#f0f0f0;font-size:11px;font-weight:bold;text-align:right;">Total</th>' +
+        '</tr></thead>' +
+        '<tbody>' + rows + '</tbody>' +
+      '</table>' +
+      '<div style="text-align:right;font-size:12px;border-top:2px solid #333;padding-top:8px;">' +
+        '<div><strong>Subtotal:</strong> N$' + Number(q.subtotal || 0).toFixed(2) + '</div>' +
+        '<div><strong>Tax:</strong> N$' + Number(q.tax || 0).toFixed(2) + '</div>' +
+        '<div style="font-size:14px;"><strong>TOTAL:</strong> N$' + Number(q.total || 0).toFixed(2) + '</div>' +
+      '</div>' +
+    '</div>';
+
+  document.getElementById('quotationViewContent').innerHTML = html;
+  document.getElementById('quotationViewModal').style.display = 'flex';
+}
+
+function closeQuotationViewModal() {
+  document.getElementById('quotationViewModal').style.display = 'none';
+}
+
+document.addEventListener('click', function(e) {
+  var modal = document.getElementById('quotationViewModal');
+  if (modal && modal.style.display === 'flex' && e.target === modal) closeQuotationViewModal();
+});
+
+function downloadQuotationHTML() {
+  if (!currentViewQuote) return;
+  var content = document.getElementById('quotationViewContent').innerHTML;
+  var fullHtml = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Quotation ' + esc(currentViewQuote.doc_number) + '</title>' +
+    '<style>body{font-family:Arial,sans-serif;margin:20px;color:#333;}table{width:100%;border-collapse:collapse;}th,td{padding:7px 9px;border:1px solid #ddd;font-size:11px;}th{background:#f0f0f0;font-weight:bold;}</style>' +
+    '</head><body>' + content + '</body></html>';
+  var blob = new Blob([fullHtml], { type: 'text/html' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'quotation-' + currentViewQuote.doc_number + '.html';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function printQuotationView() {
+  var content = document.getElementById('quotationViewContent').innerHTML;
+  var w = window.open('', '', 'width=900,height=700');
+  w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Quotation</title>' +
+    '<style>body{font-family:Arial,sans-serif;margin:20px;color:#333;}table{width:100%;border-collapse:collapse;}th,td{padding:7px 9px;border:1px solid #ddd;font-size:11px;}th{background:#f0f0f0;font-weight:bold;}</style>' +
+    '</head><body>' + content + '</body></html>');
+  w.document.close();
+  setTimeout(function() { w.print(); }, 500);
+}
+
+function editQuotation(q) {
+  // For editing, we show the full quote HTML in a modal for printing/downloading
+  viewQuotation(q);
+}
+
+// Quotation search
+document.addEventListener('DOMContentLoaded', function() {
+  var searchInput = document.getElementById('quotationSearchInput');
+  if (searchInput) {
+    searchInput.addEventListener('input', function() {
+      var val = this.value.trim();
+      loadAdminQuotations(val || '');
+    });
+  }
+});
+
+// Load quotations when switching to the tab
+document.addEventListener('click', function(e) {
+  var tab = e.target.closest('.tab[data-tab="quotations"]');
+  if (tab) {
+    setTimeout(function() { loadAdminQuotations(); }, 100);
+  }
+});
+
+/* ─── User Management ─── */
+var adminUsers = [];
+
+function loadAdminUsers() {
+  var token = getSessionToken();
+  if (!token) return;
+  fetch(API_BASE + '/api/admin/users?token=' + encodeURIComponent(token)).then(function(r) { return r.json(); }).then(function(data) {
+    adminUsers = (data && data.users) || [];
+    renderAdminUsers();
+  }).catch(function() { adminUsers = []; renderAdminUsers(); });
+}
+
+function renderAdminUsers() {
+  var el = document.getElementById('userBody');
+  if (!el) return;
+  document.getElementById('userCountLabel').textContent = adminUsers.length + ' users';
+  if (!adminUsers.length) { el.innerHTML = '<tr><td colspan="6" class="empty">No users yet.</td></tr>'; return; }
+  el.innerHTML = adminUsers.map(function(u) {
+    var perms = {};
+    try { perms = JSON.parse(u.permissions || '{}'); } catch(e) {}
+    var permLabels = [];
+    if (perms.subscribers) permLabels.push('Subscribers');
+    if (perms.messages) permLabels.push('Messages');
+    if (perms.campaigns) permLabels.push('Campaigns');
+    if (perms.products) permLabels.push('Products');
+    if (perms.sales) permLabels.push('Sales');
+    if (perms.livechat) permLabels.push('LiveChat');
+    if (perms.users) permLabels.push('Users');
+    return '<tr>' +
+      '<td><code>' + u.id + '</code></td>' +
+      '<td>' + esc(u.username) + '</td>' +
+      '<td>' + esc(u.name) + '</td>' +
+      '<td style="font-size:12px;">' + (permLabels.length ? permLabels.join(', ') : '<span style="color:var(--text-dim);">None</span>') + '</td>' +
+      '<td style="font-size:12px;color:var(--text-dim);">' + (u.created_at || '') + '</td>' +
+      '<td style="white-space:nowrap;">' +
+        '<button class="btn-edit-user" data-id="' + u.id + '" style="padding:4px 10px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;background:#2563eb;color:#fff;margin-right:4px;">Edit</button>' +
+        '<button class="btn-del-user" data-id="' + u.id + '" style="padding:4px 10px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;background:#d32f2f;color:#fff;">Delete</button>' +
+      '</td>' +
+    '</tr>';
+  }).join('');
+  el.querySelectorAll('.btn-edit-user').forEach(function(btn) {
+    btn.addEventListener('click', function() { showUserForm(parseInt(this.dataset.id)); });
+  });
+  el.querySelectorAll('.btn-del-user').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      if (!confirm('Delete this user?')) return;
+      apiFetch(API_BASE + '/api/admin/users/' + this.dataset.id, addToken({}), 'DELETE').then(function() { loadAdminUsers(); });
+    });
+  });
+}
+
+function showUserForm(userId) {
+  var user = userId ? adminUsers.find(function(u) { return u.id === userId; }) : null;
+  var perms = {};
+  if (user) { try { perms = JSON.parse(user.permissions || '{}'); } catch(e) {} }
+  var html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">' +
+    '<label style="font-size:12px;font-weight:600;color:var(--text-dim);">Username<br><input type="text" id="ufUsername" value="' + esc(user ? user.username : '') + '" placeholder="e.g. john" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;background:var(--white);color:var(--text);margin-top:4px;"></label>' +
+    '<label style="font-size:12px;font-weight:600;color:var(--text-dim);">Name<br><input type="text" id="ufName" value="' + esc(user ? user.name : '') + '" placeholder="e.g. John Doe" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;background:var(--white);color:var(--text);margin-top:4px;"></label>' +
+    '<label style="font-size:12px;font-weight:600;color:var(--text-dim);">Password' + (user ? ' <span style="font-weight:400;color:var(--text-dim);">(leave blank to keep)</span>' : '') + '<br><input type="password" id="ufPassword" placeholder="' + (user ? 'New password' : 'Password') + '" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;background:var(--white);color:var(--text);margin-top:4px;"></label>' +
+    '</div>' +
+    '<div style="margin-top:16px;"><label style="font-size:12px;font-weight:600;color:var(--text-dim);display:block;margin-bottom:8px;">Permissions</label>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:13px;">' +
+    ['subscribers','messages','campaigns','products','sales','livechat','users'].map(function(p) {
+      return '<label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="uf-perm" value="' + p + '"' + (perms[p] ? ' checked' : '') + '> ' + p.charAt(0).toUpperCase() + p.slice(1) + '</label>';
+    }).join('') +
+    '</div></div>' +
+    '<div style="display:flex;gap:8px;margin-top:16px;">' +
+      '<button id="saveUserBtn" style="flex:1;padding:12px 24px;background:var(--red);color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:14px;">' + (user ? 'Update User' : 'Create User') + '</button>' +
+      '<button onclick="closeUserForm()" style="padding:12px 24px;background:var(--dark-3);color:var(--text);border:1px solid var(--border);border-radius:6px;font-weight:500;cursor:pointer;font-size:14px;">Cancel</button>' +
+    '</div>';
+  document.getElementById('userFormContainer').innerHTML = html;
+  document.getElementById('userFormContainer').style.display = 'block';
+  document.getElementById('saveUserBtn').addEventListener('click', function() {
+    var username = document.getElementById('ufUsername').value.trim();
+    var name = document.getElementById('ufName').value.trim();
+    var password = document.getElementById('ufPassword').value;
+    if (!username || !name) { alert('Username and Name are required.'); return; }
+    if (!user && !password) { alert('Password is required for new users.'); return; }
+    var permissions = {};
+    document.querySelectorAll('.uf-perm').forEach(function(cb) { permissions[cb.value] = cb.checked; });
+    var body = { username: username, name: name, permissions: permissions };
+    if (password) body.password = password;
+    if (user) {
+      apiFetch(API_BASE + '/api/admin/users/' + user.id, addToken(body), 'PUT').then(function() {
+        document.getElementById('userFormContainer').style.display = 'none';
+        loadAdminUsers();
+      });
+    } else {
+      apiFetch(API_BASE + '/api/admin/users', addToken(body), 'POST').then(function() {
+        document.getElementById('userFormContainer').style.display = 'none';
+        loadAdminUsers();
+      });
+    }
+  });
+}
+
+function closeUserForm() {
+  document.getElementById('userFormContainer').style.display = 'none';
+  document.getElementById('userFormContainer').innerHTML = '';
+}
+
+/* ─── Initialize admin tabs ─── */
+document.addEventListener('DOMContentLoaded', function() {
+  // Load products & sales data
+  loadAdminProducts();
+  loadAdminSales();
+  loadAdminUsers();
+  // Products search
+  var searchInput = document.getElementById('productSearchInput');
+  if (searchInput) {
+    searchInput.addEventListener('input', function() { renderAdminProducts(); });
+  }
+  // Add product button
+  var addProductBtn = document.getElementById('addProductBtn');
+  if (addProductBtn) {
+    addProductBtn.addEventListener('click', function() { showProductForm(null); });
+  }
+  // New sale button
+  var newSaleBtn = document.getElementById('newSaleBtn');
+  if (newSaleBtn) {
+    newSaleBtn.addEventListener('click', function() { showSaleForm(null); });
+  }
+  // Add user button
+  var addUserBtn = document.getElementById('addUserBtn');
+  if (addUserBtn) {
+    addUserBtn.addEventListener('click', function() { showUserForm(null); });
+  }
+});
+</script>
 </body>
 </html>

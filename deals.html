@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://embed.tawk.to; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://embed.tawk.to; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.tawk.to wss://*.tawk.to https://va.tawk.to https://tawk.to; frame-src 'self' https://*.tawk.to https://tawk.to; base-uri 'self'; form-action 'self'" />
+  <title>Deals – Royal Computers Namibia</title>
+  <meta name="description" content="Shop our latest deals on laptop batteries, chargers, screens, and more at Royal Computers Namibia.">
+  <link rel="canonical" href="https://netmac.co.za/deals.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/design-tokens.css">
+  <link rel="stylesheet" href="css/royal-theme.css" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="css/search-dropdown.css" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="css/print-quote.css" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="css/animations.css" media="print" onload="this.media='all'">
+  <link rel="manifest" href="js/manifest.json" />
+  <meta name="theme-color" content="#e5383b" />
+  <link rel="apple-touch-icon" href="ROYAL PICS/royal logo.webp" />
+  <link rel="stylesheet" href="css/checkout-wizard.css" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="css/enhanced-ui.css" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="css/interactive-components.css" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="css/ecommerce-features.css" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="css/pc-builder.css" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="css/mobile.css" media="print" onload="this.media='all'">
+    <style>
+.page-loader{position:fixed!important;inset:0!important;z-index:99999!important;background:#ffffff!important;display:flex!important;align-items:center!important;justify-content:center!important}
+.loader-spinner{width:48px;height:48px;border:4px solid #ddd;border-top-color:#e5383b;border-radius:50%;animation:loaderSpin .8s linear infinite}
+@keyframes loaderSpin{to{transform:rotate(360deg)}}
+
+.deals-header{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:48px 28px 28px;max-width:1200px;margin:0 auto;flex-wrap:wrap}
+.deals-header h1{font-size:28px;font-weight:700;letter-spacing:-.4px;color:var(--text);margin-bottom:6px}
+.deals-header .breadcrumb{font-size:13px;color:var(--text-muted);display:flex;gap:8px;margin-top:2px;margin-bottom:0}
+.deals-header .breadcrumb a{color:var(--red);transition:color var(--transition)}
+.deals-header .breadcrumb a:hover{color:var(--red-dark)}
+.deals-header .breadcrumb span{color:var(--text-muted)}
+.deals-container{max-width:1200px;margin:0 auto 80px;padding:0 28px}
+.deals-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:48px 24px;padding-top:40px}
+.deal-count{font-size:14px;color:var(--text-dim);margin:0;font-weight:500}
+.no-deals{grid-column:1/-1;text-align:center;padding:80px 0;color:var(--text-muted)}
+.product-old-price{text-decoration:line-through;color:var(--text-dim);font-size:12px;margin-left:6px}
+@media(max-width:768px){
+  .deals-header{flex-direction:column;align-items:stretch;gap:12px;padding:16px 14px 0}
+  .deals-header h1{font-size:20px}
+  .deals-container{padding:0 14px;margin-bottom:48px}
+  .deals-grid{gap:24px 16px}
+}
+</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link" style="position:absolute;top:-99999px">Skip to main content</a>
+
+<div class="page-loader" id="pageLoader">
+  <div class="loader-spinner"></div>
+  <div class="loader-text">Loading…</div>
+</div>
+
+<canvas id="shader-canvas" class="shader-canvas"></canvas>
+
+<div class="spotlight-container-global">
+  <div class="spotlight-overlay-global">
+    <div class="spotlight-global spotlight-left-global"></div>
+    <div class="spotlight-global spotlight-mid-global"></div>
+    <div class="spotlight-global spotlight-right-global"></div>
+  </div>
+</div>
+
+<!-- CART SIDEBAR -->
+<div class="cart-overlay" id="cartOverlay"></div>
+<div class="cart-sidebar" id="cartSidebar">
+  <div class="cart-header">
+    <h2 id="cartHeaderTitle">Shopping Cart</h2>
+    <div class="cart-header-actions">
+      <button class="btn-clear-cart" id="clearCartBtn">Clear Cart</button>
+      <button class="cart-close" id="closeCartBtn">&times;</button>
+    </div>
+  </div>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-footer">
+    <div class="cart-total">
+      <span>Total:</span>
+      <span id="cartTotalPrice">N$0.00</span>
+    </div>
+    <button class="btn-checkout" id="checkoutBtn" onclick="handleCheckout()">Generate Quote</button>
+    <button class="btn-continue" id="continueShopping" onclick="closeCart()">Continue Shopping</button>
+  </div>
+</div>
+
+<!-- GUIDE MODAL -->
+<div class="guide-overlay" id="guideModal">
+  <div class="guide-modal">
+    <div class="bg-header">
+      <h3 id="guideModalTitle">Guide</h3>
+      <button class="bg-close" onclick="closeGuideModal()">&times;</button>
+    </div>
+    <div class="bg-body" id="guideModalBody"></div>
+  </div>
+</div>
+
+<!-- CHECKOUT MODAL -->
+<div class="modal-overlay" id="checkoutModal">
+  <div class="modal-content" style="overflow-y:auto; max-width:720px;">
+    <button class="modal-close" id="closeCheckoutBtn">&times;</button>
+    <div id="checkoutBody"></div>
+  </div>
+</div>
+
+<!-- QUOTE INFO MODAL -->
+<div class="modal-overlay" id="quoteInfoModal">
+  <div class="modal-content" style="max-width:500px;">
+    <button class="modal-close" onclick="closeQuoteInfo()">&times;</button>
+    <h2 style="margin-top:0">Request a Quote</h2>
+    <p>Complete your cart and fill in your details, then submit to receive a formal quote via email or WhatsApp.</p>
+    <div id="quoteInfoBody"></div>
+  </div>
+</div>
+
+<!-- QUOTE PREVIEW MODAL -->
+<div class="modal-overlay" id="quotePreviewModal">
+  <div class="modal-content" style="max-width:700px;">
+    <div class="modal-close" onclick="closeQuotePreview()">&times;</div>
+    <div id="quotePreviewBody"></div>
+  </div>
+</div>
+
+<!-- QUOTE MODAL -->
+<div class="modal-overlay" id="quoteModal">
+  <div class="modal-content" style="max-width:650px;">
+    <button class="modal-close" onclick="closeQuote()">&times;</button>
+    <div id="quoteBody"></div>
+  </div>
+</div>
+
+<!-- PRODUCT DETAIL MODAL -->
+<div class="modal-overlay" id="productDetailModal">
+  <div class="modal-content product-detail-content">
+    <button class="modal-close" onclick="closeProductDetail()">&times;</button>
+    <div id="productDetailBody"></div>
+  </div>
+</div>
+
+<header>
+  <div class="header-inner">
+    <a href="index.html" class="logo">
+      <img src="ROYAL PICS/royal logo.webp" alt="Royal Computers Namibia" />
+    </a>
+    <nav>
+      <button class="nav-close" aria-label="Close menu">&times;</button>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="products.html">Products</a></li>
+        <li><a href="deals.html" class="active">Deals</a></li>
+        <li><a href="Contact-us.html">Contact</a></li>
+        <li><a href="About-us.html">About Us</a></li>
+      </ul>
+    </nav>
+    <button class="mobile-toggle" id="mobileToggle" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="header-right">
+      <button class="cart-btn" id="openCartBtn" onclick="openCart()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <span class="cart-count" id="cartCount" style="display:none;">0</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div id="main-content" class="deals-header">
+  <div>
+    <h1>Current Deals</h1>
+    <div class="breadcrumb"><a href="index.html">Home</a><span>/</span><span>Deals</span></div>
+  </div>
+  <p class="deal-count" id="dealCount"></p>
+</div>
+
+<div class="deals-container">
+  <div class="deals-grid" id="dealsGrid">
+    <div class="skeleton-card" style="background:var(--dark-3);border-radius:12px;padding:16px;"><div class="skeleton-img" style="height:160px;background:var(--dark-2);border-radius:8px;margin-bottom:12px;"></div><div class="skeleton-line wide" style="height:14px;background:var(--dark-2);border-radius:4px;margin-bottom:8px;"></div><div class="skeleton-line medium" style="height:12px;background:var(--dark-2);border-radius:4px;margin-bottom:6px;width:60%;"></div><div class="skeleton-line short" style="height:14px;background:var(--dark-2);border-radius:4px;width:40%;"></div></div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="footer-brand-body">
+        <div class="footer-brand-name">Royal Computers Namibia</div>
+        <p>Leading the way in digital lifestyle</p>
+        <div style="margin-top:12px;">
+          <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> GF Shop 12 Gustav Voigts Center, Independence Ave, Windhoek</div>
+          <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg> 061228179</div>
+          <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.832-1.438A9.956 9.956 0 0 0 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18c-1.889 0-3.633-.656-5.008-1.756l-.36-.268-3.008.894.894-3.008-.268-.36A7.94 7.94 0 0 1 4 12c0-4.411 3.589-8 8-8s8 3.589 8 8-3.589 8-8 8z"/></svg> +264813631483</div>
+          <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> windhoek@netmac.co.za</div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Pages</h4>
+      <ul>
+        <li><a href="products.html">Products</a></li>
+        <li><a href="Contact-us.html">Contact Us</a></li>
+        <li><a href="About-us.html">About Us</a></li>
+        <li><a href="privacy-policy.html">Privacy Policy</a></li>
+        <li><a href="terms-conditions.html">Terms & Conditions</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Branches</h4>
+      <ul>
+        <li><a href="Contact-us.html">Windhoek</a></li>
+        <li><a href="Contact-us.html">Swakopmund</a></li>
+        <li><a href="Contact-us.html">Oshakati</a></li>
+        <li><a href="Contact-us.html">Walvis Bay</a></li>
+        <li><a href="Contact-us.html">Tsumeb</a></li>
+        <li><a href="Contact-us.html">Grove Mall, Windhoek</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Social</h4>
+      <ul>
+        <li><a href="https://www.facebook.com/RoyalComputersNamibia/" target="_blank"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle;margin-right:6px;"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>Facebook</a></li>
+        <li><a href="https://www.instagram.com/royalcomputernam/" target="_blank"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>Instagram</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>Copyright © Royal Computers Namibia</span>
+    <span><a href="terms-conditions.html">Terms and conditions</a> apply</span>
+  </div>
+</footer>
+
+<script src="js/products-data.js"></script>
+<script defer src="js/pages-data.js"></script>
+<script defer src="js/search-engine.js"></script>
+<script defer src="js/shader-background.js"></script>
+<script defer src="js/main.js"></script>
+<script src="js/cart.js"></script>
+<script defer src="js/quote.js"></script>
+<script defer src="js/cart-ui.js"></script>
+<script defer src="js/cart-badge-sync.js"></script>
+<script defer src="js/animations.js"></script>
+<script defer src="js/original-code-map.js"></script>
+<script defer src="js/loader.js"></script>
+<script defer src="js/guides-modal.js"></script>
+<script defer src="js/mobile-nav.js"></script>
+<script defer src="js/sales.js"></script>
+
+<script>
+  function formatPrice(price) {
+    return 'N$\u202f' + Number(price).toLocaleString('en-NA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function renderDeals(products, sales) {
+    var grid = document.getElementById('dealsGrid');
+    var countEl = document.getElementById('dealCount');
+    if (!grid) return;
+
+    var saleIds = {};
+    sales.forEach(function(s) { saleIds[s.product_id] = s; });
+
+    var dealProducts = products.filter(function(p) { return saleIds[p.id]; });
+
+    countEl.textContent = dealProducts.length + ' product' + (dealProducts.length !== 1 ? 's' : '') + ' on sale';
+
+    if (!dealProducts.length) {
+      grid.innerHTML = '<div class="no-deals"><p>No deals available right now. Check back soon!</p><a href="products.html" style="color:var(--accent);font-weight:600;">Browse all products &rarr;</a></div>';
+      return;
+    }
+
+    var html = '';
+    dealProducts.forEach(function(product) {
+      var sale = saleIds[product.id];
+      if (!sale) return;
+      var variant = product.variants[0] || {};
+      var image = variant.image || product.image || 'https://via.placeholder.com/240x180?text=Product';
+      var badge = sale.label || 'sale';
+      var salePrice = sale.sale_price;
+      var oldPrice = sale.old_price || product.oldPrice || variant.price;
+      var cartProduct = JSON.parse(JSON.stringify(product));
+      if (cartProduct.variants && cartProduct.variants.length) {
+        cartProduct.variants.forEach(function(v) { v.price = salePrice; });
+      }
+      var cartJson = JSON.stringify(cartProduct).replace(/"/g, "'");
+      html += '<div class="product-item-scroll" data-group-id="' + product.id + '">' +
+        '<div class="product-image-scroll" style="position:relative;">' +
+          '<img src="' + image + '" alt="' + escapeHtml(product.name) + '" loading="lazy" onerror="this.src=\'https://via.placeholder.com/240x180?text=No+Image\'">' +
+          '<span class="product-badge ' + badge + '">' + badge + '</span>' +
+        '</div>' +
+        '<div class="product-info-scroll">' +
+          '<p class="product-category-scroll">' + product.category + '</p>' +
+          '<h3 class="product-name-scroll">' + product.name + '</h3>' +
+          '<p class="product-price-scroll">' + formatPrice(salePrice) + '<span class="product-old-price">' + formatPrice(oldPrice) + '</span></p>' +
+          '<button class="add-to-cart-btn-scroll" onclick="window.CART && window.CART.add(' + cartJson + ', 0)">Add to Cart</button>' +
+        '</div>' +
+      '</div>';
+    });
+    grid.innerHTML = html;
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    window.SALES.load(function(sales) {
+      var db = (window.PRODUCTS_DB || []).slice();
+      // Fetch custom products & overrides to filter hidden
+      Promise.all([
+        fetch('/api/custom-products').then(function(r) { return r.json().then(function(d) { return (d && d.products) || []; }).catch(function() { return []; }); }),
+        fetch('/api/product-overrides').then(function(r) { return r.json().then(function(d) { return (d && d.overrides) || []; }).catch(function() { return []; }); })
+      ]).then(function(results) {
+        var customProducts = results[0];
+        var overrides = results[1];
+        // Merge custom products
+        customProducts.forEach(function(cp) {
+          var variants = [];
+          try { variants = JSON.parse(cp.variants_json || '[]'); } catch(e) { variants = [{label:'Default',price:0}]; }
+          var p = {
+            id: cp.id, name: cp.name, category: cp.category || 'Uncategorized',
+            image: cp.image || '', badge: cp.badge || null, date: cp.date || null,
+            description: cp.description || '', compatibility: cp.compatibility || '', specs: cp.specs || '',
+            variants: variants
+          };
+          var idx = db.findIndex(function(x) { return x.id === cp.id; });
+          if (idx >= 0) { db[idx] = p; } else { db.push(p); }
+        });
+        // Filter hidden
+        // Filter out hidden products
+        var hiddenIds = {};
+        overrides.forEach(function(ov) { if (ov.hidden) hiddenIds[ov.product_id] = true; });
+        var removed = 0;
+        while (removed < db.length) {
+          if (hiddenIds[db[removed].id]) { db.splice(removed, 1); }
+          else { removed++; }
+        }
+        renderDeals(db, sales || []);
+      }).catch(function() {
+        renderDeals(db, sales || []);
+      });
+    });
+  });
+</script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('js/sw.js')
+        .then(reg  => console.log('[SW] Registered, scope:', reg.scope))
+        .catch(err => console.warn('[SW] Registration failed:', err));
+    });
+  }
+</script>
+
+<!-- Floating Chat Button -->
+<div id="chatButton" onclick="openTawkChat()" style="position:fixed;bottom:24px;right:24px;width:56px;height:56px;background:#e5383b;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:99999;box-shadow:0 4px 20px rgba(229,56,59,0.4);transition:transform .2s ease,box-shadow .2s ease;border:none;" onmouseover="this.style.transform='scale(1.1)';this.style.boxShadow='0 6px 28px rgba(229,56,59,0.6)'" onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 4px 20px rgba(229,56,59,0.4)'" aria-label="Chat with us">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+    <line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="12" y2="14"/>
+  </svg>
+</div>
+<!--Start of Tawk.to Script-->
+<script type="text/javascript">
+  var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
+  (function() {
+    var s1 = document.createElement('script'), s0 = document.getElementsByTagName('script')[0];
+    s1.async = true;
+    s1.src = 'https://embed.tawk.to/67b9bbae798cea190ff5230e/1il9r4rf0';
+    s1.charset = 'UTF-8';
+    s1.setAttribute('crossorigin', '*');
+    s0.parentNode.insertBefore(s1, s0);
+  })();
+  Tawk_API.onLoad = function() { Tawk_API.hideWidget(); };
+</script>
+<!--End of Tawk.to Script-->
+<script>
+function openTawkChat() {
+  if (typeof Tawk_API !== 'undefined') {
+    if (typeof Tawk_API.toggle === 'function') { Tawk_API.toggle(); return; }
+    if (typeof Tawk_API.maximize === 'function') { Tawk_API.maximize(); return; }
+    if (typeof Tawk_API.showWidget === 'function') { Tawk_API.showWidget(); return; }
+  }
+  var checkReady = setInterval(function() {
+    if (typeof Tawk_API !== 'undefined') {
+      if (typeof Tawk_API.toggle === 'function') { Tawk_API.toggle(); clearInterval(checkReady); return; }
+      if (typeof Tawk_API.maximize === 'function') { Tawk_API.maximize(); clearInterval(checkReady); return; }
+      if (typeof Tawk_API.showWidget === 'function') { Tawk_API.showWidget(); clearInterval(checkReady); return; }
+    }
+  }, 200);
+  setTimeout(function() {
+    clearInterval(checkReady);
+    window.open('https://tawk.to/chat/67b9bbae798cea190ff5230e/1il9r4rf0', '_blank', 'noopener,noreferrer');
+  }, 5000);
+}
+</script>
+
+</body>
+</html>

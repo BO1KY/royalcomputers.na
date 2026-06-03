@@ -2582,6 +2582,22 @@ footer {
   color: var(--text-muted);
 }
 
+.newsletter-box .nl-subscribe {
+  background: var(--red);
+  border: none;
+  color: #fff;
+  padding: 12px 28px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: background var(--transition);
+}
+
+.newsletter-box .nl-subscribe:hover {
+  background: var(--red-dark);
+}
+
 .newsletter-box .nl-input-group button {
   background: var(--red);
   border: none;

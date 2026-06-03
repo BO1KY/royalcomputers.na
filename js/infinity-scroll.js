@@ -65,16 +65,23 @@ window.INFINITY_SCROLL = (function () {
   function createProductElement(product) {
     const variant = product.variants[0] || {};
     const image = variant.image || product.image || 'https://via.placeholder.com/240x180?text=Product';
+    const sale = product._sale || null;
+    const badge = product.badge || null;
+    const oldPrice = product.oldPrice || null;
+    const displayPrice = sale ? sale.sale_price : (variant.price || 0);
+    const oldPriceHtml = oldPrice ? '<span class="product-old-price">' + formatPrice(oldPrice) + '</span>' : '';
+    const badgeHtml = badge ? '<span class="product-badge ' + badge + '">' + badge + '</span>' : '';
 
     return `
       <div class="product-item-scroll">
         <div class="product-image-scroll" style="position: relative;">
           <img src="${image}" alt="${product.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/240x180?text=No+Image'">
+          ${badgeHtml}
         </div>
         <div class="product-info-scroll">
           <p class="product-category-scroll">${product.category}</p>
           <h3 class="product-name-scroll">${product.name}</h3>
-          <p class="product-price-scroll">${formatPrice(variant.price || 0)}</p>
+          <p class="product-price-scroll">${formatPrice(displayPrice)}${oldPriceHtml}</p>
           <button class="add-to-cart-btn-scroll" data-product-id="${product.id}" onclick="addToCart('${product.id}', event)">
             Add to Cart
           </button>

@@ -4,8 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta http-equiv="Content-Security-Policy"
-    content="default-src 'self'; script-src 'self' 'unsafe-inline'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://embed.tawk.to; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://embed.tawk.to; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.tawk.to wss://*.tawk.to https://va.tawk.to https://tawk.to; frame-src 'self' https://*.tawk.to https://tawk.to; base-uri 'self'; form-action 'self'" />
   <title>Contact Us – Royal Computers Namibia</title>
   <meta name="description"
     content="Get in touch with Royal Computers Namibia. Visit our branches in Windhoek, Swakopmund, Walvis Bay, Oshakati, Tsumeb, and Grove Mall. Call, email, or WhatsApp us.">
@@ -193,6 +192,7 @@
         <ul>
           <li><a href="index.html">Home</a></li>
           <li><a href="products.html">Products</a></li>
+          <li><a href="deals.html">Deals</a></li>
           <li><a href="Contact-us.html" class="active">Contact</a></li>
           <li><a href="About-us.html">About Us</a></li>
         </ul>
@@ -543,6 +543,73 @@
 <script src="js/api-config.js"></script>
 <script src="js/newsletter.js"></script>
 <script src="js/offline.js"></script>
+<!-- Floating Chat Button -->
+<div id="chatButton" onclick="openTawkChat()" style="position:fixed;bottom:24px;right:24px;width:56px;height:56px;background:#e5383b;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:99999;box-shadow:0 4px 20px rgba(229,56,59,0.4);transition:transform .2s ease,box-shadow .2s ease;border:none;" onmouseover="this.style.transform='scale(1.1)';this.style.boxShadow='0 6px 28px rgba(229,56,59,0.6)'" onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 4px 20px rgba(229,56,59,0.4)'" aria-label="Chat with us">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+    <line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="12" y2="14"/>
+  </svg>
+</div>
+<!--Start of Tawk.to Script-->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/6a200e851ebc591c2b76c8c5/1jq6jhfdn';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+<!--End of Tawk.to Script-->
+<script>
+console.log('[Chat] Page loaded. Tawk_API:', typeof Tawk_API, Tawk_API ? Object.keys(Tawk_API) : 'N/A');
+setTimeout(function() { console.log('[Chat] After 3s. Tawk_API:', typeof Tawk_API, Tawk_API ? Object.keys(Tawk_API) : 'N/A'); }, 3000);
+
+function openTawkChat() {
+  console.log('[Chat] Button clicked');
+  console.log('[Chat] Tawk_API type:', typeof Tawk_API);
+  console.log('[Chat] Tawk_API methods:', Tawk_API ? Object.keys(Tawk_API) : 'N/A');
+  
+  if (typeof Tawk_API !== 'undefined') {
+    if (typeof Tawk_API.toggle === 'function') {
+      console.log('[Chat] Calling Tawk_API.toggle()');
+      Tawk_API.toggle();
+      return;
+    }
+    if (typeof Tawk_API.maximize === 'function') {
+      console.log('[Chat] Calling Tawk_API.maximize()');
+      Tawk_API.maximize();
+      return;
+    }
+    if (typeof Tawk_API.showWidget === 'function') {
+      console.log('[Chat] Calling Tawk_API.showWidget()');
+      Tawk_API.showWidget();
+      return;
+    }
+    console.log('[Chat] Tawk_API exists but no usable methods found');
+  } else {
+    console.log('[Chat] Tawk_API is undefined');
+  }
+  
+  console.log('[Chat] Starting polling (5s timeout)');
+  var checkReady = setInterval(function() {
+    if (typeof Tawk_API !== 'undefined') {
+      console.log('[Chat] Poll: Tawk_API found, methods:', Object.keys(Tawk_API));
+      if (typeof Tawk_API.toggle === 'function') { Tawk_API.toggle(); console.log('[Chat] Poll: toggle() called'); clearInterval(checkReady); return; }
+      if (typeof Tawk_API.maximize === 'function') { Tawk_API.maximize(); console.log('[Chat] Poll: maximize() called'); clearInterval(checkReady); return; }
+      if (typeof Tawk_API.showWidget === 'function') { Tawk_API.showWidget(); console.log('[Chat] Poll: showWidget() called'); clearInterval(checkReady); return; }
+    }
+  }, 200);
+  
+  setTimeout(function() {
+    clearInterval(checkReady);
+    console.log('[Chat] Polling timed out, opening fallback URL');
+    window.open('https://tawk.to/chat/6a200e851ebc591c2b76c8c5/1jq6jhfdn', '_blank', 'noopener,noreferrer');
+  }, 5000);
+}
+</script>
 </body>
 
 </html>

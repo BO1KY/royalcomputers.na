@@ -6,94 +6,72 @@ function escHtml(str) {
 /* ── Known Brands ── */
 var KNOWN_BRANDS = ['hp','lenovo','asus','dell','acer','samsung','toshiba','msi','sony','ibm','clevo','benq','packard bell','gateway','emachines','proline','connex','kmax','fujitsu','lg','nec','panasonic','huawei','xiaomi'];
 
-/* ── Guide Guide Data ── */
-const GUIDE_DATA = {
-  charger: {
-    title: '\u26A1 Laptop Charger Guide',
-    icon: '\u26A1',
-    placeholder: 'Search by brand, voltage, or connector type\u2026',
-    hint: '\uD83D\uDCD6 How to find your charger specifications',
-    hintContent: '<p><strong>On the original charger:</strong> Look for the output label (e.g., "19V - 4.74A") and connector tip shape/size.</p><p><strong>On your laptop:</strong> Check the bottom sticker for the model number and power requirements.</p><p><strong>Connector types:</strong> Common sizes include 4.8x1.7mm (HP), 5.5x2.5mm (Universal), 4.0x1.7mm (Lenovo IdeaPad), rectangular slim tip (ThinkPad), blue tip 7.4x5.0mm (HP Envy).</p><p style="margin-top:6px;color:#e5383b;font-weight:600;">Tip: Search by brand, voltage (e.g., "19V"), or connector size!</p>',
-    items: [
-      { code: 'NTCHR-01', brand: 'HP', desc: '18.5V-3.5A 4.8*1.7', connector: '4.8x1.7mm', price: 465, image: 'ROYAL PICS/NTCHR-01.webp', compat: 'HP Pavilion, HP 250 G3, G4, HP 15 series' },
-      { code: 'NTCHR-02', brand: 'Lenovo', desc: '20V-4.5A Rectangular', connector: 'Rectangular (Slim Tip)', price: 465, image: 'ROYAL PICS/NTCHR-02.webp', compat: 'Lenovo ThinkPad T series, X1 Carbon, E series' },
-      { code: 'NTCHR-03', brand: 'Lenovo', desc: '20V-2.25A 4.0*1.7', connector: '4.0x1.7mm', price: 465, image: 'ROYAL PICS/NTCHR-03.webp', compat: 'Lenovo IdeaPad 100, 110, 300 series' },
-      { code: 'NTCHR-04', brand: 'Sony', desc: '19.5V-4.74A 6.0*4.4', connector: '6.0x4.4mm', price: 465, image: 'ROYAL PICS/NTCHR-04.avif', compat: 'Sony VAIO S, F, E series' },
-      { code: 'NTCHR-05', brand: 'Universal', desc: '19V-4.74A 5.5*2.5', connector: '5.5x2.5mm', price: 465, image: 'ROYAL PICS/NTCHR-05.webp', compat: 'Acer, HP, Toshiba, MSI, Proline laptops' },
-      { code: 'NTCHR-06', brand: 'HP', desc: '19V-4.74A 7.4*5.0 Blue Tip', connector: '7.4x5.0mm (Blue Tip)', price: 465, image: 'ROYAL PICS/NTCHR-06.webp', compat: 'HP Envy, HP Pavilion dv series, HP ProBook' },
-      { code: 'NTCHR-07', brand: 'Acer', desc: '19V-4.74A 5.5*1.7', connector: '5.5x1.7mm', price: 465, image: 'ROYAL PICS/NTCHR-07.webp', compat: 'Acer Aspire E5, Acer Swift 3, Acer Predator' },
-      { code: 'NTCHR-08', brand: 'Lenovo', desc: '20V-3.25A 5.5*2.5', connector: '5.5x2.5mm', price: 465, image: 'ROYAL PICS/NTCHR-08.webp', compat: 'Lenovo ThinkPad Edge, Lenovo B series' },
-      { code: 'NTCHR-09', brand: 'Lenovo', desc: '20V-4.5A 7.9*5.5 Square', connector: '7.9x5.5mm (Square)', price: 465, image: 'ROYAL PICS/NTCHR-09.webp', compat: 'Lenovo Yoga, Lenovo ThinkPad X/T series' },
-      { code: 'NTCHR-10', brand: 'Samsung', desc: '19V-4.74A 5.5*3.0', connector: '5.5x3.0mm', price: 465, image: 'ROYAL PICS/NTCHR-10.webp', compat: 'Samsung Notebook 9, Samsung ATIV Book, Galaxy Book' },
-      { code: 'NTCHR-11', brand: 'Dell', desc: '19.5V-4.62A 7.4*5.0', connector: '7.4x5.0mm', price: 465, image: 'ROYAL PICS/NTCHR-11.webp', compat: 'Dell Inspiron 15, Dell Latitude 3000/5000 series' },
-      { code: 'NTCHR-12', brand: 'HP', desc: '19.5V-3.33A 4.5*3.0', connector: '4.5x3.0mm', price: 465, image: 'ROYAL PICS/NTCHR-12.webp', compat: 'HP 250 G8, HP ProBook 450 G8, HP EliteBook' },
-      { code: 'NTCHR-13', brand: 'Asus', desc: '19V-2.37A 4.0*1.35', connector: '4.0x1.35mm', price: 465, image: 'ROYAL PICS/NTCHR-13.webp', compat: 'Asus VivoBook, Asus ZenBook, Asus X series' },
-      { code: 'NTCHR-14', brand: 'Asus', desc: '19V-2.1A 2.315*1.0', connector: '2.315x1.0mm', price: 250, image: 'ROYAL PICS/NTCHR-14.webp', compat: 'Asus older models, Asus Eee PC' },
-      { code: 'NTCHR-15', brand: 'HP', desc: '19V-1.58A 4.0*1.7', connector: '4.0x1.7mm', price: 465, image: 'ROYAL PICS/NTCHR-15.webp', compat: 'HP Chromebook 11, HP Stream 11/13, HP 14 series' },
-      { code: 'NTCHR-16', brand: 'Dell', desc: '19.5V-3.33A 4.5*3.0', connector: '4.5x3.0mm', price: 465, image: 'ROYAL PICS/NTCHR-16.webp', compat: 'Dell Latitude 3000/5000 series, Dell Vostro' },
-      { code: 'NTCHR-17', brand: 'Samsung', desc: '19V-2.1A 3.0*1.0', connector: '3.0x1.0mm', price: 465, image: 'ROYAL PICS/NTCHR-17.webp', compat: 'Samsung older notebook models, Samsung NP series' },
-      { code: 'NTCHR-18', brand: 'Acer', desc: '19V-7.1A 5.5*2.5', connector: '5.5x2.5mm', price: 795, image: 'ROYAL PICS/NTCHR-18.webp', compat: 'Acer gaming laptops, Acer Predator, high-power Acer' },
-      { code: 'NTCHR-19', brand: 'Lenovo', desc: '5V-4.0A 3.0*1.0', connector: '3.0x1.0mm', price: 465, compat: 'Lenovo tablets, Lenovo small devices' },
-      { code: 'NTCHR-20', brand: 'Universal', desc: '20V-3.25A 65W Type-C', connector: 'USB-C', price: 695, image: 'ROYAL PICS/NTCHR-20.webp', compat: 'Lenovo, Dell USB-C laptops, universal Type-C' },
-      { code: 'NTCHR-21', brand: 'Connex', desc: '12V-2.0A 3.5*1.35', connector: '3.5x1.35mm', price: 465, image: 'ROYAL PICS/NTCHR-21.avif', compat: 'Connex devices, industrial notebooks' },
-    ]
-  },
-  port: {
-    title: '\uD83D\uDCA1 Charging Port & DC Jack Guide',
-    icon: '\uD83D\uDCA1',
-    placeholder: 'Search by brand, laptop model, or connector type\u2026',
-    hint: '\uD83D\uDCD6 How to identify your charging port',
-    hintContent: '<p><strong>Check your laptop model:</strong> Look on the bottom sticker for the full model number (e.g., "HP 250 G7", "Dell Inspiron 15-5555").</p><p><strong>Inspect the port:</strong> Common types include barrel connectors (4.0x1.7mm, 4.5x3.0mm), rectangular, and USB-C.</p><p><strong>Note the shape:</strong> Some ports are soldered directly to the motherboard; others have a cable. We stock both types.</p><p style="margin-top:6px;color:#e5383b;font-weight:600;">Tip: Search by laptop brand + model number for the best results!</p>',
-    items: [
-      { code: 'NTBK-PRT-01', brand: 'HP', desc: 'HP 14-DK / 14-CF / 14-CK / 14M-BA series DC Jack', connector: '14.0x3.0mm', price: 195, image:'ROYAL PICS/NTBK-PRT-01.webp', compat: 'HP 14-DK0000, 14-DK1000, 14-CF, 14-CK, 14M-BA, 14T-BA, 14-BA, 14-DF, 14-DQ, 14-DW, 14-FQ, 14-CM, 799735-F51, 799735-S51, 799735-T51, 799735-Y51, 855995-001, 807522-001' },
-      { code: 'NTBK-PRT-02', brand: 'Asus', desc: 'Asus X441M DC Jack', connector: '4.0x1.35mm', price: 195, image:'ROYAL PICS/NTBK-PRT-02.webp', compat: 'Asus X441M, X441N, X441U' },
-      { code: 'NTBK-PRT-03', brand: 'HP', desc: 'HP 250 G7 / 255 G7 / 256 G7 DC Jack', connector: '4.5x3.0mm', price: 195, image:'ROYAL PICS/NTBK-PRT-03.webp', compat: 'HP 250 G7, HP 255 G7, HP 256 G7, HP 14-cf series' },
-      { code: 'NTBK-PRT-04', brand: 'Lenovo', desc: 'Lenovo IdeaPad 1 14ADA7 / 15ADA7 / 14AMN7 / 15AMN7 DC Jack', connector: '4.0x1.7mm', price: 195, image:'ROYAL PICS/NTBK-PRT-04.webp', compat: 'Lenovo IdeaPad 1 14ADA7 (82R0), IdeaPad 1 15ADA7 (82R1), IdeaPad 1 14AMN7 (82VF), IdeaPad 1 15AMN7 (82VG), 5C10S30363, DC301015P00' },
-      { code: 'NTBK-PRT-05', brand: 'Lenovo', desc: 'Lenovo ThinkPad P50 / P51 / P52 DC Jack (Rectangular)', connector: '11.0x3.0mm rectangular', price: 195, image:'ROYAL PICS/NTBK-PRT-05.webp', compat: 'Lenovo ThinkPad P50 (20EN, 20EQ), P51 (20HH, 20HJ), P52 (20M9, 20MA)' },
-      { code: 'NTBK-PRT-07', brand: 'HP', desc: 'HP 250 G8 / 255 G8 DC Jack', connector: '4.5x3.0mm', price: 195, image:'ROYAL PICS/NTBK-PRT-07.webp', compat: 'HP 250 G8, HP 255 G8, HP ProBook 450 G8' },
-      { code: 'NTBK-PRT-08', brand: 'Dell / Lenovo', desc: 'Dell & Lenovo Type-C Charging Port', connector: 'USB-C', price: 195, image:'ROYAL PICS/NTBK-PRT-08.webp', compat: 'Dell Latitude 5000 series, Lenovo ThinkPad X1/T series Type-C, Dell/Lenovo LT 4/580' },
-      { code: 'NTBK-PRT-09', brand: 'Lenovo', desc: 'Lenovo ThinkPad E420s / S420 DC Jack', connector: '\u2013', price: 195, image:'ROYAL PICS/laptop battery replacement.webp', compat: 'Lenovo ThinkPad E420s, Lenovo S420, S430' },
-      { code: 'NTBK-PRT-10', brand: 'Sony', desc: 'Sony VAIO VGP-FW Series DC Jack (with cable)', connector: '\u2013', price: 195, image:'ROYAL PICS/NTBK-PRT-10.webp', compat: 'Sony VAIO VGP-FW series, FW11, FW13, FW15, PCG-TR1, PCG-Z1, PCG-NV100, PCG-NV190, PCG-NV200, PCG-NV290, PCG-Z505, PCG-V505, PCG-SRX77, PCG-SRX87, PCG-SRX99, VGN-S150, VGN-S170, VGN-S240, VGN-S250, VGN-S260, VGN-S270, VGN-S360, VGN-F550, VGN-FS100, VGN-FS200, VGN-FS300, VGN-FS500, VGN-FS600, VGN-FS700, VGN-FS800, VGN-FS900, VGN-FE500, VGN-FE600, VGN-FE700, VGN-FE800, VGN-N100, VGN-N300, VGN-SZ100, VGN-SZ200, VGN-SZ300, VGN-SZ400, VGN-FZ200, VGN-C200, VGN-FW' },
-      { code: 'NTBK-PRT-11', brand: 'Dell', desc: 'Dell Inspiron 15-5555 / 5558 / 15-5000 series DC Jack', connector: '\u2013', price: 195, image:'ROYAL PICS/laptop battery replacement.webp', compat: 'Dell Inspiron 15-5555, 15-5558, 15-5559, Inspiron 15-5000 series, DC30100UD00' },
-      { code: 'NTBK-PRT-12', brand: 'Asus', desc: 'Asus D553M / X553M / X553MA DC Jack', connector: '\u2013', price: 195, image:'ROYAL PICS/laptop battery replacement.webp', compat: 'Asus D553M, X553M, X553MA' },
-      { code: 'NTBK-PRT-13', brand: 'Acer', desc: 'Acer Aspire E15 / ES1-512 / ES1-531 / V5-431 / V5-471 / V5-571 series DC Jack', connector: '5.5x1.7mm', price: 195, image:'ROYAL PICS/laptop battery replacement.webp', compat: 'Acer Aspire E15, ES1-512, ES1-531, V5-431, V5-431PG, V5-471, V5-571P, V5-571P-6866, V5-571PG-9814, MS2394 series' },
-      { code: 'NTBK-PRT-14', brand: 'Acer', desc: 'Acer Aspire 5251 / 5552 / 5741ZG / 5742G / 5750 series DC Jack', connector: '5.5x1.7mm', price: 195, image:'ROYAL PICS/laptop battery replacement.webp', compat: 'Acer Aspire 5251, 5552, 5741ZG, 5742G, 5742GZ, 5750' },
-      { code: 'NTBK-PRT-15', brand: 'Lenovo', desc: 'Lenovo ThinkPad T440 / T440s DC Jack', connector: '\u2013', price: 195, image:'ROYAL PICS/laptop battery replacement.webp', compat: 'Lenovo ThinkPad T440, T440s' },
-    ]
-  },
-  screen: {
-    title: '\uD83D\uDCE1 LCD, LED Screen Guide',
-    icon: '\uD83D\uDCE1',
-    placeholder: 'Search by size, pin type, or laptop model\u2026',
-    hint: '\uD83D\uDCD6 How to find your screen specifications',
-    hintContent: '<p><strong>Measure the screen diagonally:</strong> Common sizes include 15.6", 14.0", 13.3", 11.6", 10.1" for laptops, and 18.5"\u201324" for monitors.</p><p><strong>Check the connector:</strong> Count the pins (30-pin or 40-pin) and note if it\'s a standard or slim connector.</p><p><strong>Look for the part number:</strong> A sticker on the back of the screen usually has a model number like "NT156WHM-N50".</p><p style="margin-top:6px;color:#e5383b;font-weight:600;">Tip: Search by part number, size (e.g., "15.6"), or pin type (e.g., "30pin")!</p>',
-    items: [
-      { code: 'LCD01', desc: '18.5, 19 inch LED \u2013 Dahua', size: '18.5-19"', pin: 'LED', price: 2595 },
-      { code: 'LCD02', desc: '23.6, 24 inch LED \u2013 Dell, LG', size: '23.6-24"', pin: 'LED', price: 3995 },
-      { code: 'LCD03', desc: '15.6" LED Standard 40pin', size: '15.6"', pin: '40pin Standard', price: 1695 },
-      { code: 'LCD04', desc: '15.6" LED Slim 40pin Bottom', size: '15.6"', pin: '40pin Slim', price: 1695 },
-      { code: 'LCD05', desc: '15.6" LED Slim 30pin', size: '15.6"', pin: '30pin Slim', price: 1695 },
-      { code: 'LCD06', desc: '10.1" LED SlimLine 40pin', size: '10.1"', pin: '40pin Slim', price: 695 },
-      { code: 'LCD07', desc: '14.0" LED Slim 30pin', size: '14.0"', pin: '30pin Slim', price: 1695 },
-      { code: 'LCD08', desc: '10.1" LED Standard 40pin', size: '10.1"', pin: '40pin Standard', price: 695 },
-      { code: 'LCD09', desc: '11.6" LED Standard 40pin', size: '11.6"', pin: '40pin Standard', price: 695 },
-      { code: 'LCD10', desc: '14.0" LED Standard 40pin', size: '14.0"', pin: '40pin Standard', price: 995 },
-      { code: 'LCD12', desc: '13.3" LED Slim 30pin', size: '13.3"', pin: '30pin Slim', price: 1495 },
-      { code: 'LCD13', desc: '13.3" LED Standard 40pin', size: '13.3"', pin: '40pin Standard', price: 1295 },
-      { code: 'LCD14', desc: '15.6" 4K UHD 40pin', size: '15.6"', pin: '40pin 4K', price: 3895 },
-      { code: 'LCD15', desc: '15.6" LED Slim 40pin Top', size: '15.6"', pin: '40pin Slim', price: 1695 },
-      { code: 'LCD16', desc: '12.5" LED Slim 30pin', size: '12.5"', pin: '30pin Slim', price: 1295 },
-      { code: 'LCD17', desc: '17.3" LED Standard 40pin', size: '17.3"', pin: '40pin Standard', price: 2595 },
-      { code: 'LCD18', desc: '15.6" LED Slim 40pin (LG)', size: '15.6"', pin: '40pin Slim', price: 1695 },
-      { code: 'LCD19', desc: '11.6" LED Slim 30pin', size: '11.6"', pin: '30pin Slim', price: 895 },
-      { code: 'LCD21', desc: '14.0" LED Slim 40pin', size: '14.0"', pin: '40pin Slim', price: 1695 },
-      { code: 'LCD22', desc: '15.6" 1080p IPS Slim 30pin', size: '15.6"', pin: '30pin Slim', price: 2495 },
-      { code: 'LCD23', desc: '15.6" 1080p IPS Slim 40pin', size: '15.6"', pin: '40pin Slim', price: 2495 },
-      { code: 'LCD26', desc: '14.0" 1080p IPS Slim 30pin', size: '14.0"', pin: '30pin Slim', price: 2495 },
-      { code: 'LCD27', desc: '17.3" 1080p IPS 40pin', size: '17.3"', pin: '40pin Standard', price: 3495 },
-    ]
+/* ── Guide category mapping to PRODUCTS_DB ── */
+function getGuideItemsFromDB(type) {
+  var db = window.PRODUCTS_DB || [];
+  var catMap = { charger: 'Chargers', port: 'Laptop Ports', screen: 'Screens' };
+  var cat = catMap[type];
+  if (!cat) return [];
+  return db.filter(function(p) { return p.category === cat; }).map(function(p) {
+    var base = {
+      code: p.id,
+      price: p.variants && p.variants.length ? p.variants[0].price : 0,
+      image: p.image || null
+    };
+    if (type === 'screen') {
+      base.desc = p.name;
+      base.size = p.size || '';
+      base.pin = p.pin || '';
+    } else {
+      base.brand = p.brand || '';
+      base.desc = p.name;
+      base.connector = p.connector || '';
+      base.compat = p.compatibility || '';
+    }
+    return base;
+  });
+}
+
+/* ── Guide Data ── */
+var GUIDE_DATA_CACHE = {};
+function getGuideDataCached(type) {
+  if (!GUIDE_DATA_CACHE[type]) {
+    var meta = {
+      charger: {
+        title: '\u26A1 Laptop Charger Guide',
+        icon: '\u26A1',
+        placeholder: 'Search by brand, voltage, or connector type\u2026',
+        hint: '\uD83D\uDCD6 How to find your charger specifications',
+        hintContent: '<p><strong>On the original charger:</strong> Look for the output label (e.g., "19V - 4.74A") and connector tip shape/size.</p><p><strong>On your laptop:</strong> Check the bottom sticker for the model number and power requirements.</p><p><strong>Connector types:</strong> Common sizes include 4.8x1.7mm (HP), 5.5x2.5mm (Universal), 4.0x1.7mm (Lenovo IdeaPad), rectangular slim tip (ThinkPad), blue tip 7.4x5.0mm (HP Envy).</p><p style="margin-top:6px;color:#e5383b;font-weight:600;">Tip: Search by brand, voltage (e.g., "19V"), or connector size!</p>'
+      },
+      port: {
+        title: '\uD83D\uDCA1 Charging Port & DC Jack Guide',
+        icon: '\uD83D\uDCA1',
+        placeholder: 'Search by brand, laptop model, or connector type\u2026',
+        hint: '\uD83D\uDCD6 How to identify your charging port',
+        hintContent: '<p><strong>Check your laptop model:</strong> Look on the bottom sticker for the full model number (e.g., "HP 250 G7", "Dell Inspiron 15-5555").</p><p><strong>Inspect the port:</strong> Common types include barrel connectors (4.0x1.7mm, 4.5x3.0mm), rectangular, and USB-C.</p><p><strong>Note the shape:</strong> Some ports are soldered directly to the motherboard; others have a cable. We stock both types.</p><p style="margin-top:6px;color:#e5383b;font-weight:600;">Tip: Search by laptop brand + model number for the best results!</p>'
+      },
+      screen: {
+        title: '\uD83D\uDCE1 LCD, LED Screen Guide',
+        icon: '\uD83D\uDCE1',
+        placeholder: 'Search by size, pin type, or laptop model\u2026',
+        hint: '\uD83D\uDCD6 How to find your screen specifications',
+        hintContent: '<p><strong>Measure the screen diagonally:</strong> Common sizes include 15.6", 14.0", 13.3", 11.6", 10.1" for laptops, and 18.5"\u201324" for monitors.</p><p><strong>Check the connector:</strong> Count the pins (30-pin or 40-pin) and note if it\'s a standard or slim connector.</p><p><strong>Look for the part number:</strong> A sticker on the back of the screen usually has a model number like "NT156WHM-N50".</p><p style="margin-top:6px;color:#e5383b;font-weight:600;">Tip: Search by part number, size (e.g., "15.6"), or pin type (e.g., "30pin")!</p>'
+      }
+    };
+    var m = meta[type] || {};
+    GUIDE_DATA_CACHE[type] = {
+      type: type,
+      title: m.title || '',
+      icon: m.icon || '',
+      placeholder: m.placeholder || '',
+      hint: m.hint || '',
+      hintContent: m.hintContent || '',
+      items: getGuideItemsFromDB(type)
+    };
   }
-};
+  return GUIDE_DATA_CACHE[type];
+}
 
 /* ── Modal Functions ── */
 function getBatteryItems() {
@@ -134,10 +112,7 @@ function getGuideData(type) {
     }
     return GUIDE_DATA_BATTERY;
   }
-  if (type === 'charger') return GUIDE_DATA.charger;
-  if (type === 'port') return GUIDE_DATA.port;
-  if (type === 'screen') return GUIDE_DATA.screen;
-  return null;
+  return getGuideDataCached(type);
 }
 
 function openGuideModal(type) {

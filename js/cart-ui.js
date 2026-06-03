@@ -420,6 +420,23 @@ document.addEventListener('DOMContentLoaded', function () {
         try { sessionStorage.setItem('rc_quote_snapshot', JSON.stringify(window.CART.getItems())); } catch (_) {}
         window.CART.clear(true);
 
+        // Save quotation to server (fire-and-forget)
+        try {
+          fetch('/api/quotations', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              doc_number: quote.number,
+              customer_info: { email, phone, name, company, address, notes, additionalDetails, paymentMethod },
+              items: cartItems.map(function(item) { return { productId: item.productId, name: item.name, variantLabel: item.variantLabel, quantity: item.quantity, price: item.price, lineTotal: (item.price || 0) * (item.quantity || 1) }; }),
+              subtotal: quote.subtotal,
+              tax: quote.tax,
+              total: quote.total,
+              branch_id: branchId
+            })
+          }).catch(function(err) { console.warn('Failed to save quotation:', err); });
+        } catch (_) {}
+
         if (quoteContent) {
           quoteContent.innerHTML = quoteHTML;
           quoteContent.dataset.quoteNumber = quote.number;
