@@ -1,184 +1,20 @@
-(function() {
-  'use strict';
-
-  window.PRODUCT_FILTERS = (function() {
-    let activeFilters = { categories: [], priceMin: 0, priceMax: Infinity, search: '' };
-    let onFilterChange = null;
-
-    function getCategories() {
-      const products = window.PRODUCTS_DB || [];
-      const cats = new Set(products.map(p => p.category));
-      return Array.from(cats).sort();
-    }
-
-    function getPriceRange() {
-      const products = window.PRODUCTS_DB || [];
-      let min = Infinity, max = 0;
-      products.forEach(p => {
-        (p.variants || []).forEach(v => {
-          if (v.price < min) min = v.price;
-          if (v.price > max) max = v.price;
-        });
-      });
-      return { min: Math.floor(min), max: Math.ceil(max) };
-    }
-
-    function filter(products) {
-      return products.filter(p => {
-        if (activeFilters.search) {
-          const q = activeFilters.search.toLowerCase();
-          const match = p.name.toLowerCase().includes(q) ||
-            p.category.toLowerCase().includes(q) ||
-            (p.variants || []).some(v => v.label.toLowerCase().includes(q));
-          if (!match) return false;
-        }
-        if (activeFilters.categories.length > 0) {
-          if (!activeFilters.categories.includes(p.category)) return false;
-        }
-        const minPrice = getMinPrice(p);
-        if (minPrice < activeFilters.priceMin || minPrice > activeFilters.priceMax) return false;
-        return true;
-      });
-    }
-
-    function getMinPrice(p) {
-      return Math.min(...(p.variants || []).map(v => v.price));
-    }
-
-    function setFilters(filters) {
-      for (var key in filters) {
-        if (filters.hasOwnProperty(key) && key !== '__proto__' && key !== 'constructor' && key !== 'prototype') {
-          activeFilters[key] = filters[key];
-        }
-      }
-      if (onFilterChange) onFilterChange(getActiveFilters());
-    }
-
-    function getActiveFilters() { return { ...activeFilters }; }
-    function resetFilters() {
-      const range = getPriceRange();
-      activeFilters = { categories: [], priceMin: range.min, priceMax: range.max, search: '' };
-      if (onFilterChange) onFilterChange(getActiveFilters());
-    }
-    function onChange(cb) { onFilterChange = cb; }
-
-    function renderFilterPanel(container) {
-      const cats = getCategories();
-      const range = getPriceRange();
-      if (!activeFilters.priceMax) {
-        activeFilters.priceMin = range.min;
-        activeFilters.priceMax = range.max;
-      }
-      container.innerHTML = `
+(function(){"use strict";window.PRODUCT_FILTERS=(function(){let e={categories:[],priceMin:0,priceMax:1/0,search:""},c=null;function d(){const i=window.PRODUCTS_DB||[],t=new Set(i.map(r=>r.category));return Array.from(t).sort()}function f(){const i=window.PRODUCTS_DB||[];let t=1/0,r=0;return i.forEach(s=>{(s.variants||[]).forEach(a=>{a.price<t&&(t=a.price),a.price>r&&(r=a.price)})}),{min:Math.floor(t),max:Math.ceil(r)}}function v(i){return i.filter(t=>{if(e.search){const s=e.search.toLowerCase();if(!(t.name.toLowerCase().includes(s)||t.category.toLowerCase().includes(s)||(t.variants||[]).some(o=>o.label.toLowerCase().includes(s))))return!1}if(e.categories.length>0&&!e.categories.includes(t.category))return!1;const r=g(t);return!(r<e.priceMin||r>e.priceMax)})}function g(i){return Math.min(...(i.variants||[]).map(t=>t.price))}function M(i){for(var t in i)i.hasOwnProperty(t)&&t!=="__proto__"&&t!=="constructor"&&t!=="prototype"&&(e[t]=i[t]);c&&c(l())}function l(){return{...e}}function x(){const i=f();e={categories:[],priceMin:i.min,priceMax:i.max,search:""},c&&c(l())}function h(i){c=i}function P(i){const t=d(),r=f();e.priceMax||(e.priceMin=r.min,e.priceMax=r.max),i.innerHTML=`
         <div class="filter-panel">
           <div class="filter-active-tags" id="filterActiveTags"></div>
           <div class="filter-group">
             <div class="filter-group-title">Category</div>
-            <div id="filterCategories">${cats.map(c => `
-              <span class="filter-chip${activeFilters.categories.includes(c) ? ' active' : ''}" data-cat="${c}">${c}</span>
-            `).join('')}</div>
+            <div id="filterCategories">${t.map(n=>`
+              <span class="filter-chip${e.categories.includes(n)?" active":""}" data-cat="${n}">${n}</span>
+            `).join("")}</div>
           </div>
           <div class="filter-group">
             <div class="filter-group-title">Price Range (N$)</div>
             <div class="filter-price-range">
-              <input type="number" id="filterPriceMin" placeholder="Min" value="${activeFilters.priceMin}" min="${range.min}" max="${range.max}">
-              <span>—</span>
-              <input type="number" id="filterPriceMax" placeholder="Max" value="${activeFilters.priceMax >= range.max ? '' : activeFilters.priceMax}" min="${range.min}" max="${range.max}">
+              <input type="number" id="filterPriceMin" placeholder="Min" value="${e.priceMin}" min="${r.min}" max="${r.max}">
+              <span>\u2014</span>
+              <input type="number" id="filterPriceMax" placeholder="Max" value="${e.priceMax>=r.max?"":e.priceMax}" min="${r.min}" max="${r.max}">
             </div>
           </div>
           <button class="btn-reset-filters active" id="filterResetBtn" style="width:100%;margin-top:12px;">Clear All Filters</button>
         </div>
-      `;
-
-      container.querySelectorAll('.filter-chip').forEach(chip => {
-        chip.addEventListener('click', function() {
-          const cat = this.dataset.cat;
-          const idx = activeFilters.categories.indexOf(cat);
-          if (idx >= 0) {
-            activeFilters.categories.splice(idx, 1);
-            this.classList.remove('active');
-          } else {
-            activeFilters.categories.push(cat);
-            this.classList.add('active');
-          }
-          updateActiveTags();
-          if (onFilterChange) onFilterChange(getActiveFilters());
-        });
-      });
-
-      const minInput = container.querySelector('#filterPriceMin');
-      const maxInput = container.querySelector('#filterPriceMax');
-      function onPriceChange() {
-        activeFilters.priceMin = parseFloat(minInput.value) || range.min;
-        activeFilters.priceMax = parseFloat(maxInput.value) || range.max;
-        updateActiveTags();
-        if (onFilterChange) onFilterChange(getActiveFilters());
-      }
-      minInput.addEventListener('change', onPriceChange);
-      maxInput.addEventListener('change', onPriceChange);
-
-      container.querySelector('#filterResetBtn').addEventListener('click', function() {
-        const range2 = getPriceRange();
-        activeFilters.categories = [];
-        activeFilters.priceMin = range2.min;
-        activeFilters.priceMax = range2.max;
-        container.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
-        minInput.value = range2.min;
-        maxInput.value = '';
-        updateActiveTags();
-        if (onFilterChange) onFilterChange(getActiveFilters());
-      });
-    }
-
-    function updateActiveTags() {
-      const container = document.getElementById('filterActiveTags');
-      if (!container) return;
-      let tags = '';
-      activeFilters.categories.forEach(c => {
-        tags += `<span class="filter-tag">${c} <button data-remove-cat="${c}">&times;</button></span>`;
-      });
-      const range = getPriceRange();
-      if (activeFilters.priceMin > range.min || activeFilters.priceMax < range.max) {
-        tags += `<span class="filter-tag">N$${activeFilters.priceMin} - N$${activeFilters.priceMax >= range.max ? '∞' : activeFilters.priceMax} <button id="removePriceFilter">&times;</button></span>`;
-      }
-      container.innerHTML = tags;
-      container.querySelectorAll('[data-remove-cat]').forEach(btn => {
-        btn.addEventListener('click', function() {
-          const cat = this.dataset.removeCat;
-          activeFilters.categories = activeFilters.categories.filter(c => c !== cat);
-          document.querySelectorAll('.filter-chip').forEach(c => {
-            if (c.dataset.cat === cat) c.classList.remove('active');
-          });
-          updateActiveTags();
-          if (onFilterChange) onFilterChange(getActiveFilters());
-        });
-      });
-      const removePrice = container.querySelector('#removePriceFilter');
-      if (removePrice) {
-        removePrice.addEventListener('click', function() {
-          const range2 = getPriceRange();
-          activeFilters.priceMin = range2.min;
-          activeFilters.priceMax = range2.max;
-          const minInput = document.getElementById('filterPriceMin');
-          const maxInput = document.getElementById('filterPriceMax');
-          if (minInput) minInput.value = range2.min;
-          if (maxInput) maxInput.value = '';
-          updateActiveTags();
-          if (onFilterChange) onFilterChange(getActiveFilters());
-        });
-      }
-    }
-
-    return {
-      getCategories,
-      getPriceRange,
-      filter,
-      setFilters,
-      getActiveFilters,
-      resetFilters,
-      onChange,
-      renderFilterPanel,
-      updateActiveTags
-    };
-  })();
-})();
+      `,i.querySelectorAll(".filter-chip").forEach(n=>{n.addEventListener("click",function(){const p=this.dataset.cat,m=e.categories.indexOf(p);m>=0?(e.categories.splice(m,1),this.classList.remove("active")):(e.categories.push(p),this.classList.add("active")),u(),c&&c(l())})});const s=i.querySelector("#filterPriceMin"),a=i.querySelector("#filterPriceMax");function o(){e.priceMin=parseFloat(s.value)||r.min,e.priceMax=parseFloat(a.value)||r.max,u(),c&&c(l())}s.addEventListener("change",o),a.addEventListener("change",o),i.querySelector("#filterResetBtn").addEventListener("click",function(){const n=f();e.categories=[],e.priceMin=n.min,e.priceMax=n.max,i.querySelectorAll(".filter-chip").forEach(p=>p.classList.remove("active")),s.value=n.min,a.value="",u(),c&&c(l())})}function u(){const i=document.getElementById("filterActiveTags");if(!i)return;let t="";e.categories.forEach(a=>{t+=`<span class="filter-tag">${a} <button data-remove-cat="${a}">&times;</button></span>`});const r=f();(e.priceMin>r.min||e.priceMax<r.max)&&(t+=`<span class="filter-tag">N$${e.priceMin} - N$${e.priceMax>=r.max?"\u221E":e.priceMax} <button id="removePriceFilter">&times;</button></span>`),i.innerHTML=t,i.querySelectorAll("[data-remove-cat]").forEach(a=>{a.addEventListener("click",function(){const o=this.dataset.removeCat;e.categories=e.categories.filter(n=>n!==o),document.querySelectorAll(".filter-chip").forEach(n=>{n.dataset.cat===o&&n.classList.remove("active")}),u(),c&&c(l())})});const s=i.querySelector("#removePriceFilter");s&&s.addEventListener("click",function(){const a=f();e.priceMin=a.min,e.priceMax=a.max;const o=document.getElementById("filterPriceMin"),n=document.getElementById("filterPriceMax");o&&(o.value=a.min),n&&(n.value=""),u(),c&&c(l())})}return{getCategories:d,getPriceRange:f,filter:v,setFilters:M,getActiveFilters:l,resetFilters:x,onChange:h,renderFilterPanel:P,updateActiveTags:u}})()})();

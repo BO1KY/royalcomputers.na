@@ -19,6 +19,8 @@
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://embed.tawk.to">
+  <link rel="dns-prefetch" href="https://embed.tawk.to">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/design-tokens.css">
   <link rel="stylesheet" href="css/royal-theme.css" media="print" onload="this.media='all'">
@@ -145,7 +147,7 @@
 <div class="newsletter-overlay" id="newsletterOverlay">
   <div class="newsletter-box">
     <button class="close-newsletter" onclick="closeNewsletter()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-    <img src="ROYAL PICS/royal logo.webp" alt="Royal Computers Namibia" class="nl-logo" />
+    <img src="ROYAL PICS/royal logo.webp" alt="Royal Computers Namibia" class="nl-logo" loading="lazy" />
     <h3>Stay in the Loop</h3>
     <p>Get exclusive deals, new arrivals, and tech tips delivered to your inbox.</p>
     <div class="nl-input-group">
@@ -240,7 +242,7 @@
 <!-- NEWSLETTER SECTION -->
 <section class="newsletter-section">
   <div class="newsletter-inner">
-    <img class="mailbox-img" src="ROYAL PICS/royal logo.webp" alt="Royal Computers Namibia" style="display:block;margin:0 auto;" />
+    <img class="mailbox-img" src="ROYAL PICS/royal logo.webp" alt="Royal Computers Namibia" style="display:block;margin:0 auto;" loading="lazy" />
     <h2>Oh hi there 👋 It's nice to meet you.</h2>
     <h2>Sign up to receive awesome content in your inbox, every month.</h2>
     <p class="sub">We don't spam! Read our <a href="privacy-policy.html">privacy policy</a> for more info.</p>
@@ -371,9 +373,9 @@
   }
 </script>
 
-<script src="js/api-config.js"></script>
-<script src="js/newsletter.js"></script>
-<script src="js/offline.js"></script>
-<script src="js/chat.js"></script>
+<script defer src="js/api-config.js"></script>
+<script defer src="js/newsletter.js"></script>
+<script defer src="js/offline.js"></script>
+<script defer src="js/chat.js"></script>
 </body>
 </html>

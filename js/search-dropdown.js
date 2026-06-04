@@ -1,260 +1,33 @@
-/**
- * SEARCH DROPDOWN — Royal Computers
- * Enhancements over original:
- *  - Input debouncing (250 ms) – prevents a search call on every keystroke
- *  - ARIA roles / live region for screen-reader announcements
- *  - Safe DOM manipulation with null-checks throughout
- *  - Shared singleton dropdown per input (no orphaned elements)
- */
-
-window.SEARCH_DROPDOWN = (function () {
-  'use strict';
-
-  const DEBOUNCE_MS = 250;
-
-  
-
-
-  
-  
-
-
-
-
-  /* ── tiny debounce util ── */
-  function debounce(fn, ms) {
-    let timer;
-    return function (...args) {
-      clearTimeout(timer);
-      timer = setTimeout(() => fn.apply(this, args), ms);
-    };
-  }
-
-  /* ── HTML escape ── */
-  function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = String(text || '');
-    return div.innerHTML;
-  }
-
-  /* ── Create / reuse a dropdown element anchored to an input ── */
-  function ensureDropdown(inputEl) {
-    const parent = inputEl.parentElement;
-    if (!parent) return null;
-
-    let dropdown = parent.querySelector('.search-dropdown');
-    if (!dropdown) {
-      parent.style.position = 'relative';
-      dropdown = document.createElement('div');
-      dropdown.className = 'search-dropdown';
-      dropdown.setAttribute('role', 'listbox');
-      dropdown.setAttribute('aria-label', 'Search suggestions');
-      dropdown.style.display = 'none';
-      parent.appendChild(dropdown);
-    }
-    return dropdown;
-  }
-
-  /* ── Render results ── */
-  function renderResults(results, inputEl, dropdown) {
-    if (!dropdown) return;
-
-    let productCount = 0;
-    let pageCount    = 0;
-    let html         = '';
-
-    (results || []).forEach((result, idx) => {
-      if (result.type === 'product' && productCount < 6) {
-        html += `
+window.SEARCH_DROPDOWN=(function(){"use strict";function h(t,a){let e;return function(...r){clearTimeout(e),e=setTimeout(()=>t.apply(this,r),a)}}function c(t){const a=document.createElement("div");return a.textContent=String(t||""),a.innerHTML}function p(t){const a=t.parentElement;if(!a)return null;let e=a.querySelector(".search-dropdown");return e||(a.style.position="relative",e=document.createElement("div"),e.className="search-dropdown",e.setAttribute("role","listbox"),e.setAttribute("aria-label","Search suggestions"),e.style.display="none",a.appendChild(e)),e}function v(t,a,e){if(!e)return;let r=0,i=0,o="";(t||[]).forEach((n,s)=>{n.type==="product"&&r<6?(o+=`
           <div class="search-dropdown-item search-product-item"
                role="option"
-               data-index="${idx}"
-               data-id="${escapeHtml(result.id)}"
+               data-index="${s}"
+               data-id="${c(n.id)}"
                data-type="product"
                tabindex="-1">
             <div class="search-product-thumbnail">
-              <img src="${escapeHtml(result.image)}"
-                   alt="${escapeHtml(result.title)}"
+              <img src="${c(n.image)}"
+                   alt="${c(n.title)}"
                    loading="lazy"
                    onerror="this.src='https://placehold.co/40x40/eef2f5/1a1a1a?text=?'">
             </div>
             <div class="search-product-info">
-              <div class="search-product-name">${escapeHtml(result.title)}</div>
+              <div class="search-product-name">${c(n.title)}</div>
               <div class="search-product-meta">
-                <span class="search-product-category">${escapeHtml(result.category)}</span>
-                <span class="search-product-price">${escapeHtml(result.price)}</span>
+                <span class="search-product-category">${c(n.category)}</span>
+                <span class="search-product-price">${c(n.price)}</span>
               </div>
             </div>
-          </div>`;
-        productCount++;
-
-      } else if (result.type === 'page' && pageCount < 4) {
-        html += `
+          </div>`,r++):n.type==="page"&&i<4&&(o+=`
           <div class="search-dropdown-item search-page-item"
                role="option"
-               data-index="${idx}"
-               data-id="${escapeHtml(result.id)}"
+               data-index="${s}"
+               data-id="${c(n.id)}"
                data-type="page"
-               data-path="${escapeHtml(result.path)}"
+               data-path="${c(n.path)}"
                tabindex="-1">
-            <div class="search-page-icon" aria-hidden="true">📄</div>
+            <div class="search-page-icon" aria-hidden="true">\u{1F4C4}</div>
             <div class="search-page-info">
-              <div class="search-page-name">${escapeHtml(result.title)}</div>
+              <div class="search-page-name">${c(n.title)}</div>
             </div>
-          </div>`;
-        pageCount++;
-      }
-    });
-
-    if (!html) {
-      html = '<div class="search-dropdown-item search-no-results" role="option" aria-disabled="true">No results found</div>';
-    }
-
-    dropdown.innerHTML = html;
-    dropdown.style.display = 'block';
-
-    /* attach click + hover listeners */
-    dropdown.querySelectorAll('.search-dropdown-item:not(.search-no-results)').forEach(item => {
-      item.addEventListener('mousedown', e => {
-        e.preventDefault(); // prevent blur on input
-        handleResultClick(item, inputEl);
-      });
-      item.addEventListener('mouseover', () => {
-        setSelected(dropdown, parseInt(item.dataset.index, 10));
-      });
-    });
-  }
-
-  /* ── Navigate to clicked result ── */
-  function handleResultClick(el, inputEl) {
-    if (!el) return;
-    if (el.dataset.type === 'product') {
-      const query = inputEl ? inputEl.value.trim() : '';
-      const dest  = query
-        ? `products.html?search=${encodeURIComponent(query)}&highlight=${el.dataset.id}`
-        : `products.html?highlight=${el.dataset.id}`;
-      window.location.href = dest;
-    } else if (el.dataset.type === 'page') {
-      window.location.href = el.dataset.path;
-    }
-  }
-
-  /* ── Visual selection by index ── */
-  function setSelected(dropdown, targetIdx) {
-    if (!dropdown) return;
-    dropdown.querySelectorAll('.search-dropdown-item').forEach(item => {
-      const match = parseInt(item.dataset.index, 10) === targetIdx;
-      item.classList.toggle('selected', match);
-      if (match) item.setAttribute('aria-selected', 'true');
-      else        item.removeAttribute('aria-selected');
-    });
-  }
-
-  /* ── Keyboard navigation inside an open dropdown ── */
-  function handleKeydown(e, dropdown, inputEl, results, selectedIdxRef) {
-    if (!dropdown || dropdown.style.display === 'none') return;
-
-    const items = dropdown.querySelectorAll(
-      '.search-dropdown-item:not(.search-no-results)'
-    );
-    const count = items.length;
-
-    // Allow space key in search input
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      selectedIdxRef.value = Math.min(selectedIdxRef.value + 1, count - 1);
-      setSelected(dropdown, parseInt(items[selectedIdxRef.value]?.dataset.index, 10));
-
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      selectedIdxRef.value = Math.max(selectedIdxRef.value - 1, -1);
-      if (selectedIdxRef.value < 0) {
-        dropdown.querySelectorAll('.search-dropdown-item').forEach(i => {
-          i.classList.remove('selected');
-          i.removeAttribute('aria-selected');
-        });
-      } else {
-        setSelected(dropdown, parseInt(items[selectedIdxRef.value]?.dataset.index, 10));
-      }
-
-    } else if (e.key === 'Enter') {
-      e.preventDefault();
-      if (selectedIdxRef.value >= 0 && items[selectedIdxRef.value]) {
-        handleResultClick(items[selectedIdxRef.value], inputEl);
-      } else if (inputEl) {
-        // fallback: go to products page with full-text search
-        const q = inputEl.value.trim();
-        if (q) window.location.href = `products.html?search=${encodeURIComponent(q)}`;
-      }
-
-    } else if (e.key === 'Escape') {
-      dropdown.style.display = 'none';
-      selectedIdxRef.value = -1;
-    }
-  }
-
-  /* ── Public init ── */
-  function init(selector) {
-    const inputs = document.querySelectorAll(selector);
-    if (!inputs.length) return;
-
-    inputs.forEach(inputEl => {
-      const dropdown     = ensureDropdown(inputEl);
-      const selectedIdx  = { value: -1 }; // mutable ref
-
-      /* DEBOUNCED search handler */
-      const debouncedSearch = debounce(function () {
-        const q = inputEl.value.trim();
-        selectedIdx.value = -1;
-
-        if (!q || q.length < 1) {
-          if (dropdown) dropdown.style.display = 'none';
-          return;
-        }
-
-        const results = window.SEARCH_ENGINE
-          ? window.SEARCH_ENGINE.searchAll(q)
-          : [];
-
-        renderResults(results, inputEl, dropdown);
-      }, DEBOUNCE_MS);
-
-      inputEl.addEventListener('input', debouncedSearch);
-
-      inputEl.addEventListener('focus', function () {
-        if (this.value.trim().length >= 1 && dropdown && dropdown.children.length) {
-          dropdown.style.display = 'block';
-        }
-      });
-
-      inputEl.addEventListener('keydown', function (e) {
-
-        const results = window.SEARCH_ENGINE
-          ? window.SEARCH_ENGINE.searchAll(this.value.trim())
-          : [];
-        handleKeydown(e, dropdown, inputEl, results, selectedIdx);
-      });
-
-      /* close dropdown on blur (delay allows click to register first) */
-      inputEl.addEventListener('blur', function () {
-        setTimeout(() => {
-          if (dropdown) dropdown.style.display = 'none';
-          selectedIdx.value = -1;
-        }, 200);
-      });
-    });
-  }
-
-  /* ── Auto-init on DOMContentLoaded ── */
-  document.addEventListener('DOMContentLoaded', function () {
-    if (document.querySelector('.search-wrap input')) {
-      init('.search-wrap input');
-    }
-    if (document.querySelector('#searchInput')) {
-      init('#searchInput');
-    }
-  });
-
-  return { init };
-
-})();
+          </div>`,i++)}),o||(o='<div class="search-dropdown-item search-no-results" role="option" aria-disabled="true">No results found</div>'),e.innerHTML=o,e.style.display="block",e.querySelectorAll(".search-dropdown-item:not(.search-no-results)").forEach(n=>{n.addEventListener("mousedown",s=>{s.preventDefault(),u(n,a)}),n.addEventListener("mouseover",()=>{l(e,parseInt(n.dataset.index,10))})})}function u(t,a){if(t)if(t.dataset.type==="product"){const e=a?a.value.trim():"",r=e?`products.html?search=${encodeURIComponent(e)}&highlight=${t.dataset.id}`:`products.html?highlight=${t.dataset.id}`;window.location.href=r}else t.dataset.type==="page"&&(window.location.href=t.dataset.path)}function l(t,a){t&&t.querySelectorAll(".search-dropdown-item").forEach(e=>{const r=parseInt(e.dataset.index,10)===a;e.classList.toggle("selected",r),r?e.setAttribute("aria-selected","true"):e.removeAttribute("aria-selected")})}function f(t,a,e,r,i){if(!a||a.style.display==="none")return;const o=a.querySelectorAll(".search-dropdown-item:not(.search-no-results)"),n=o.length;if(t.key==="ArrowDown")t.preventDefault(),i.value=Math.min(i.value+1,n-1),l(a,parseInt(o[i.value]?.dataset.index,10));else if(t.key==="ArrowUp")t.preventDefault(),i.value=Math.max(i.value-1,-1),i.value<0?a.querySelectorAll(".search-dropdown-item").forEach(s=>{s.classList.remove("selected"),s.removeAttribute("aria-selected")}):l(a,parseInt(o[i.value]?.dataset.index,10));else if(t.key==="Enter"){if(t.preventDefault(),i.value>=0&&o[i.value])u(o[i.value],e);else if(e){const s=e.value.trim();s&&(window.location.href=`products.html?search=${encodeURIComponent(s)}`)}}else t.key==="Escape"&&(a.style.display="none",i.value=-1)}function d(t){const a=document.querySelectorAll(t);a.length&&a.forEach(e=>{const r=p(e),i={value:-1},o=h(function(){const n=e.value.trim();if(i.value=-1,!n||n.length<1){r&&(r.style.display="none");return}const s=window.SEARCH_ENGINE?window.SEARCH_ENGINE.searchAll(n):[];v(s,e,r)},250);e.addEventListener("input",o),e.addEventListener("focus",function(){this.value.trim().length>=1&&r&&r.children.length&&(r.style.display="block")}),e.addEventListener("keydown",function(n){const s=window.SEARCH_ENGINE?window.SEARCH_ENGINE.searchAll(this.value.trim()):[];f(n,r,e,s,i)}),e.addEventListener("blur",function(){setTimeout(()=>{r&&(r.style.display="none"),i.value=-1},200)})})}return document.addEventListener("DOMContentLoaded",function(){document.querySelector(".search-wrap input")&&d(".search-wrap input"),document.querySelector("#searchInput")&&d("#searchInput")}),{init:d}})();

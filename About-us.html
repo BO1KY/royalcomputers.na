@@ -19,6 +19,8 @@
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://embed.tawk.to">
+  <link rel="dns-prefetch" href="https://embed.tawk.to">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/design-tokens.css">
   <link rel="stylesheet" href="css/royal-theme.css" media="print" onload="this.media='all'">
@@ -61,7 +63,7 @@
 <div class="newsletter-overlay" id="newsletterOverlay">
   <div class="newsletter-box">
     <button class="close-newsletter" onclick="closeNewsletter()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-    <img src="ROYAL PICS/royal logo.webp" alt="Royal Computers Namibia" class="nl-logo" />
+    <img src="ROYAL PICS/royal logo.webp" alt="Royal Computers Namibia" class="nl-logo" loading="lazy" />
     <h3>Stay in the Loop</h3>
     <p>Get exclusive deals, new arrivals, and tech tips delivered to your inbox.</p>
     <div class="nl-input-group">
@@ -224,12 +226,12 @@
       <p>Our friendly and knowledgeable sales team is ready to assist you at any of our shops. We believe in building lasting relationships with our customers through exceptional service and support.</p>
     </div>
     <div class="about-image" id="branchSlideshow">
-      <img src="ROYAL PICS/Grove.webp" alt="Windhoek" class="active" data-index="0" />
-      <img src="ROYAL PICS/Swakop.webp" alt="Swakopmund Branch" data-index="1" />
-      <img src="ROYAL PICS/Oshakati.webp" alt="Oshakati Branch" data-index="2" />
-      <img src="ROYAL PICS/Walvisbay.webp" alt="Walvis Bay Branch" data-index="3" />
-      <img src="ROYAL PICS/Tsumeb.webp" alt="Tsumeb Branch" data-index="4" />
-      <img src="ROYAL PICS/Grove.webp" alt="Grove Mall, Windhoek" data-index="5" />
+      <img src="ROYAL PICS/Grove.webp" alt="Windhoek" class="active" data-index="0" loading="lazy" />
+      <img src="ROYAL PICS/Swakop.webp" alt="Swakopmund Branch" data-index="1" loading="lazy" />
+      <img src="ROYAL PICS/Oshakati.webp" alt="Oshakati Branch" data-index="2" loading="lazy" />
+      <img src="ROYAL PICS/Walvisbay.webp" alt="Walvis Bay Branch" data-index="3" loading="lazy" />
+      <img src="ROYAL PICS/Tsumeb.webp" alt="Tsumeb Branch" data-index="4" loading="lazy" />
+      <img src="ROYAL PICS/Grove.webp" alt="Grove Mall, Windhoek" data-index="5" loading="lazy" />
       <div class="slide-dots"></div>
     </div>
   </div>
@@ -254,32 +256,32 @@
   <h2 class="faq-section-title">Our Values</h2>
   <div class="values-grid">
     <div class="value-card">
-      <div class="value-icon"><img src="ROYAL PICS/QUALITY.webp" alt="Quality" class="value-img" /></div>
+      <div class="value-icon"><img src="ROYAL PICS/QUALITY.webp" alt="Quality" class="value-img" loading="lazy" /></div>
       <h3>Quality First</h3>
       <p>We never compromise on quality. Every product we sell and every service we offer meets the highest standards.</p>
     </div>
     <div class="value-card">
-      <div class="value-icon"><img src="ROYAL PICS/CUSTOMER.webp" alt="Customer Focus" class="value-img" /></div>
+      <div class="value-icon"><img src="ROYAL PICS/CUSTOMER.webp" alt="Customer Focus" class="value-img" loading="lazy" /></div>
       <h3>Customer Focus</h3>
       <p>Our customers are at the heart of everything we do. We listen, understand, and deliver solutions that truly help.</p>
     </div>
     <div class="value-card">
-      <div class="value-icon"><img src="ROYAL PICS/INNOVATION.webp" alt="Innovation" class="value-img" /></div>
+      <div class="value-icon"><img src="ROYAL PICS/INNOVATION.webp" alt="Innovation" class="value-img" loading="lazy" /></div>
       <h3>Innovation</h3>
       <p>We stay ahead of the curve, bringing the latest technology and repair techniques to serve you better.</p>
     </div>
     <div class="value-card">
-      <div class="value-icon"><img src="ROYAL PICS/INTEGRITY.webp" alt="Integrity" class="value-img" /></div>
+      <div class="value-icon"><img src="ROYAL PICS/INTEGRITY.webp" alt="Integrity" class="value-img" loading="lazy" /></div>
       <h3>Integrity</h3>
       <p>Honest pricing, transparent service, and ethical business practices are the foundation of our reputation.</p>
     </div>
     <div class="value-card">
-      <div class="value-icon"><img src="ROYAL PICS/FAST.webp" alt="Fast Service" class="value-img" /></div>
+      <div class="value-icon"><img src="ROYAL PICS/FAST.webp" alt="Fast Service" class="value-img" loading="lazy" /></div>
       <h3>Fast Service</h3>
       <p>Most repairs completed within 24–48 hours. We value your time and work efficiently to minimize downtime.</p>
     </div>
     <div class="value-card">
-      <div class="value-icon"><img src="ROYAL PICS/COMMUNITY.webp" alt="Community" class="value-img" /></div>
+      <div class="value-icon"><img src="ROYAL PICS/COMMUNITY.webp" alt="Community" class="value-img" loading="lazy" /></div>
       <h3>Community</h3>
       <p>Proudly Namibian, we support local communities and strive to make technology accessible to everyone.</p>
     </div>
@@ -557,9 +559,9 @@
 })();
 </script>
 
-<script src="js/api-config.js"></script>
-<script src="js/newsletter.js"></script>
-<script src="js/offline.js"></script>
-<script src="js/chat.js"></script>
+<script defer src="js/api-config.js"></script>
+<script defer src="js/newsletter.js"></script>
+<script defer src="js/offline.js"></script>
+<script defer src="js/chat.js"></script>
 </body>
 </html>

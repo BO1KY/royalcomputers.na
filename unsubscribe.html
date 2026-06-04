@@ -9,6 +9,8 @@
   <link rel="canonical" href="https://netmac.co.za/unsubscribe.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://embed.tawk.to">
+  <link rel="dns-prefetch" href="https://embed.tawk.to">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/design-tokens.css">
   <link rel="stylesheet" href="css/royal-theme.css" media="print" onload="this.media='all'">
@@ -51,7 +53,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg,#f5f3f4);color:var(--t
     <div class="loader-text">Loading…</div>
   </div>
   <div class="card">
-    <img src="ROYAL PICS/royal logo.webp" alt="Royal Computers Namibia" class="logo" />
+    <img src="ROYAL PICS/royal logo.webp" alt="Royal Computers Namibia" class="logo" loading="lazy" />
     <h1>Unsubscribe</h1>
 
     <!-- STEP 1: Enter Email -->
@@ -191,6 +193,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg,#f5f3f4);color:var(--t
   <script defer src="js/loader.js"></script>
   <script defer src="js/api-config.js"></script>
   <script defer src="js/offline.js"></script>
-<script src="js/chat.js"></script>
+<script defer src="js/chat.js"></script>
 </body>
 </html>

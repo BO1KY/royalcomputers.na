@@ -21,6 +21,8 @@
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://embed.tawk.to">
+  <link rel="dns-prefetch" href="https://embed.tawk.to">
   <link
     href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap"
     rel="stylesheet" />
@@ -70,7 +72,7 @@
           <line x1="18" y1="6" x2="6" y2="18" />
           <line x1="6" y1="6" x2="18" y2="18" />
         </svg></button>
-      <img src="ROYAL PICS/royal logo.webp" alt="Royal Computers Namibia" class="nl-logo" />
+      <img src="ROYAL PICS/royal logo.webp" alt="Royal Computers Namibia" class="nl-logo" loading="lazy" />
       <h3>Stay in the Loop</h3>
       <p>Get exclusive deals, new arrivals, and tech tips delivered to your inbox.</p>
       <div class="nl-input-group">
@@ -510,7 +512,7 @@
         card.className = 'branch-card';
         var status = b.isHeadquarters ? ' (HQ)' : '';
         var imgSrc = branchImages[b.id] || '';
-        var imgHtml = imgSrc ? '<div class="branch-img"><img src="' + imgSrc + '" alt="' + b.city + '"></div>' : '';
+        var imgHtml = imgSrc ? '<div class="branch-img"><img src="' + imgSrc + '" alt="' + b.city + '" loading="lazy"></div>' : '';
         var hoursFormatted = b.hours.replace(/\|/g, '<br>');
         card.innerHTML =
           imgHtml +
@@ -539,10 +541,10 @@
     });
   </script>
 
-<script src="js/api-config.js"></script>
-<script src="js/newsletter.js"></script>
-<script src="js/offline.js"></script>
-<script src="js/chat.js"></script>
+<script defer src="js/api-config.js"></script>
+<script defer src="js/newsletter.js"></script>
+<script defer src="js/offline.js"></script>
+<script defer src="js/chat.js"></script>
 </body>
 
 </html>

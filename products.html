@@ -196,7 +196,7 @@
 <div class="newsletter-overlay" id="newsletterOverlay">
   <div class="newsletter-box">
     <button class="close-newsletter" onclick="closeNewsletter()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-    <img src="ROYAL PICS/royal logo.webp" alt="Royal Computers Namibia" class="nl-logo" />
+    <img src="ROYAL PICS/royal logo.webp" alt="Royal Computers Namibia" class="nl-logo" loading="lazy" />
     <h3>Stay in the Loop</h3>
     <p>Get exclusive deals, new arrivals, and tech tips delivered to your inbox.</p>
     <div class="nl-input-group">
@@ -841,7 +841,7 @@
         cartItems.forEach(item => {
           html += `
             <div class="cart-item">
-              <img src="${item.image}" alt="${item.name}" class="cart-item-img">
+              <img src="${item.image}" alt="${item.name}" class="cart-item-img" loading="lazy">
               <div class="cart-item-info">
                 <div class="cart-item-name">${item.name}</div>
                 <div class="cart-item-variant">${item.variantLabel}</div>
@@ -1292,7 +1292,7 @@
     // Variants
     var variantsHtml = '';
     (group.variants || []).forEach(function(v, idx) {
-      var varImg = v.image ? '<img src="' + escapeHtml(v.image) + '" alt="' + escapeHtml(v.label) + '">' : '';
+      var varImg = v.image ? '<img src="' + escapeHtml(v.image) + '" alt="' + escapeHtml(v.label) + '" loading="lazy">' : '';
       var selected = idx === 0 ? ' pd-variant-selected' : '';
       var saleTag = isOnSale && oldPrice > v.price ? '<span class="pd-variant-sale">Sale</span>' : '';
       variantsHtml +=
@@ -1373,7 +1373,7 @@
     top.innerHTML =
       '<div class="product-detail-top">' +
         '<div class="pd-image">' +
-          '<img src="' + escapeHtml(group.image) + '" alt="' + escapeHtml(group.name) + '" id="pdMainImage">' +
+          '<img src="' + escapeHtml(group.image) + '" alt="' + escapeHtml(group.name) + '" id="pdMainImage" loading="lazy">' +
           detailsHtml +
         '</div>' +
         '<div class="pd-info">' +
@@ -1428,7 +1428,7 @@
         var minPrice = Math.min.apply(null, (r.variants || []).map(function(v) { return v.price; }));
         relatedHtml +=
           '<div class="pd-related-item" data-id="' + r.id + '">' +
-            '<img src="' + escapeHtml(r.image) + '" alt="' + escapeHtml(r.name) + '">' +
+            '<img src="' + escapeHtml(r.image) + '" alt="' + escapeHtml(r.name) + '" loading="lazy">' +
             '<span class="pd-r-name">' + escapeHtml(r.name) + '</span>' +
             '<span class="pd-r-price">' + formatPrice(minPrice) + '</span>' +
           '</div>';
@@ -1723,9 +1723,9 @@
   document.addEventListener('DOMContentLoaded', function() { if (window.CART && window.CART.getMode) { updateModeUI(); } });
 </script>
 
-<script src="js/api-config.js"></script>
-<script src="js/newsletter.js"></script>
-<script src="js/offline.js"></script>
-<script src="js/chat.js"></script>
+<script defer src="js/api-config.js"></script>
+<script defer src="js/newsletter.js"></script>
+<script defer src="js/offline.js"></script>
+<script defer src="js/chat.js"></script>
 </body>
 </html>
