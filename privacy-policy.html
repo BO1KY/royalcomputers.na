@@ -21,7 +21,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://embed.tawk.to">
   <link rel="dns-prefetch" href="https://embed.tawk.to">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap"></noscript>
   <link rel="stylesheet" href="css/design-tokens.css">
   <link rel="stylesheet" href="css/royal-theme.css" media="print" onload="this.media='all'">
   <link rel="stylesheet" href="css/search-dropdown.css" media="print" onload="this.media='all'">
@@ -59,7 +60,7 @@
   </div>
 </div>
 
-<!-- CART OVERLAY & SIDEBAR -->
+
 <div class="cart-overlay" id="cartOverlay"></div>
 <div class="cart-sidebar" id="cartSidebar">
   <div class="cart-header">
@@ -78,7 +79,7 @@
   </div>
 </div>
 
-<!-- CHECKOUT MODAL -->
+
 <div class="modal-overlay" id="checkoutModal">
   <div class="modal-content" style="overflow-y:hidden;">
     <button class="modal-close" id="closeCheckoutBtn">&times;</button>
@@ -135,7 +136,7 @@
   </div>
 </div>
 
-<!-- QUOTE DISPLAY MODAL -->
+
 <div class="modal-overlay" id="quoteModal">
   <div class="modal-content">
     <button class="modal-close" id="closeQuoteBtn">&times;</button>
@@ -143,7 +144,7 @@
   </div>
 </div>
 
-<!-- NEWSLETTER POPUP -->
+
 <div class="newsletter-overlay" id="newsletterOverlay">
   <div class="newsletter-box">
     <button class="close-newsletter" onclick="closeNewsletter()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
@@ -158,7 +159,7 @@
   </div>
 </div>
 
-<!-- HEADER -->
+
 <header>
   <div class="header-inner">
     <a href="index.html" class="logo">
@@ -178,6 +179,9 @@
       <span></span><span></span><span></span>
     </button>
     <div class="header-right">
+      <button class="cart-btn" onclick="window.location.href='tracking.html'" title="Track Repair">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4m10-10h-4M6 12H2"/></svg>
+      </button>
       <button class="cart-btn" id="openCartBtn" onclick="openCart()">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
         <span class="cart-count" id="cartCount" style="display:none;">0</span>
@@ -192,7 +196,7 @@
   <p>How we collect, use, and protect your personal information</p>
 </div>
 
-<!-- PRIVACY POLICY CONTENT -->
+
 <div id="main-content" class="terms-container">
   <div class="terms-card">
     <div class="terms-inner">
@@ -305,7 +309,7 @@
   </div>
 </div>
 
-<!-- NEWSLETTER SECTION -->
+
 <section class="newsletter-section">
   <div class="newsletter-inner">
     <img class="mailbox-img" src="ROYAL PICS/royal logo.webp" alt="Royal Computers Namibia" style="display:block;margin:0 auto;" loading="lazy" />
@@ -319,7 +323,7 @@
   </div>
 </section>
 
-<!-- FOOTER -->
+
 <footer>
   <div class="footer-inner">
     <div class="footer-brand">
@@ -438,9 +442,12 @@
   }
 </script>
 
+<script defer src="js/site-data.js"></script>
 <script defer src="js/api-config.js"></script>
 <script defer src="js/newsletter.js"></script>
 <script defer src="js/offline.js"></script>
 <script defer src="js/chat.js"></script>
+<script defer src="js/whatsapp-widget.js"></script>
 </body>
 </html>
+

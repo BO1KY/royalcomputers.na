@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Track Your Repair - Royal Computers</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap"></noscript>
+  <link rel="stylesheet" href="css/design-tokens.css">
+  <link rel="stylesheet" href="css/royal-theme.css" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="css/search-dropdown.css" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="css/print-quote.css" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="css/animations.css" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="css/checkout-wizard.css" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="css/enhanced-ui.css" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="css/interactive-components.css" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="css/ecommerce-features.css" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="css/mobile.css" media="print" onload="this.media='all'">
+  <link rel="icon" href="ROYAL PICS/logo.webp" type="image/webp">
+  <style>
+    :root { --bg: #f8f9fa; --card-bg: #fff; --primary: #dc2626; --primary-hover: #b91c1c; --text: #1a1a2e; --text-dim: #6b7280; --border: #e5e7eb; }
+    body { background: var(--bg); font-family: 'DM Sans', sans-serif; margin: 0; min-height: 100vh; display: flex; flex-direction: column; }
+    .tracking-wrapper { flex: 1; max-width: 800px; margin: 40px auto; padding: 0 20px; width: 100%; box-sizing: border-box; }
+    .tracking-card { background: var(--card-bg); border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); padding: 40px; }
+    .tracking-card h1 { font-size: 28px; margin: 0 0 8px; color: var(--text); }
+    .tracking-card p { color: var(--text-dim); font-size: 15px; margin: 0 0 28px; line-height: 1.6; }
+    .search-form { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 32px; }
+    .search-form select, .search-form input { flex: 1; min-width: 180px; padding: 14px 16px; border: 2px solid var(--border); border-radius: 10px; font-size: 15px; font-family: inherit; background: var(--card-bg); color: var(--text); transition: border-color .2s; }
+    .search-form select:focus, .search-form input:focus { outline: none; border-color: var(--primary); }
+    .search-form button { padding: 14px 32px; background: var(--primary); color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit; transition: background .2s; white-space: nowrap; }
+    .search-form button:hover { background: var(--primary-hover); }
+    .search-form button:disabled { opacity: .6; cursor: not-allowed; }
+    #trackingError { color: #d32f2f; font-size: 14px; margin: -20px 0 20px; display: none; }
+    #trackingResult { display: none; }
+    .result-header { border-bottom: 2px solid var(--border); padding-bottom: 16px; margin-bottom: 24px; }
+    .result-header .job-id { font-size: 20px; font-weight: 700; color: var(--text); }
+    .result-header .job-id code { color: var(--primary); font-weight: 700; }
+    .result-header .status-badge { display: inline-block; margin-top: 8px; padding: 6px 18px; border-radius: 20px; font-size: 14px; font-weight: 600; }
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+    .info-box { background: #f8f9fa; border-radius: 10px; padding: 16px; }
+    .info-box h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .5px; color: var(--text-dim); margin: 0 0 8px; }
+    .info-box .value { font-size: 14px; color: var(--text); line-height: 1.6; }
+    .issue-box { background: #f8f9fa; border-radius: 10px; padding: 16px; margin-bottom: 24px; }
+    .issue-box h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .5px; color: var(--text-dim); margin: 0 0 8px; }
+    .issue-box .value { font-size: 14px; color: var(--text); line-height: 1.6; }
+    .timeline-horizontal { display: flex; gap: 0; margin-bottom: 24px; overflow-x: auto; padding: 8px 0; -webkit-overflow-scrolling: touch; }
+    .timeline-step { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 80px; position: relative; }
+    .timeline-step .step-icon { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; background: var(--border); color: #9ca3af; border: 2px solid #d1d5db; position: relative; z-index: 1; transition: all .3s; }
+    .timeline-step.done .step-icon { background: #16a34a; color: #fff; border-color: #16a34a; }
+    .timeline-step.current .step-icon { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(220,38,38,0.2); }
+    .timeline-step .step-label { font-size: 10px; font-weight: 600; color: var(--text-dim); margin-top: 6px; text-align: center; white-space: nowrap; }
+    .timeline-step.done .step-label { color: #16a34a; }
+    .timeline-step.current .step-label { color: var(--primary); font-weight: 700; }
+    .timeline-step .step-date { font-size: 9px; color: var(--text-dim); margin-top: 2px; text-align: center; }
+    .timeline-step .step-note { font-size: 9px; color: var(--text-dim); margin-top: 1px; text-align: center; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .timeline-connector { flex: 1; height: 2px; background: var(--border); align-self: center; margin: 0 -1px; position: relative; top: -18px; z-index: 0; }
+    .timeline-connector.done { background: #16a34a; }
+    .timeline-connector.current { background: linear-gradient(90deg, #16a34a 50%, var(--border) 50%); }
+    .loading-spinner { text-align: center; padding: 40px; color: var(--text-dim); }
+    .loading-spinner::after { content: ''; display: inline-block; width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin .8s linear infinite; margin-bottom: 8px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    header { background: #fff; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+    .header-inner { max-width: 1200px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; height: 64px; }
+    .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); }
+    .logo img { height: 36px; width: auto; }
+    .header-right { display: flex; align-items: center; gap: 8px; }
+    .track-btn { display: flex; align-items: center; justify-content: center; padding: 8px; border-radius: 8px; color: var(--text-dim); text-decoration: none; transition: all .2s; }
+    .track-btn:hover { color: var(--text); background: #f3f4f6; }
+
+    @media (max-width: 768px) { nav { display: none; } .nav-toggle { display: block; } }
+    @media (max-width: 600px) { .tracking-card { padding: 24px; } .search-form { flex-direction: column; } .search-form select, .search-form input { min-width: auto; width: 100%; } .info-grid { grid-template-columns: 1fr; } .timeline-horizontal { gap: 4px; } .timeline-step { min-width: 60px; } .timeline-step .step-label { font-size: 8px; } .timeline-step .step-icon { width: 28px; height: 28px; font-size: 12px; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <a href="index.html" class="logo">
+        <img src="ROYAL PICS/royal logo.webp" alt="Royal Computers Namibia" onerror="this.style.display='none';">
+      </a>
+      <nav>
+        <button class="nav-close" aria-label="Close menu">&times;</button>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="products.html">Products</a></li>
+          <li><a href="deals.html">Deals</a></li>
+          <li><a href="Contact-us.html">Contact</a></li>
+          <li><a href="About-us.html">About Us</a></li>
+        </ul>
+      </nav>
+      <button class="mobile-toggle" id="mobileToggle" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="header-right">
+        <a href="tracking.html" class="track-btn" title="Track Repair">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4m10-10h-4M6 12H2"/></svg>
+        </a>
+        <button class="cart-btn" id="openCartBtn" onclick="openCart()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          <span class="cart-count" id="cartCount" style="display:none;">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="tracking-wrapper">
+    <div class="tracking-card">
+      <h1>Track Your Repair</h1>
+      <p id="trackingIntro">Enter your branch and job card number to check the current status of your device repair.</p>
+
+      <div class="search-form" id="trackingForm">
+        <select id="trackBranchSelect">
+          <option value="">Select Branch</option>
+        </select>
+        <input type="text" id="trackJobNumber" placeholder="Job Card Number (e.g. JC-20260605-B1-001)" autocomplete="off">
+        <button id="trackBtn">Check Status</button>
+      </div>
+
+      <div id="trackingError"></div>
+
+      <div id="trackingResult">
+        <div class="result-header">
+          <div class="job-id">Job Card: <code id="rJobId"></code></div>
+          <div id="rStatusBadge" class="status-badge"></div>
+        </div>
+
+        <div style="display:flex;gap:8px;margin-bottom:16px;" id="resultActions">
+          <a id="pdfDownloadLink" href="#" target="_blank" style="padding:8px 18px;background:#374151;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;">Download PDF</a>
+          <button onclick="showTrackingForm()" style="padding:8px 18px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Track Another</button>
+        </div>
+
+        <div class="info-grid">
+          <div class="info-box">
+            <h3>Client</h3>
+            <div class="value" id="rClientName"></div>
+          </div>
+          <div class="info-box">
+            <h3>Branch</h3>
+            <div class="value" id="rBranchInfo"></div>
+          </div>
+          <div class="info-box">
+            <h3>Device</h3>
+            <div class="value" id="rDeviceInfo"></div>
+          </div>
+          <div class="info-box">
+            <h3>Date Created</h3>
+            <div class="value" id="rDateCreated"></div>
+          </div>
+        </div>
+
+        <div class="issue-box">
+          <h3>Issue Description</h3>
+          <div class="value" id="rIssueDesc"></div>
+        </div>
+
+        <h3 style="font-size:14px;color:var(--text-dim);margin:0 0 8px;">Repair Progress</h3>
+        <div id="rTimeline"></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div class="footer-brand-body">
+          <div class="footer-brand-name" id="site-footer-company">Royal Computers Namibia</div>
+          <p id="site-footer-tagline">Leading the way in digital lifestyle</p>
+          <div style="margin-top:12px;">
+            <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> <span id="site-footer-address">GF Shop 12 Gustav Voigts Center, Independence Ave, Windhoek</span></div>
+            <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg> <span id="site-footer-phone">061228179</span></div>
+            <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.832-1.438A9.956 9.956 0 0 0 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18c-1.889 0-3.633-.656-5.008-1.756l-.36-.268-3.008.894.894-3.008-.268-.36A7.94 7.94 0 0 1 4 12c0-4.411 3.589-8 8-8s8 3.589 8 8-3.589 8-8 8z"/></svg> <span id="site-footer-whatsapp">+264813631483</span></div>
+            <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> <span id="site-footer-email">windhoek@netmac.co.za</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Pages</h4>
+        <ul>
+          <li><a href="products.html">Products</a></li>
+          <li><a href="Contact-us.html">Contact Us</a></li>
+          <li><a href="About-us.html">About Us</a></li>
+          <li><a href="privacy-policy.html">Privacy Policy</a></li>
+          <li><a href="tracking.html">Track Repair</a></li>
+          <li><a href="terms-conditions.html">Terms &amp; Conditions</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Branches</h4>
+        <ul>
+          <li><a href="Contact-us.html">Windhoek</a></li>
+          <li><a href="Contact-us.html">Swakopmund</a></li>
+          <li><a href="Contact-us.html">Oshakati</a></li>
+          <li><a href="Contact-us.html">Walvis Bay</a></li>
+          <li><a href="Contact-us.html">Tsumeb</a></li>
+          <li><a href="Contact-us.html">Grove Mall, Windhoek</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Social</h4>
+        <ul>
+          <li><a href="https://www.facebook.com/RoyalComputersNamibia/" target="_blank" id="site-footer-facebook"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle;margin-right:6px;"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>Facebook</a></li>
+          <li><a href="https://www.instagram.com/royalcomputernam/" target="_blank" id="site-footer-instagram"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>Instagram</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span id="site-footer-copyright">Copyright &copy; Royal Computers Namibia</span>
+      <span><a href="terms-conditions.html">Terms and conditions</a> apply</span>
+    </div>
+  </footer>
+
+  <script>
+    var API_BASE = location.origin === 'null' ? '' : (location.origin + '');
+
+    function esc(s) { if (s === null || s === undefined) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
+
+    var STATUS_COLORS = { diagnostic: '#f59e0b', 'in-progress': '#2563eb', 'waiting-parts': '#8b5cf6', ready: '#16a34a', completed: '#6b7280', collected: '#374151' };
+
+    var SERVICE_TYPE_LABELS = {
+      'diagnostic': 'Diagnostic / Assessment',
+      'screen-replacement-laptop': 'Screen Replacement (Laptop)',
+      'screen-replacement-phone': 'Screen Replacement (Cellphone)',
+      'charging-port-repair': 'Charging Port Repair',
+      'keyboard-replacement': 'Keyboard Replacement',
+      'battery-replacement': 'Battery Replacement',
+      'ram-upgrade': 'RAM / Storage Upgrade (Hardware)',
+      'hardware-upgrade': 'Other Hardware Upgrade / Installation',
+      'power-repair': 'Power Supply / Adapter Repair',
+      'liquid-damage': 'Liquid Damage Repair',
+      'fan-repair': 'Fan / Cooling System Repair',
+      'virus-removal': 'Virus / Malware Removal',
+      'software-install': 'Software Installation / Upgrade',
+      'data-recovery': 'Data Recovery / Backup',
+      'os-repair': 'Operating System Repair',
+      'networking-setup': 'Networking Setup / Configuration',
+      'general-repair': 'General PC / Laptop Repair & Maintenance',
+      'printer-repair': 'Printer Setup / Repair'
+    };
+
+    function showTrackingForm() {
+      document.getElementById('trackingForm').style.display = 'flex';
+      document.getElementById('trackingResult').style.display = 'none';
+      document.getElementById('trackingError').style.display = 'none';
+    }
+
+    function displayJobCard(j) {
+      document.getElementById('rJobId').textContent = j.id;
+      var sc = STATUS_COLORS[j.status] || '#6b7280';
+      var badge = document.getElementById('rStatusBadge');
+      var STATUS_ICONS = { diagnostic:'\uD83D\uDD0D', 'in-progress':'\u2699\uFE0F', 'waiting-parts':'\uD83D\uDCE6', ready:'\u2705', completed:'\uD83D\uDCCB', collected:'\uD83D\uDED2' };
+      badge.textContent = (STATUS_ICONS[j.status] || '') + ' ' + j.status.replace(/-/g, ' ').replace(/\b\w/g, function(l) { return l.toUpperCase(); });
+      badge.style.background = sc + '20';
+      badge.style.color = sc;
+      badge.style.border = '1px solid ' + sc + '40';
+      document.getElementById('rClientName').textContent = j.client_name;
+      document.getElementById('rBranchInfo').textContent = (j.branch_name || '') + (j.branch_address ? '\n' + j.branch_address : '') + (j.branch_phone ? '\n' + j.branch_phone : '');
+      var stLabel = SERVICE_TYPE_LABELS[j.service_type] || j.service_type || 'N/A';
+      document.getElementById('rDeviceInfo').innerHTML = (j.service_type ? '<strong>Service:</strong> ' + esc(stLabel) + '<br>' : '') + [j.device_type, j.device_brand, j.device_model].filter(Boolean).join(' ') || 'N/A';
+      document.getElementById('rDateCreated').textContent = (j.created_at || '').substring(0, 10);
+      document.getElementById('rIssueDesc').textContent = j.issue_description || 'N/A';
+
+      // Set PDF download link
+      var pdfLink = document.getElementById('pdfDownloadLink');
+      if (j.public_token) {
+        pdfLink.href = API_BASE + '/api/public/job-card/' + encodeURIComponent(j.public_token) + '/pdf';
+      } else {
+        pdfLink.href = API_BASE + '/api/public/track-job?branch=' + encodeURIComponent(j.branch_id || '') + '&job=' + encodeURIComponent(j.id) + '&format=pdf';
+      }
+
+      var timelineEl = document.getElementById('rTimeline');
+      var ORDERED_STATUSES = ['diagnostic', 'in-progress', 'waiting-parts', 'ready', 'completed', 'collected'];
+
+      if (j.history && j.history.length) {
+        var latestStatus = j.history[j.history.length - 1].status;
+        var statusDateMap = {};
+        j.history.forEach(function(h) {
+          if (!statusDateMap[h.status]) statusDateMap[h.status] = h;
+        });
+
+        var html = '';
+        ORDERED_STATUSES.forEach(function(s, idx) {
+          var h = statusDateMap[s];
+          var isDone = h !== undefined;
+          var isCurrent = s === latestStatus;
+
+          html += '<div class="timeline-step' + (isDone ? ' done' : '') + (isCurrent ? ' current' : '') + '">' +
+            '<div class="step-icon">' + (STATUS_ICONS[s] || '\u2022') + '</div>' +
+            '<div class="step-label">' + esc(s.replace(/-/g, ' ').replace(/\b\w/g, function(l) { return l.toUpperCase(); })) + '</div>' +
+            (isDone && h ? '<div class="step-date">' + esc((h.created_at || '').substring(0, 10)) + '</div>' : '') +
+            (isDone && h && h.note ? '<div class="step-note" title="' + esc(h.note) + '">' + esc(h.note) + '</div>' : '') +
+            '</div>';
+
+          if (idx < ORDERED_STATUSES.length - 1) {
+            html += '<div class="timeline-connector' + (isDone ? ' done' : '') + (isCurrent ? ' current' : '') + '"></div>';
+          }
+        });
+
+        timelineEl.innerHTML = '<div class="timeline-horizontal">' + html + '</div>';
+      } else {
+        timelineEl.innerHTML = '<div style="color:var(--text-dim);font-size:13px;">No status history available.</div>';
+      }
+      document.getElementById('trackingForm').style.display = 'none';
+      document.getElementById('trackingResult').style.display = 'block';
+    }
+
+    function loadBranches() {
+      fetch(API_BASE + '/api/site-data').then(function(r) { return r.json(); }).then(function(data) {
+        var branches = (data && data.branches) || [];
+        var sel = document.getElementById('trackBranchSelect');
+        sel.innerHTML = '<option value="">Select Branch</option>';
+        branches.forEach(function(b) {
+          sel.innerHTML += '<option value="' + esc(b.id) + '">' + esc(b.name) + '</option>';
+        });
+      }).catch(function() {});
+    }
+
+    document.getElementById('trackBtn').addEventListener('click', function() {
+      var branch = document.getElementById('trackBranchSelect').value;
+      var job = document.getElementById('trackJobNumber').value.trim();
+      var errorEl = document.getElementById('trackingError');
+      var resultEl = document.getElementById('trackingResult');
+
+      errorEl.style.display = 'none';
+      resultEl.style.display = 'none';
+
+      if (!branch) { errorEl.textContent = 'Please select a branch.'; errorEl.style.display = 'block'; return; }
+      if (!job) { errorEl.textContent = 'Please enter a job card number.'; errorEl.style.display = 'block'; return; }
+
+      this.disabled = true;
+      this.textContent = 'Checking...';
+
+      fetch(API_BASE + '/api/public/track-job?branch=' + encodeURIComponent(branch) + '&job=' + encodeURIComponent(job))
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (!data || !data.jobCard) {
+            errorEl.textContent = 'Job card not found. Check your branch and job card number.';
+            errorEl.style.display = 'block';
+            return;
+          }
+          displayJobCard(data.jobCard);
+        })
+        .catch(function(err) {
+          errorEl.textContent = 'Error: ' + err.message;
+          errorEl.style.display = 'block';
+        })
+        .then(function() {
+          document.getElementById('trackBtn').disabled = false;
+          document.getElementById('trackBtn').textContent = 'Check Status';
+        });
+    });
+
+    document.getElementById('trackJobNumber').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') document.getElementById('trackBtn').click();
+    });
+
+    // Auto-lookup by token from URL parameter
+    (function autoLookup() {
+      var params = new URLSearchParams(window.location.search);
+      var token = params.get('token');
+      var job = params.get('job');
+      var branch = params.get('branch');
+
+      if (token) {
+        document.getElementById('trackingIntro').textContent = 'Loading your repair status...';
+        document.getElementById('trackingForm').style.display = 'none';
+        fetch(API_BASE + '/api/public/track-job?token=' + encodeURIComponent(token))
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
+            if (data && data.jobCard) {
+              displayJobCard(data.jobCard);
+            } else {
+              document.getElementById('trackingIntro').textContent = 'Job card not found. Please try searching manually.';
+              document.getElementById('trackingForm').style.display = 'flex';
+            }
+          })
+          .catch(function() {
+            document.getElementById('trackingIntro').textContent = 'Could not load repair status. Please try searching manually.';
+            document.getElementById('trackingForm').style.display = 'flex';
+          });
+      } else if (job && branch) {
+        document.getElementById('trackBranchSelect').value = branch;
+        document.getElementById('trackJobNumber').value = job;
+        document.getElementById('trackBtn').click();
+      }
+    })();
+
+    loadBranches();
+  </script>
+  <script src="js/cart.js"></script>
+  <script src="js/mobile-nav.js"></script>
+<script defer src="js/whatsapp-widget.js"></script>
+</body>
+</html>

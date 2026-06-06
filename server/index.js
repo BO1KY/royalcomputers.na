@@ -6,6 +6,7 @@ var fs = require('fs');
 var Database = require('better-sqlite3');
 var nodemailer = require('nodemailer');
 var multer = require('multer');
+var sharp = require('sharp');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 var app = express();
@@ -36,29 +37,101 @@ try { db.exec("ALTER TABLE product_overrides ADD COLUMN specs TEXT"); } catch(e)
 try { db.exec("ALTER TABLE product_overrides ADD COLUMN name TEXT"); } catch(e) {}
 try { db.exec("ALTER TABLE product_overrides ADD COLUMN hidden INTEGER DEFAULT 0"); } catch(e) {}
 try { db.exec("ALTER TABLE product_overrides ADD COLUMN image TEXT"); } catch(e) {}
+try { db.exec("ALTER TABLE product_overrides ADD COLUMN badge TEXT"); } catch(e) {}
 
 db.exec("CREATE TABLE IF NOT EXISTS quotations (doc_number TEXT PRIMARY KEY, customer_info TEXT NOT NULL, items TEXT NOT NULL, subtotal REAL, tax REAL, total REAL, branch_id TEXT, created_at TEXT DEFAULT (datetime('now')), updated_at TEXT DEFAULT (datetime('now')))");
 
 db.exec("CREATE TABLE IF NOT EXISTS custom_products (id TEXT PRIMARY KEY, name TEXT NOT NULL, category TEXT, image TEXT, badge TEXT, date TEXT, description TEXT, compatibility TEXT, specs TEXT, variants_json TEXT NOT NULL DEFAULT '[]', hidden INTEGER DEFAULT 0, created_at TEXT DEFAULT (datetime('now')))");
+db.exec("CREATE TABLE IF NOT EXISTS branch_products (branch_id TEXT NOT NULL, product_id TEXT NOT NULL, is_available INTEGER DEFAULT 1, created_at TEXT DEFAULT (datetime('now')), PRIMARY KEY (branch_id, product_id))");
 
 var UPLOADS_DIR = path.join(__dirname, '..', 'uploads');
 if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 
 // Users table for admin multi-user support
-db.exec("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL UNIQUE, password_hash TEXT NOT NULL, name TEXT NOT NULL, permissions TEXT NOT NULL DEFAULT '{}', created_at TEXT DEFAULT (datetime('now')))");
+db.exec("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL UNIQUE, password_hash TEXT NOT NULL, name TEXT NOT NULL, permissions TEXT NOT NULL DEFAULT '{}', branch_id TEXT, created_at TEXT DEFAULT (datetime('now')))");
+try { db.exec("ALTER TABLE users ADD COLUMN branch_id TEXT"); } catch (e) {}
+try { db.exec("ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'staff'"); } catch (e) {}
+
+db.exec("CREATE TABLE IF NOT EXISTS password_resets (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL, branch_id TEXT, status TEXT NOT NULL DEFAULT 'pending', requested_at TEXT DEFAULT (datetime('now')), resolved_at TEXT, resolved_by TEXT)");
+
+// ─── Feature enhancements: new columns & tables ───
+try { db.exec("ALTER TABLE subscribers ADD COLUMN source TEXT DEFAULT 'website'"); } catch(e) {}
+try { db.exec("ALTER TABLE subscribers ADD COLUMN notes TEXT"); } catch(e) {}
+try { db.exec("ALTER TABLE messages ADD COLUMN is_read INTEGER DEFAULT 0"); } catch(e) {}
+try { db.exec("ALTER TABLE messages ADD COLUMN replied_at TEXT"); } catch(e) {}
+try { db.exec("ALTER TABLE messages ADD COLUMN assigned_to TEXT"); } catch(e) {}
+try { db.exec("ALTER TABLE quotations ADD COLUMN status TEXT DEFAULT 'pending'"); } catch(e) {}
+try { db.exec("ALTER TABLE users ADD COLUMN last_login TEXT"); } catch(e) {}
+try { db.exec("ALTER TABLE users ADD COLUMN is_active INTEGER DEFAULT 1"); } catch(e) {}
+try { db.exec("ALTER TABLE users ADD COLUMN created_by INTEGER"); } catch(e) {}
+try { db.exec("ALTER TABLE branches ADD COLUMN is_active INTEGER DEFAULT 1"); } catch(e) {}
+try { db.exec("ALTER TABLE branches ADD COLUMN latitude REAL"); } catch(e) {}
+try { db.exec("ALTER TABLE branches ADD COLUMN longitude REAL"); } catch(e) {}
+try { db.exec("ALTER TABLE branches ADD COLUMN hours_json TEXT"); } catch(e) {}
+try { db.exec("ALTER TABLE faqs ADD COLUMN category TEXT DEFAULT 'General'"); } catch(e) {}
+try { db.exec("ALTER TABLE faqs ADD COLUMN is_active INTEGER DEFAULT 1"); } catch(e) {}
+
+db.exec(`CREATE TABLE IF NOT EXISTS campaigns (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  type TEXT NOT NULL DEFAULT 'general',
+  subject TEXT NOT NULL,
+  html TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'draft',
+  scheduled_for TEXT,
+  sent_at TEXT,
+  sent_count INTEGER DEFAULT 0,
+  error_count INTEGER DEFAULT 0,
+  created_by TEXT,
+  created_at TEXT DEFAULT (datetime('now'))
+)`);
+
+db.exec(`CREATE TABLE IF NOT EXISTS campaign_templates (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  type TEXT DEFAULT 'general',
+  subject TEXT,
+  html TEXT,
+  created_at TEXT DEFAULT (datetime('now'))
+)`);
+
+db.exec(`CREATE TABLE IF NOT EXISTS chat_transcripts (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  visitor_name TEXT,
+  visitor_email TEXT,
+  visitor_phone TEXT,
+  messages TEXT NOT NULL DEFAULT '[]',
+  status TEXT DEFAULT 'closed',
+  assigned_to TEXT,
+  started_at TEXT,
+  ended_at TEXT,
+  created_at TEXT DEFAULT (datetime('now'))
+)`);
+
+db.exec(`CREATE TABLE IF NOT EXISTS audit_log (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER,
+  username TEXT,
+  action TEXT NOT NULL,
+  details TEXT,
+  ip_address TEXT,
+  user_agent TEXT,
+  created_at TEXT DEFAULT (datetime('now'))
+)`);
+try { db.exec("ALTER TABLE audit_log ADD COLUMN ip_address TEXT"); } catch(e) {}
+try { db.exec("ALTER TABLE audit_log ADD COLUMN user_agent TEXT"); } catch(e) {}
 
 var storage = multer.diskStorage({
   destination: function (req, file, cb) { cb(null, UPLOADS_DIR); },
   filename: function (req, file, cb) {
-    var ext = path.extname(file.originalname);
-    cb(null, Date.now() + '-' + crypto.randomBytes(6).toString('hex') + ext);
+    // All uploaded images are converted to .webp on the server, so save with .webp extension
+    cb(null, Date.now() + '-' + crypto.randomBytes(6).toString('hex') + '.webp');
   }
 });
 function imageFilter(req, file, cb) {
-  var allowed = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.svg'];
+  var allowed = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.svg', '.tiff', '.tif'];
   var ext = path.extname(file.originalname).toLowerCase();
   if (allowed.indexOf(ext) >= 0) { cb(null, true); }
-  else { cb(new Error('Only image files are allowed (jpg, jpeg, png, gif, webp, bmp, svg).')); }
+  else { cb(new Error('Only image files are allowed (jpg, jpeg, png, gif, webp, bmp, svg, tiff).')); }
 }
 var upload = multer({ storage: storage, limits: { fileSize: 50 * 1024 * 1024 }, fileFilter: imageFilter });
 
@@ -78,10 +151,43 @@ function getTransporter() {
 
 var ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '').split(',').filter(Boolean);
 app.use(cors({
-  origin: ALLOWED_ORIGINS.length ? ALLOWED_ORIGINS : true,
+  origin: ALLOWED_ORIGINS.length ? ALLOWED_ORIGINS : false,
   credentials: true
 }));
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: '5mb' }));
+
+// General API rate limiter (per-IP, 120 requests per minute)
+var apiLimiter = new Map();
+app.use('/api/', function (req, res, next) {
+  var ip = req.ip || req.connection.remoteAddress || 'unknown';
+  var now = Date.now();
+  var entry = apiLimiter.get(ip) || { count: 0, reset: now + 60000 };
+  if (now > entry.reset) { entry.count = 0; entry.reset = now + 60000; }
+  entry.count++;
+  apiLimiter.set(ip, entry);
+  if (entry.count > 120) {
+    return res.status(429).json({ error: 'Too many requests. Try again later.' });
+  }
+  next();
+});
+
+// Strip null bytes from request body strings to prevent injection
+app.use(function (req, res, next) {
+  if (req.body && typeof req.body === 'object') {
+    Object.keys(req.body).forEach(function(k) {
+      if (typeof req.body[k] === 'string') {
+        req.body[k] = req.body[k].replace(/\0/g, '');
+      }
+    });
+  }
+  next();
+});
+
+function requireAuth(req, res, next) {
+  if (authorizeRequest(req)) return next();
+  res.status(401).json({ error: 'Unauthorized' });
+}
+
 app.use('/uploads', express.static(UPLOADS_DIR));
 
 app.use(function (req, res, next) {
@@ -89,6 +195,7 @@ app.use(function (req, res, next) {
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('X-XSS-Protection', '1; mode=block');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
   next();
 });
 
@@ -106,13 +213,33 @@ app.get('*', function (req, res, next) {
   if (req.path.indexOf('.') !== -1 || req.path === '/') return next();
   var htmlPath = path.join(__dirname, '..', req.path + '.html');
   try {
-    if (require('fs').existsSync(htmlPath)) return res.sendFile(htmlPath);
+    if (fs.existsSync(htmlPath)) return res.sendFile(htmlPath);
   } catch (_) {}
   next();
 });
 
 function sha256(str) {
   return crypto.createHash('sha256').update(str).digest('hex');
+}
+
+// Master password uses scrypt; falls back to SHA-256 for migration
+function verifyMasterPassword(password) {
+  if (!ADMIN_HASH) return false;
+  if (ADMIN_HASH.indexOf(':') > 0) {
+    return verifyPassword(password, ADMIN_HASH);
+  }
+  return sha256(password) === ADMIN_HASH;
+}
+
+// Simple in-memory rate limiter (per-IP, sliding window)
+var loginAttempts = new Map();
+function checkRateLimit(ip) {
+  var now = Date.now();
+  var entry = loginAttempts.get(ip) || { count: 0, reset: now + 60000 };
+  if (now > entry.reset) { entry.count = 0; entry.reset = now + 60000; }
+  entry.count++;
+  loginAttempts.set(ip, entry);
+  return entry.count <= 10;
 }
 
 function hashPassword(password) {
@@ -128,6 +255,24 @@ function verifyPassword(password, stored) {
   return hash === parts[1];
 }
 
+function logAudit(user, action, details, req) {
+  try {
+    var ip = req ? (req.ip || req.connection.remoteAddress || '') : '';
+    var ua = req ? (req.headers['user-agent'] || '') : '';
+    var uid = user ? user.id : null;
+    var uname = user ? (user.username || user.name || '') : '';
+    db.prepare("INSERT INTO audit_log (user_id, username, action, details, ip_address, user_agent) VALUES (?,?,?,?,?,?)").run(uid, uname, action, details || '', ip, ua);
+  } catch (_) {}
+}
+
+function getTokenFromRequest(req) {
+  var auth = req.headers && req.headers.authorization;
+  if (auth && auth.startsWith('Bearer ')) return auth.slice(7);
+  if (req.body && req.body.token) return req.body.token;
+  // Security: query param tokens removed to prevent leakage in logs/referrers
+  return null;
+}
+
 function getUserFromToken(body) {
   if (body && body.token && sessions.has(body.token)) {
     var s = sessions.get(body.token);
@@ -136,6 +281,19 @@ function getUserFromToken(body) {
       return s.user || null;
     }
     sessions.delete(body.token);
+  }
+  return null;
+}
+
+function getUserFromRequest(req) {
+  var token = getTokenFromRequest(req);
+  if (token && sessions.has(token)) {
+    var s = sessions.get(token);
+    if (Date.now() < s.expires) {
+      s.expires = Date.now() + SESSION_TTL;
+      return s.user || null;
+    }
+    sessions.delete(token);
   }
   return null;
 }
@@ -149,33 +307,56 @@ function authorize(body) {
     }
     sessions.delete(body.token);
   }
-  // Master admin password fallback
-  if (body && body.password && ADMIN_HASH && sha256(body.password) === ADMIN_HASH) {
-    return true;
+  return false;
+}
+
+function authorizeRequest(req) {
+  var token = getTokenFromRequest(req);
+  if (token && sessions.has(token)) {
+    var s = sessions.get(token);
+    if (Date.now() < s.expires) {
+      s.expires = Date.now() + SESSION_TTL;
+      return true;
+    }
+    sessions.delete(token);
   }
   return false;
 }
 
 app.post('/api/admin/login', function (req, res) {
   try {
+    // Rate limiting
+    var ip = req.ip || req.connection.remoteAddress || 'unknown';
+    if (!checkRateLimit(ip)) {
+      logAudit(null, 'login-rate-limited', 'IP: ' + ip, req);
+      return res.status(429).json({ error: 'Too many login attempts. Try again in 60 seconds.' });
+    }
     var b = req.body;
     // Try user-based login (username + password)
     if (b && b.username && b.password) {
       var user = db.prepare("SELECT * FROM users WHERE username = ?").get(b.username);
       if (user && verifyPassword(b.password, user.password_hash)) {
         var token = crypto.randomBytes(32).toString('hex');
-        var userInfo = { id: user.id, username: user.username, name: user.name, permissions: JSON.parse(user.permissions || '{}') };
+        var userInfo = { id: user.id, username: user.username, name: user.name, permissions: JSON.parse(user.permissions || '{}'), branch_id: user.branch_id || null };
         sessions.set(token, { expires: Date.now() + SESSION_TTL, user: userInfo });
+        loginAttempts.delete(ip);
+        // Update last_login
+        db.prepare("UPDATE users SET last_login = datetime('now') WHERE id = ?").run(user.id);
+        logAudit(userInfo, 'login', 'Login from ' + ip, req);
         return res.json({ success: true, token: token, user: userInfo });
       }
     }
-    // Fallback to master admin password
-    if (b && b.password && ADMIN_HASH && sha256(b.password) === ADMIN_HASH) {
+    // Fallback to master admin password (scrypt; SHA-256 for migration)
+    if (b && b.password && verifyMasterPassword(b.password)) {
       var token = crypto.randomBytes(32).toString('hex');
-      sessions.set(token, { expires: Date.now() + SESSION_TTL, user: { id: 0, username: 'admin', name: 'Admin', permissions: { subscribers: true, messages: true, campaigns: true, products: true, sales: true, livechat: true, users: true } } });
-      return res.json({ success: true, token: token, user: { id: 0, username: 'admin', name: 'Admin', permissions: { subscribers: true, messages: true, campaigns: true, products: true, sales: true, livechat: true, users: true } } });
+      var allPerms = { subscribers: true, messages: true, campaigns: true, products: true, sales: true, livechat: true, users: true, content: true, job_cards: true };
+      sessions.set(token, { expires: Date.now() + SESSION_TTL, user: { id: 0, username: 'admin', name: 'Admin', permissions: allPerms } });
+      loginAttempts.delete(ip);
+      logAudit({ id: 0, username: 'admin', name: 'Admin' }, 'login', 'Master admin login from ' + ip, req);
+      return res.json({ success: true, token: token, user: { id: 0, username: 'admin', name: 'Admin', permissions: allPerms } });
     }
-    return res.status(401).json({ error: 'Unauthorized' });
+    logAudit(null, 'login-failed', 'Failed login attempt from ' + ip + ' user: ' + (b ? b.username || 'unknown' : 'unknown'), req);
+    return res.status(401).json({ error: 'Incorrect username or password.' });
   } catch (err) {
     res.status(500).json({ error: err.message || 'Server error' });
   }
@@ -183,7 +364,7 @@ app.post('/api/admin/login', function (req, res) {
 
 app.get('/api/admin/me', function (req, res) {
   try {
-    var user = getUserFromToken(req.query);
+    var user = getUserFromRequest(req);
     if (!user) return res.status(401).json({ error: 'Unauthorized' });
     res.json({ success: true, user: user });
   } catch (err) {
@@ -194,10 +375,16 @@ app.get('/api/admin/me', function (req, res) {
 // ── User Management (admin only) ──
 app.get('/api/admin/users', function (req, res) {
   try {
-    var user = getUserFromToken(req.query);
+    var user = getUserFromRequest(req);
     if (!user) return res.status(401).json({ error: 'Unauthorized' });
     if (!user.permissions.users) return res.status(403).json({ error: 'Forbidden' });
-    var users = db.prepare("SELECT id, username, name, permissions, created_at FROM users ORDER BY id").all();
+    var users;
+    if (user.branch_id) {
+      // Branch users only see users from their branch
+      users = db.prepare("SELECT id, username, name, permissions, branch_id, role, created_at FROM users WHERE branch_id = ? ORDER BY id").all(user.branch_id);
+    } else {
+      users = db.prepare("SELECT id, username, name, permissions, branch_id, role, created_at FROM users ORDER BY id").all();
+    }
     res.json({ success: true, users: users });
   } catch (err) {
     res.status(500).json({ error: err.message || 'Server error' });
@@ -206,16 +393,21 @@ app.get('/api/admin/users', function (req, res) {
 
 app.post('/api/admin/users', function (req, res) {
   try {
-    var user = getUserFromToken(req.body);
-    if (!user) return res.status(401).json({ error: 'Unauthorized' });
-    if (!user.permissions.users) return res.status(403).json({ error: 'Forbidden' });
+    var admin = getUserFromRequest(req);
+    if (!admin) return res.status(401).json({ error: 'Unauthorized' });
+    if (!admin.permissions.users) return res.status(403).json({ error: 'Forbidden' });
     var b = req.body;
     if (!b.username || !b.password || !b.name) return res.status(400).json({ error: 'username, password, and name are required' });
+    // Branch user can only create users for their own branch
+    var branchId = b.branch_id || admin.branch_id || null;
+    if (admin.branch_id && b.branch_id && b.branch_id !== admin.branch_id) return res.status(403).json({ error: 'Cannot create users for other branches' });
     var existing = db.prepare("SELECT id FROM users WHERE username = ?").get(b.username);
     if (existing) return res.status(409).json({ error: 'Username already exists' });
     var password_hash = hashPassword(b.password);
     var permissions = JSON.stringify(b.permissions || {});
-    var result = db.prepare("INSERT INTO users (username, password_hash, name, permissions) VALUES (?, ?, ?, ?)").run(b.username, password_hash, b.name, permissions);
+    var role = b.role || 'staff';
+    var result = db.prepare("INSERT INTO users (username, password_hash, name, permissions, branch_id, role, created_by) VALUES (?, ?, ?, ?, ?, ?, ?)").run(b.username, password_hash, b.name, permissions, branchId, role, admin.id);
+    logAudit(admin, 'create-user', 'Created user: ' + b.username + ' (ID: ' + result.lastInsertRowid + ')', req);
     res.json({ success: true, id: result.lastInsertRowid });
   } catch (err) {
     res.status(500).json({ error: err.message || 'Server error' });
@@ -224,16 +416,31 @@ app.post('/api/admin/users', function (req, res) {
 
 app.put('/api/admin/users/:id', function (req, res) {
   try {
-    var user = getUserFromToken(req.body);
-    if (!user) return res.status(401).json({ error: 'Unauthorized' });
-    if (!user.permissions.users) return res.status(403).json({ error: 'Forbidden' });
-    var b = req.body;
-    if (b.password) {
-      var password_hash = hashPassword(b.password);
-      db.prepare("UPDATE users SET password_hash = ?, name = ?, permissions = ? WHERE id = ?").run(password_hash, b.name, JSON.stringify(b.permissions || {}), req.params.id);
-    } else {
-      db.prepare("UPDATE users SET name = ?, permissions = ? WHERE id = ?").run(b.name, JSON.stringify(b.permissions || {}), req.params.id);
+    var admin = getUserFromRequest(req);
+    if (!admin) return res.status(401).json({ error: 'Unauthorized' });
+    if (!admin.permissions.users) return res.status(403).json({ error: 'Forbidden' });
+    // Branch users can only edit users from their branch
+    if (admin.branch_id) {
+      var target = db.prepare("SELECT branch_id FROM users WHERE id = ?").get(req.params.id);
+      if (!target) return res.status(404).json({ error: 'User not found' });
+      if (target.branch_id !== admin.branch_id) return res.status(403).json({ error: 'Cannot edit users from other branches' });
     }
+    var b = req.body;
+    var existing = db.prepare("SELECT * FROM users WHERE id = ?").get(req.params.id);
+    if (!existing) return res.status(404).json({ error: 'User not found' });
+    var updates = [];
+    var vals = [];
+    if (b.password) { var password_hash = hashPassword(b.password); updates.push('password_hash = ?'); vals.push(password_hash); }
+    if (b.name !== undefined) { updates.push('name = ?'); vals.push(b.name); }
+    if (b.permissions !== undefined) { updates.push('permissions = ?'); vals.push(JSON.stringify(b.permissions)); }
+    if (b.branch_id !== undefined) { updates.push('branch_id = ?'); vals.push(b.branch_id || null); }
+    if (b.role !== undefined) { updates.push('role = ?'); vals.push(b.role); }
+    if (updates.length) {
+      vals.push(req.params.id);
+      var stmt = db.prepare("UPDATE users SET " + updates.join(', ') + " WHERE id = ?");
+      stmt.run.apply(stmt, vals);
+    }
+    logAudit(admin, 'update-user', 'Updated user ID ' + req.params.id + ' (' + existing.username + ')', req);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message || 'Server error' });
@@ -242,11 +449,331 @@ app.put('/api/admin/users/:id', function (req, res) {
 
 app.delete('/api/admin/users/:id', function (req, res) {
   try {
-    var user = getUserFromToken(req.body);
-    if (!user) return res.status(401).json({ error: 'Unauthorized' });
-    if (!user.permissions.users) return res.status(403).json({ error: 'Forbidden' });
+    var admin = getUserFromRequest(req);
+    if (!admin) return res.status(401).json({ error: 'Unauthorized' });
+    if (!admin.permissions.users) return res.status(403).json({ error: 'Forbidden' });
+    // Branch users can only delete users from their branch
+    if (admin.branch_id) {
+      var target = db.prepare("SELECT branch_id, username FROM users WHERE id = ?").get(req.params.id);
+      if (!target) return res.status(404).json({ error: 'User not found' });
+      if (target.branch_id !== admin.branch_id) return res.status(403).json({ error: 'Cannot delete users from other branches' });
+    }
+    var delUser = db.prepare("SELECT username FROM users WHERE id = ?").get(req.params.id);
     db.prepare("DELETE FROM users WHERE id = ?").run(req.params.id);
+    logAudit(admin, 'delete-user', 'Deleted user ID ' + req.params.id + ' (' + (delUser ? delUser.username : 'unknown') + ')', req);
     res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message || 'Server error' });
+  }
+});
+
+// ── Password Reset Requests ──
+app.post('/api/admin/request-password-reset', function (req, res) {
+  try {
+    var username = (req.body.username || '').trim().toLowerCase();
+    if (!username) return res.status(400).json({ error: 'Username is required' });
+    var user = db.prepare("SELECT id, username, name, branch_id FROM users WHERE LOWER(username) = ?").get(username);
+    if (!user) return res.json({ success: true, message: 'If the account exists, a reset request has been submitted.' });
+    if (!user.branch_id) return res.json({ success: true, message: 'If the account exists, a reset request has been submitted.' });
+    var existing = db.prepare("SELECT id FROM password_resets WHERE username = ? AND status = 'pending'").get(user.username);
+    if (existing) return res.json({ success: true, message: 'A reset request is already pending for this account.' });
+    db.prepare("INSERT INTO password_resets (username, branch_id) VALUES (?, ?)").run(user.username, user.branch_id);
+    res.json({ success: true, message: 'Reset request submitted. An admin will review it shortly.' });
+  } catch (err) {
+    res.status(500).json({ error: err.message || 'Server error' });
+  }
+});
+
+app.get('/api/admin/password-resets', function (req, res) {
+  try {
+    var admin = getUserFromRequest(req);
+    if (!admin) return res.status(401).json({ error: 'Unauthorized' });
+    if (!admin.permissions.users && admin.id !== 0) return res.status(403).json({ error: 'Forbidden' });
+    var rows;
+    if (admin.branch_id) {
+      rows = db.prepare("SELECT * FROM password_resets WHERE branch_id = ? ORDER BY requested_at DESC").all(admin.branch_id);
+    } else {
+      rows = db.prepare("SELECT * FROM password_resets ORDER BY requested_at DESC").all();
+    }
+    res.json({ success: true, resets: rows });
+  } catch (err) {
+    res.status(500).json({ error: err.message || 'Server error' });
+  }
+});
+
+app.post('/api/admin/password-resets/:id/approve', function (req, res) {
+  try {
+    var admin = getUserFromRequest(req);
+    if (!admin) return res.status(401).json({ error: 'Unauthorized' });
+    if (!admin.permissions.users && admin.id !== 0) return res.status(403).json({ error: 'Forbidden' });
+    var reset = db.prepare("SELECT * FROM password_resets WHERE id = ? AND status = 'pending'").get(req.params.id);
+    if (!reset) return res.status(404).json({ error: 'Reset request not found or already resolved' });
+    if (admin.branch_id && reset.branch_id !== admin.branch_id) return res.status(403).json({ error: 'Cannot reset passwords for other branches' });
+    var newPassword = req.body.password || 'branch123';
+    var password_hash = hashPassword(newPassword);
+    db.prepare("UPDATE users SET password_hash = ? WHERE username = ?").run(password_hash, reset.username);
+    db.prepare("UPDATE password_resets SET status = 'approved', resolved_at = datetime('now'), resolved_by = ? WHERE id = ?").run(admin.username || 'admin', req.params.id);
+    logAudit(admin, 'approve-password-reset', 'Approved reset for user: ' + reset.username + ' (ID: ' + req.params.id + ')', req);
+    res.json({ success: true, message: 'Password reset successfully. New password: ' + newPassword });
+  } catch (err) {
+    res.status(500).json({ error: err.message || 'Server error' });
+  }
+});
+
+app.post('/api/admin/password-resets/:id/reject', function (req, res) {
+  try {
+    var admin = getUserFromRequest(req);
+    if (!admin) return res.status(401).json({ error: 'Unauthorized' });
+    if (!admin.permissions.users && admin.id !== 0) return res.status(403).json({ error: 'Forbidden' });
+    var reset = db.prepare("SELECT * FROM password_resets WHERE id = ? AND status = 'pending'").get(req.params.id);
+    if (!reset) return res.status(404).json({ error: 'Reset request not found or already resolved' });
+    if (admin.branch_id && reset.branch_id !== admin.branch_id) return res.status(403).json({ error: 'Cannot reject resets for other branches' });
+    db.prepare("UPDATE password_resets SET status = 'rejected', resolved_at = datetime('now'), resolved_by = ? WHERE id = ?").run(admin.username || 'admin', req.params.id);
+    logAudit(admin, 'reject-password-reset', 'Rejected reset for user: ' + reset.username + ' (ID: ' + req.params.id + ')', req);
+    res.json({ success: true, message: 'Reset request rejected.' });
+  } catch (err) {
+    res.status(500).json({ error: err.message || 'Server error' });
+  }
+});
+
+// ─── Campaign Templates CRUD ───
+app.get('/api/admin/campaign-templates', function(req, res) {
+  try {
+    if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+    var rows = db.prepare('SELECT * FROM campaign_templates ORDER BY created_at DESC').all();
+    res.json({ success: true, templates: rows });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+app.post('/api/admin/campaign-templates', function(req, res) {
+  try {
+    if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+    var admin = getUserFromRequest(req);
+    var b = req.body;
+    db.prepare('INSERT INTO campaign_templates (name, type, subject, html) VALUES (?,?,?,?)').run(b.name, b.type||'general', b.subject||'', b.html||'');
+    logAudit(admin, 'create-campaign-template', 'Created template: "' + (b.name || 'untitled') + '"', req);
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+app.put('/api/admin/campaign-templates/:id', function(req, res) {
+  try {
+    if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+    var admin = getUserFromRequest(req);
+    var b = req.body;
+    db.prepare('UPDATE campaign_templates SET name=?, type=?, subject=?, html=? WHERE id=?').run(b.name, b.type||'general', b.subject||'', b.html||'', req.params.id);
+    logAudit(admin, 'update-campaign-template', 'Updated template ID ' + req.params.id, req);
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+app.delete('/api/admin/campaign-templates/:id', function(req, res) {
+  try {
+    if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+    var admin = getUserFromRequest(req);
+    db.prepare('DELETE FROM campaign_templates WHERE id=?').run(req.params.id);
+    logAudit(admin, 'delete-campaign-template', 'Deleted template ID ' + req.params.id, req);
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ─── Campaign History ───
+app.get('/api/admin/campaigns', function(req, res) {
+  try {
+    if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+    var rows = db.prepare('SELECT * FROM campaigns ORDER BY created_at DESC').all();
+    res.json({ success: true, campaigns: rows });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ─── Subscriber management ───
+app.post('/api/admin/subscribers', function(req, res) {
+  try {
+    if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+    var admin = getUserFromRequest(req);
+    var email = (req.body.email || '').trim().toLowerCase();
+    if (!email) return res.status(400).json({ error: 'Email is required' });
+    db.prepare('INSERT OR IGNORE INTO subscribers (email, source, notes) VALUES (?,?,?)').run(email, 'manual', req.body.notes || null);
+    logAudit(admin, 'add-subscriber', 'Added subscriber: ' + email, req);
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+app.post('/api/admin/subscribers/bulk-delete', function(req, res) {
+  try {
+    if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+    var admin = getUserFromRequest(req);
+    var emails = req.body.emails || [];
+    var del = db.prepare('DELETE FROM subscribers WHERE email = ?');
+    var tx = db.transaction(function() { emails.forEach(function(e) { del.run(e); }); });
+    tx();
+    logAudit(admin, 'bulk-delete-subscribers', 'Deleted ' + emails.length + ' subscribers', req);
+    res.json({ success: true, deleted: emails.length });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ─── Messages management ───
+app.put('/api/admin/messages/:id/read', function(req, res) {
+  try {
+    if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+    var admin = getUserFromRequest(req);
+    db.prepare("UPDATE messages SET is_read=1 WHERE id=?").run(req.params.id);
+    logAudit(admin, 'mark-message-read', 'Marked message ID ' + req.params.id + ' as read', req);
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+app.delete('/api/admin/messages/:id', function(req, res) {
+  try {
+    if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+    var admin = getUserFromRequest(req);
+    db.prepare('DELETE FROM messages WHERE id=?').run(req.params.id);
+    logAudit(admin, 'delete-message', 'Deleted message ID ' + req.params.id, req);
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+app.post('/api/admin/messages/bulk-delete', function(req, res) {
+  try {
+    if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+    var admin = getUserFromRequest(req);
+    var ids = req.body.ids || [];
+    var del = db.prepare('DELETE FROM messages WHERE id=?');
+    var tx = db.transaction(function() { ids.forEach(function(id) { del.run(id); }); });
+    tx();
+    logAudit(admin, 'bulk-delete-messages', 'Deleted ' + ids.length + ' messages', req);
+    res.json({ success: true, deleted: ids.length });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ─── Audit log ───
+app.get('/api/admin/audit-log', function(req, res) {
+  try {
+    if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+    var user = getUserFromRequest(req);
+
+    var conditions = [];
+    var params = [];
+
+    if (req.query.action) {
+      conditions.push('action = ?');
+      params.push(req.query.action);
+    }
+    if (req.query.username) {
+      conditions.push('username LIKE ?');
+      params.push('%' + req.query.username.replace(/[%_]/g, '\\$&') + '%');
+    }
+
+    // Branch users can only see their own branch's logs (by their username)
+    if (user && user.branch_id) {
+      conditions.push('username = ?');
+      params.push(user.username);
+    }
+
+    var where = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';
+    var rows = db.prepare('SELECT * FROM audit_log ' + where + ' ORDER BY created_at DESC LIMIT 500').all.apply(null, params.length ? [params] : []);
+    var total = db.prepare('SELECT COUNT(*) as cnt FROM audit_log ' + where).get.apply(null, params.length ? [params] : []);
+    res.json({ success: true, entries: rows, total: total ? total.cnt : rows.length });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ─── Quotation status update ───
+app.put('/api/admin/quotations/:doc/status', function(req, res) {
+  try {
+    if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+    var admin = getUserFromRequest(req);
+    var validStatuses = ['pending','approved','rejected','converted'];
+    if (validStatuses.indexOf(req.body.status) === -1) return res.status(400).json({ error: 'Invalid status' });
+    db.prepare("UPDATE quotations SET status=? WHERE doc_number=?").run(req.body.status, req.params.doc);
+    logAudit(admin, 'update-quotation-status', 'Updated quotation ' + req.params.doc + ' to ' + req.body.status, req);
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ─── Chat transcripts ───
+app.get('/api/admin/chat-transcripts', function(req, res) {
+  try {
+    if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+    var rows = db.prepare('SELECT * FROM chat_transcripts ORDER BY created_at DESC LIMIT 100').all();
+    res.json({ success: true, transcripts: rows });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+app.put('/api/admin/chat-transcripts/:id', function(req, res) {
+  try {
+    if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+    var admin = getUserFromRequest(req);
+    db.prepare("UPDATE chat_transcripts SET status=?, assigned_to=? WHERE id=?").run(req.body.status||'closed', req.body.assigned_to||null, req.params.id);
+    logAudit(admin, 'update-chat-transcript', 'Updated chat transcript ID ' + req.params.id, req);
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ─── Branch hours update ───
+app.put('/api/admin/branches/:id/hours', function(req, res) {
+  try {
+    if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+    var admin = getUserFromRequest(req);
+    db.prepare("UPDATE branches SET hours_json=?, hours=? WHERE id=?").run(JSON.stringify(req.body.hours||{}), req.body.display_hours||'', req.params.id);
+    logAudit(admin, 'update-branch-hours', 'Updated hours for branch: ' + req.params.id, req);
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ─── Subscriber search/filter ───
+app.get('/api/admin/subscribers/search', function(req, res) {
+  try {
+    if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+    var q = req.query.q || '';
+    var rows = q ? db.prepare("SELECT * FROM subscribers WHERE email LIKE ? ORDER BY created_at DESC").all('%' + q.replace(/[%_]/g,'\\$&') + '%') : db.prepare("SELECT * FROM subscribers ORDER BY created_at DESC").all();
+    res.json({ success: true, subscribers: rows });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ─── Campaign save (draft / schedule) ───
+app.post('/api/admin/campaigns', function(req, res) {
+  try {
+    if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+    var b = req.body;
+    var user = getUserFromRequest(req);
+    db.prepare('INSERT INTO campaigns (type, subject, html, status, scheduled_for, created_by) VALUES (?,?,?,?,?,?)').run(
+      b.type || 'general', b.subject || '', b.html || '', b.status || 'draft', b.scheduled_for || null, user ? (user.name || user.username) : 'admin'
+    );
+    logAudit(user, 'create-campaign', 'Created campaign: "' + (b.subject || 'untitled') + '"', req);
+    res.json({ success: true, id: db.prepare('SELECT last_insert_rowid() as id').get().id });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+/* ─── Change own password ─── */
+app.post('/api/admin/change-password', function (req, res) {
+  try {
+    var user = getUserFromRequest(req);
+    if (!user) return res.status(401).json({ error: 'Unauthorized' });
+
+    var oldPassword = req.body.old_password || '';
+    var newPassword = req.body.new_password || '';
+
+    if (!oldPassword || !newPassword) {
+      return res.status(400).json({ error: 'Both current password and new password are required' });
+    }
+    if (newPassword.length < 4) {
+      return res.status(400).json({ error: 'New password must be at least 4 characters' });
+    }
+
+    // If master admin (id === 0), verify via master password
+    if (user.id === 0) {
+      if (!verifyMasterPassword(oldPassword)) {
+        return res.status(403).json({ error: 'Current password is incorrect' });
+      }
+      // Update .env or just acknowledge — master admin password change is handled via .env
+      return res.json({ success: true, message: 'For master admin, update ADMIN_PASSWORD_HASH in the .env file. Password verified.' });
+    }
+
+    // DB user: verify old password
+    var dbUser = db.prepare("SELECT * FROM users WHERE id = ?").get(user.id);
+    if (!dbUser) return res.status(404).json({ error: 'User not found' });
+
+    if (!verifyPassword(oldPassword, dbUser.password_hash)) {
+      return res.status(403).json({ error: 'Current password is incorrect' });
+    }
+
+    var newHash = hashPassword(newPassword);
+    db.prepare("UPDATE users SET password_hash = ? WHERE id = ?").run(newHash, user.id);
+    logAudit(user, 'change-password', 'Changed own password (user ID: ' + user.id + ')', req);
+    res.json({ success: true, message: 'Password changed successfully.' });
   } catch (err) {
     res.status(500).json({ error: err.message || 'Server error' });
   }
@@ -299,7 +826,7 @@ app.post('/api/contact', function (req, res) {
 
 app.post('/api/get-data', function (req, res) {
   try {
-    if (!authorize(req.body)) {
+    if (!authorizeRequest(req)) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
@@ -347,7 +874,7 @@ app.post('/api/unsubscribe', function (req, res) {
 
 app.post('/api/delete-subscriber', function (req, res) {
   try {
-    if (!authorize(req.body)) {
+    if (!authorizeRequest(req)) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
@@ -369,7 +896,7 @@ app.post('/api/delete-subscriber', function (req, res) {
 
 app.post('/api/notify-unsubscribe', function (req, res) {
   try {
-    if (!authorize(req.body)) {
+    if (!authorizeRequest(req)) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
@@ -388,11 +915,12 @@ app.post('/api/notify-unsubscribe', function (req, res) {
 
 app.post('/api/clear-data', function (req, res) {
   try {
-    if (!authorize(req.body)) {
+    if (!authorizeRequest(req)) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
     var type = req.body.type || '';
+    var user = getUserFromRequest(req);
     if (type === 'subscribers') {
       db.prepare("DELETE FROM subscribers").run();
     } else if (type === 'messages') {
@@ -400,7 +928,7 @@ app.post('/api/clear-data', function (req, res) {
     } else {
       return res.status(400).json({ error: 'Invalid type' });
     }
-
+    logAudit(user, 'clear-data', 'Cleared all ' + type, req);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message || 'Server error' });
@@ -410,19 +938,38 @@ app.post('/api/clear-data', function (req, res) {
 app.post('/api/upload', function (req, res) {
   upload.single('file')(req, res, function (err) {
     if (err) return res.status(400).json({ error: err.message });
-    if (!req.body || !authorize(req.body)) {
+    if (!req.body || !authorizeRequest(req)) {
       if (req.file) fs.unlinkSync(req.file.path);
       return res.status(401).json({ error: 'Unauthorized' });
     }
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-    var url = '/uploads/' + req.file.filename;
-    res.json({ success: true, url: url, filename: req.file.originalname });
+    // Convert any non-WebP image to WebP using sharp
+    var filePath = req.file.path;
+    var originalExt = path.extname(req.file.originalname).toLowerCase();
+    (async function() {
+      try {
+        if (originalExt !== '.webp') {
+          var tempPath = filePath + '.tmp';
+          fs.renameSync(filePath, tempPath);
+          await sharp(tempPath).webp({ quality: 85 }).toFile(filePath);
+          fs.unlinkSync(tempPath);
+        }
+      } catch (convErr) {
+        // If conversion fails, keep original (saved with .webp extension from multer)
+        console.warn('WebP conversion failed:', convErr.message);
+      }
+    })().then(function() {
+      var user = getUserFromRequest(req);
+      logAudit(user, 'upload', 'Uploaded: ' + req.file.originalname + ' → ' + req.file.filename, req);
+      var url = '/uploads/' + req.file.filename;
+      res.json({ success: true, url: url, filename: req.file.originalname });
+    });
   });
 });
 
 app.post('/api/send-campaign', function (req, res) {
   try {
-    if (!authorize(req.body)) {
+    if (!authorizeRequest(req)) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
@@ -448,6 +995,14 @@ app.post('/api/send-campaign', function (req, res) {
     var typeLabels = { promotion: 'Promotion', sale: 'Sale', 'new': 'New Arrival', general: 'Announcement' };
     var typeLabel = typeLabels[type] || 'Announcement';
 
+    var settings = db.prepare("SELECT * FROM site_settings").all();
+    var s = {};
+    settings.forEach(function(r) { s[r.key] = r.value; });
+    var campAddr = s.campaign_footer_address || 'GF Shop 12 Gustav Voigts Center, Independence Ave, Windhoek';
+    var campPhone = s.campaign_footer_phone || '061228179';
+    var campEmail = s.campaign_footer_email || 'windhoek@netmac.co.za';
+    var campHours = s.campaign_footer_hours || 'Mon-Fri: 08:30-17:30 | Sat: 08:30-13:00 | Sun: 09:00-13:00';
+
     var fullHtml = '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">' +
       '<title>' + subject + '</title></head><body style="margin:0;padding:0;background:#f4f4f6;font-family:Arial,sans-serif;">' +
       '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f6;"><tr><td align="center" style="padding:20px;">' +
@@ -466,9 +1021,9 @@ app.post('/api/send-campaign', function (req, res) {
       '</td>' +
       '<td style="vertical-align:top;font-size:12px;color:#555;line-height:1.5;">' +
       '<strong style="color:#1a1a2e;font-size:13px;">ROYAL COMPUTERS</strong><br>' +
-      'GF Shop 12 Gustav Voigts Center, Independence Ave, Windhoek<br>' +
-      'Tel: 061228179 | Email: windhoek@netmac.co.za<br>' +
-      'www.netmac.co.za | Mon-Fri: 08:30-17:30 | Sat: 08:30-13:00 | Sun: 09:00-13:00' +
+      campAddr + '<br>' +
+      'Tel: ' + campPhone + ' | Email: ' + campEmail + '<br>' +
+      'www.netmac.co.za | ' + campHours +
       '</td></tr></table>' +
       '</td></tr>' +
       '<tr><td style="background:#1a1a2e;padding:16px;text-align:center;">' +
@@ -489,6 +1044,8 @@ app.post('/api/send-campaign', function (req, res) {
       if (err) {
         res.status(500).json({ error: err.message || 'Failed to send' });
       } else {
+        var admin = getUserFromRequest(req);
+        logAudit(admin, 'send-campaign', 'Sent campaign: "' + subject + '" to ' + subscribers.length + ' subscribers', req);
         res.json({ success: true, sent: subscribers.length, total: subscribers.length });
       }
     });
@@ -510,7 +1067,7 @@ app.get('/api/sales', function (req, res) {
 
 app.get('/api/sales/all', function (req, res) {
   try {
-    if (!authorize(req.query)) return res.status(401).json({ error: 'Unauthorized' });
+    if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
     var sales = db.prepare("SELECT * FROM sales ORDER BY created_at DESC").all();
     res.json({ success: true, sales: sales });
   } catch (err) {
@@ -520,7 +1077,9 @@ app.get('/api/sales/all', function (req, res) {
 
 app.post('/api/sales', function (req, res) {
   try {
-    if (!authorize(req.body)) return res.status(401).json({ error: 'Unauthorized' });
+    if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+    var admin = getUserFromRequest(req);
+    if (admin && admin.branch_id) return res.status(403).json({ error: 'Branch users cannot create sales' });
     var b = req.body;
     if (!b.product_id || !b.sale_price || !b.start_date || !b.end_date) {
       return res.status(400).json({ error: 'Missing required fields: product_id, sale_price, start_date, end_date' });
@@ -528,6 +1087,7 @@ app.post('/api/sales', function (req, res) {
     var result = db.prepare("INSERT INTO sales (product_id, sale_price, old_price, start_date, end_date, label, ad_image, ad_video, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)").run(
       b.product_id, b.sale_price, b.old_price || null, b.start_date, b.end_date, b.label || 'sale', b.ad_image || null, b.ad_video || null, b.description || null
     );
+    logAudit(admin, 'create-sale', 'Created sale for product: ' + b.product_id + ' (price: N$' + b.sale_price + ')', req);
     res.json({ success: true, id: result.lastInsertRowid });
   } catch (err) {
     res.status(500).json({ error: err.message || 'Server error' });
@@ -536,11 +1096,15 @@ app.post('/api/sales', function (req, res) {
 
 app.put('/api/sales/:id', function (req, res) {
   try {
-    if (!authorize(req.body)) return res.status(401).json({ error: 'Unauthorized' });
+    if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+    var admin = getUserFromRequest(req);
+    if (admin && admin.branch_id) return res.status(403).json({ error: 'Branch users cannot edit sales' });
     var b = req.body;
+    var oldSale = db.prepare("SELECT * FROM sales WHERE id=?").get(req.params.id);
     db.prepare("UPDATE sales SET product_id=?, sale_price=?, old_price=?, start_date=?, end_date=?, label=?, ad_image=?, ad_video=?, description=?, active=? WHERE id=?").run(
       b.product_id, b.sale_price, b.old_price || null, b.start_date, b.end_date, b.label || 'sale', b.ad_image || null, b.ad_video || null, b.description || null, b.active !== undefined ? (b.active ? 1 : 0) : 1, req.params.id
     );
+    logAudit(admin, 'update-sale', 'Updated sale ID ' + req.params.id + ' for product: ' + (b.product_id || (oldSale ? oldSale.product_id : 'unknown')), req);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message || 'Server error' });
@@ -549,8 +1113,12 @@ app.put('/api/sales/:id', function (req, res) {
 
 app.delete('/api/sales/:id', function (req, res) {
   try {
-    if (!authorize(req.body)) return res.status(401).json({ error: 'Unauthorized' });
+    if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+    var admin = getUserFromRequest(req);
+    if (admin && admin.branch_id) return res.status(403).json({ error: 'Branch users cannot delete sales' });
+    var oldSale = db.prepare("SELECT * FROM sales WHERE id=?").get(req.params.id);
     db.prepare("DELETE FROM sales WHERE id = ?").run(req.params.id);
+    logAudit(admin, 'delete-sale', 'Deleted sale ID ' + req.params.id + ' for product: ' + (oldSale ? oldSale.product_id : 'unknown'), req);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message || 'Server error' });
@@ -569,11 +1137,13 @@ app.get('/api/product-overrides', function (req, res) {
 
 app.put('/api/product-overrides/:productId', function (req, res) {
   try {
-    if (!authorize(req.body)) return res.status(401).json({ error: 'Unauthorized' });
+    if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+    var admin = getUserFromRequest(req);
     var b = req.body;
-    db.prepare("INSERT INTO product_overrides (product_id, price, description, compatibility, specs, name, image, variants_json, hidden, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now')) ON CONFLICT(product_id) DO UPDATE SET price=excluded.price, description=excluded.description, compatibility=excluded.compatibility, specs=excluded.specs, name=excluded.name, image=excluded.image, variants_json=excluded.variants_json, hidden=excluded.hidden, updated_at=datetime('now')").run(
-      req.params.productId, b.price || null, b.description || null, b.compatibility || null, b.specs || null, b.name || null, b.image || null, b.variants_json || null, b.hidden !== undefined ? (b.hidden ? 1 : 0) : 0
+    db.prepare("INSERT INTO product_overrides (product_id, price, description, compatibility, specs, name, image, variants_json, hidden, badge, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now')) ON CONFLICT(product_id) DO UPDATE SET price=excluded.price, description=excluded.description, compatibility=excluded.compatibility, specs=excluded.specs, name=excluded.name, image=excluded.image, variants_json=excluded.variants_json, hidden=excluded.hidden, badge=excluded.badge, updated_at=datetime('now')").run(
+      req.params.productId, b.price || null, b.description || null, b.compatibility || null, b.specs || null, b.name || null, b.image || null, b.variants_json || null, b.hidden !== undefined ? (b.hidden ? 1 : 0) : 0, b.badge || null
     );
+    logAudit(admin, 'update-product-override', 'Updated product: ' + req.params.productId, req);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message || 'Server error' });
@@ -582,8 +1152,10 @@ app.put('/api/product-overrides/:productId', function (req, res) {
 
 app.delete('/api/product-overrides/:productId', function (req, res) {
   try {
-    if (!authorize(req.body)) return res.status(401).json({ error: 'Unauthorized' });
+    if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+    var admin = getUserFromRequest(req);
     db.prepare("DELETE FROM product_overrides WHERE product_id = ?").run(req.params.productId);
+    logAudit(admin, 'delete-product-override', 'Removed override for product: ' + req.params.productId, req);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message || 'Server error' });
@@ -602,7 +1174,8 @@ app.get('/api/custom-products', function (req, res) {
 
 app.post('/api/custom-products', function (req, res) {
   try {
-    if (!authorize(req.body)) return res.status(401).json({ error: 'Unauthorized' });
+    if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+    var admin = getUserFromRequest(req);
     var b = req.body;
     if (!b.id || !b.name) return res.status(400).json({ error: 'id and name are required' });
     db.prepare("INSERT INTO custom_products (id, name, category, image, badge, date, description, compatibility, specs, variants_json, hidden) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").run(
@@ -611,6 +1184,7 @@ app.post('/api/custom-products', function (req, res) {
       b.variants_json || JSON.stringify([{ label: 'Default', price: 0 }]),
       b.hidden || 0
     );
+    logAudit(admin, 'create-custom-product', 'Created custom product: ' + b.id + ' - ' + b.name, req);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message || 'Server error' });
@@ -619,7 +1193,8 @@ app.post('/api/custom-products', function (req, res) {
 
 app.put('/api/custom-products/:id', function (req, res) {
   try {
-    if (!authorize(req.body)) return res.status(401).json({ error: 'Unauthorized' });
+    if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+    var admin = getUserFromRequest(req);
     var b = req.body;
     var sets = []; var vals = [];
     ['name','category','image','badge','date','description','compatibility','specs','variants_json','hidden'].forEach(function(k) {
@@ -627,7 +1202,9 @@ app.put('/api/custom-products/:id', function (req, res) {
     });
     if (!sets.length) return res.status(400).json({ error: 'No fields to update' });
     vals.push(req.params.id);
-    db.prepare("UPDATE custom_products SET " + sets.join(',') + " WHERE id=?").run.apply(null, vals);
+    var stmt = db.prepare("UPDATE custom_products SET " + sets.join(',') + " WHERE id=?");
+    stmt.run.apply(stmt, vals);
+    logAudit(admin, 'update-custom-product', 'Updated custom product: ' + req.params.id, req);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message || 'Server error' });
@@ -636,9 +1213,78 @@ app.put('/api/custom-products/:id', function (req, res) {
 
 app.delete('/api/custom-products/:id', function (req, res) {
   try {
-    if (!authorize(req.body)) return res.status(401).json({ error: 'Unauthorized' });
+    if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+    var admin = getUserFromRequest(req);
     db.prepare("DELETE FROM custom_products WHERE id=?").run(req.params.id);
+    logAudit(admin, 'delete-custom-product', 'Deleted custom product: ' + req.params.id, req);
     res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message || 'Server error' });
+  }
+});
+
+/* ─── Branch Products API ─── */
+app.get('/api/admin/branch-products/:branchId', function (req, res) {
+  try {
+    var user = getUserFromRequest(req);
+    if (!user) return res.status(401).json({ error: 'Unauthorized' });
+    // Branch users can only access their own branch products
+    if (user.branch_id && user.branch_id !== req.params.branchId) return res.status(403).json({ error: 'Forbidden' });
+    var rows = db.prepare("SELECT * FROM branch_products WHERE branch_id = ?").all(req.params.branchId);
+    var productIds = rows.map(function(r) { return r.product_id; });
+    res.json({ success: true, products: rows, productIds: productIds });
+  } catch (err) {
+    res.status(500).json({ error: err.message || 'Server error' });
+  }
+});
+
+app.post('/api/admin/branch-products/:branchId', function (req, res) {
+  try {
+    var user = getUserFromRequest(req);
+    if (!user) return res.status(401).json({ error: 'Unauthorized' });
+    if (user.branch_id && user.branch_id !== req.params.branchId) return res.status(403).json({ error: 'Forbidden' });
+    var b = req.body;
+    if (!b.product_id) return res.status(400).json({ error: 'product_id is required' });
+    db.prepare("INSERT OR IGNORE INTO branch_products (branch_id, product_id) VALUES (?, ?)").run(req.params.branchId, b.product_id);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message || 'Server error' });
+  }
+});
+
+app.delete('/api/admin/branch-products/:branchId/:productId', function (req, res) {
+  try {
+    var user = getUserFromRequest(req);
+    if (!user) return res.status(401).json({ error: 'Unauthorized' });
+    if (user.branch_id && user.branch_id !== req.params.branchId) return res.status(403).json({ error: 'Forbidden' });
+    db.prepare("DELETE FROM branch_products WHERE branch_id = ? AND product_id = ?").run(req.params.branchId, req.params.productId);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message || 'Server error' });
+  }
+});
+
+/* ─── Products public endpoint (with branch filtering) ─── */
+app.get('/api/products', function (req, res) {
+  try {
+    var branchId = req.query.branch_id;
+    // Just return branch products + custom products
+    // The main product catalogue is loaded client-side from products-data.js
+    var branchProductIds = branchId
+      ? db.prepare("SELECT product_id FROM branch_products WHERE branch_id = ? AND is_available = 1").all(branchId).map(function(r) { return r.product_id; })
+      : [];
+    var customProducts = db.prepare("SELECT * FROM custom_products WHERE hidden = 0").all();
+    var products = customProducts.map(function(cp) {
+      var variants = [];
+      try { variants = JSON.parse(cp.variants_json || '[]'); } catch(e) { variants = [{label:'Default',price:0}]; }
+      return { id: cp.id, name: cp.name, category: cp.category || 'Uncategorized', image: cp.image || '', badge: cp.badge || null, date: cp.date || null, variants: variants };
+    });
+    res.json({
+      success: true,
+      products: products,
+      branchProductIds: branchProductIds,
+      branch: branchId || null
+    });
   } catch (err) {
     res.status(500).json({ error: err.message || 'Server error' });
   }
@@ -647,11 +1293,11 @@ app.delete('/api/custom-products/:id', function (req, res) {
 /* ─── Quotations API ─── */
 app.get('/api/quotations', function (req, res) {
   try {
-    if (!authorize(req.query)) return res.status(401).json({ error: 'Unauthorized' });
-    var search = req.query.search || '';
+    if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+    var search = (req.query.search || '').replace(/[%_]/g, '\\$&');
     var rows;
     if (search) {
-      rows = db.prepare("SELECT * FROM quotations WHERE doc_number LIKE ? ORDER BY created_at DESC").all('%' + search + '%');
+      rows = db.prepare("SELECT * FROM quotations WHERE doc_number LIKE ? ESCAPE '\\' ORDER BY created_at DESC").all('%' + search + '%');
     } else {
       rows = db.prepare("SELECT * FROM quotations ORDER BY created_at DESC").all();
     }
@@ -663,7 +1309,7 @@ app.get('/api/quotations', function (req, res) {
 
 app.get('/api/quotations/:docNumber', function (req, res) {
   try {
-    if (!authorize(req.query)) return res.status(401).json({ error: 'Unauthorized' });
+    if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
     var row = db.prepare("SELECT * FROM quotations WHERE doc_number = ?").get(req.params.docNumber);
     if (!row) return res.status(404).json({ error: 'Quotation not found' });
     res.json({ success: true, quotation: row });
@@ -674,6 +1320,7 @@ app.get('/api/quotations/:docNumber', function (req, res) {
 
 app.post('/api/quotations', function (req, res) {
   try {
+    if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
     var b = req.body;
     if (!b.doc_number || !b.items) return res.status(400).json({ error: 'doc_number and items are required' });
     db.prepare("INSERT INTO quotations (doc_number, customer_info, items, subtotal, tax, total, branch_id) VALUES (?, ?, ?, ?, ?, ?, ?)").run(
@@ -691,7 +1338,7 @@ app.post('/api/quotations', function (req, res) {
 
 app.put('/api/quotations/:docNumber', function (req, res) {
   try {
-    if (!authorize(req.body)) return res.status(401).json({ error: 'Unauthorized' });
+    if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
     var b = req.body;
     db.prepare("UPDATE quotations SET customer_info=?, items=?, subtotal=?, tax=?, total=?, branch_id=?, updated_at=datetime('now') WHERE doc_number=?").run(
       JSON.stringify(b.customer_info || {}), JSON.stringify(b.items || []),
@@ -705,13 +1352,701 @@ app.put('/api/quotations/:docNumber', function (req, res) {
 
 app.delete('/api/quotations/:docNumber', function (req, res) {
   try {
-    if (!authorize(req.body)) return res.status(401).json({ error: 'Unauthorized' });
+    if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
     db.prepare("DELETE FROM quotations WHERE doc_number = ?").run(req.params.docNumber);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message || 'Server error' });
   }
 });
+
+/* ─── Branches API ─── */
+
+db.exec(`CREATE TABLE IF NOT EXISTS branches (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  city TEXT DEFAULT '',
+  address TEXT,
+  phone TEXT,
+  email TEXT,
+  hours TEXT DEFAULT '',
+  created_at TEXT DEFAULT (datetime('now'))
+)`);
+
+try { db.exec("ALTER TABLE branches ADD COLUMN is_headquarters INTEGER DEFAULT 0"); } catch(e) {}
+try { db.exec("ALTER TABLE branches ADD COLUMN sort_order INTEGER DEFAULT 0"); } catch(e) {}
+try { db.exec("ALTER TABLE branches ADD COLUMN whatsapp TEXT"); } catch(e) {}
+try { db.exec("ALTER TABLE branches ADD COLUMN latitude TEXT"); } catch(e) {}
+try { db.exec("ALTER TABLE branches ADD COLUMN longitude TEXT"); } catch(e) {}
+try { db.exec("ALTER TABLE branches ADD COLUMN description TEXT"); } catch(e) {}
+try { db.exec("ALTER TABLE branches ADD COLUMN image TEXT"); } catch(e) {}
+
+// Insert default branches if empty (using IDs matching js/branches.js)
+var branchCount = db.prepare("SELECT COUNT(*) as c FROM branches").get().c;
+if (branchCount === 0) {
+  var stmt = db.prepare("INSERT INTO branches (id, name, city, address, phone, email) VALUES (?, ?, ?, ?, ?, ?)");
+  stmt.run('branch-001', 'Royal Computers - Gustav Voigts Centre, Windhoek', 'Windhoek', 'GF Shop 12 Gustav Voigts Center, Independence Ave', '061228179', 'windhoek@netmac.co.za');
+  stmt.run('branch-002', 'Royal Computers - Swakopmund', 'Swakopmund', 'Shop 03 Minette Court Sam Nujoma Street', '064406914', 'swakop@netmec.co.za');
+  stmt.run('branch-003', 'Royal Computers - Oshakati', 'Oshakati', 'Shop 42 Etango Complex', '065227045', 'oshakati@netmac.co.za');
+  stmt.run('branch-004', 'Royal Computers - Walvis Bay', 'Walvis Bay', '111 Hage Geingob Street Office C', '064200453', 'walvisbay@netmac.co.za');
+  stmt.run('branch-005', 'Royal Computers - Tsumeb', 'Tsumeb', 'Shop 03 Tsumeb Shopping Mall', '+264818163936', 'tsumeb@netmac.co.za');
+  stmt.run('branch-006', 'Royal Computers - Grove Mall, Windhoek', 'Windhoek', 'GF Shop 256 Grove Mall', '061242938', 'grove@netmac.co.za');
+}
+
+app.get('/api/admin/branches', function (req, res) {
+  try {
+    if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+    var rows = db.prepare("SELECT * FROM branches ORDER BY name ASC").all();
+    res.json({ success: true, branches: rows });
+  } catch (err) {
+    res.status(500).json({ error: err.message || 'Server error' });
+  }
+});
+
+app.post('/api/admin/branches', function (req, res) {
+  try {
+    if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+    var admin = getUserFromRequest(req);
+    var b = req.body;
+    if (!b.id || !b.name) return res.status(400).json({ error: 'id and name are required' });
+    db.prepare("INSERT INTO branches (id, name, address, phone, email) VALUES (?, ?, ?, ?, ?)").run(
+      b.id, b.name, b.address || null, b.phone || null, b.email || null
+    );
+    logAudit(admin, 'create-branch', 'Created branch: ' + b.id + ' - ' + b.name, req);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message || 'Server error' });
+  }
+});
+
+app.put('/api/admin/branches/:id', function (req, res) {
+  try {
+    if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+    var admin = getUserFromRequest(req);
+    var b = req.body;
+    db.prepare("UPDATE branches SET name=?, address=?, phone=?, email=?, hours=?, whatsapp=?, is_headquarters=?, sort_order=?, image=?, description=? WHERE id=?").run(
+      b.name, b.address || null, b.phone || null, b.email || null, b.hours || null, b.whatsapp || null,
+      b.is_headquarters || 0, b.sort_order || 0, b.image || null, b.description || null, req.params.id
+    );
+    logAudit(admin, 'update-branch', 'Updated branch: ' + req.params.id, req);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message || 'Server error' });
+  }
+});
+
+app.delete('/api/admin/branches/:id', function (req, res) {
+  try {
+    if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+    var admin = getUserFromRequest(req);
+    db.prepare("DELETE FROM branches WHERE id=?").run(req.params.id);
+    logAudit(admin, 'delete-branch', 'Deleted branch: ' + req.params.id, req);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message || 'Server error' });
+  }
+});
+
+/* ─── Job Card Management ─── */
+
+// DB schema for job cards
+db.exec(`CREATE TABLE IF NOT EXISTS job_cards (
+  id TEXT PRIMARY KEY,
+  branch_id TEXT NOT NULL,
+  client_name TEXT NOT NULL,
+  client_company TEXT,
+  client_phone TEXT,
+  client_email TEXT,
+  client_address TEXT,
+  device_type TEXT,
+  device_brand TEXT,
+  device_model TEXT,
+  device_serial TEXT,
+  device_condition TEXT,
+  accessories TEXT,
+  issue_description TEXT,
+  technician_notes TEXT,
+  work_done TEXT,
+  parts_used TEXT,
+  sales_rep TEXT,
+  technician_name TEXT,
+  status TEXT NOT NULL DEFAULT 'diagnostic',
+  diag_fee REAL DEFAULT 0,
+  total_cost REAL DEFAULT 0,
+  amount_paid REAL DEFAULT 0,
+  invoice_no TEXT,
+  public_token TEXT UNIQUE,
+  service_type TEXT,
+  collection_code TEXT,
+  collector_name TEXT,
+  collection_proof_path TEXT,
+  created_at TEXT DEFAULT (datetime('now')),
+  updated_at TEXT DEFAULT (datetime('now')),
+  completed_at TEXT
+)`);
+
+db.exec(`CREATE TABLE IF NOT EXISTS job_card_history (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  job_card_id TEXT NOT NULL,
+  status TEXT NOT NULL,
+  note TEXT,
+  changed_by TEXT,
+  created_at TEXT DEFAULT (datetime('now'))
+)`);
+
+// Add columns for older DBs
+var jcCols = ['client_company','client_address','device_condition','accessories','work_done','parts_used','invoice_no','public_token','created_by'];
+jcCols.forEach(function(col) { try { db.exec('ALTER TABLE job_cards ADD COLUMN ' + col + ' TEXT'); } catch(e) {} });
+// Add service_type column for existing DBs
+try { db.exec("ALTER TABLE job_cards ADD COLUMN service_type TEXT"); } catch(e) {}
+try { db.exec("ALTER TABLE job_cards ADD COLUMN collection_code TEXT"); } catch(e) {}
+try { db.exec("ALTER TABLE job_cards ADD COLUMN collector_name TEXT"); } catch(e) {}
+try { db.exec("ALTER TABLE job_cards ADD COLUMN collection_proof_path TEXT"); } catch(e) {}
+
+// Service type definitions: value → { label, category }
+var SERVICE_TYPES = {
+  'diagnostic': { label: 'Diagnostic / Assessment', category: 'software' },
+  'screen-replacement-laptop': { label: 'Screen Replacement (Laptop)', category: 'hardware' },
+  'screen-replacement-phone': { label: 'Screen Replacement (Cellphone)', category: 'hardware' },
+  'charging-port-repair': { label: 'Charging Port Repair', category: 'hardware' },
+  'keyboard-replacement': { label: 'Keyboard Replacement', category: 'hardware' },
+  'battery-replacement': { label: 'Battery Replacement', category: 'hardware' },
+  'ram-upgrade': { label: 'RAM / Storage Upgrade (Hardware)', category: 'hardware' },
+  'hardware-upgrade': { label: 'Other Hardware Upgrade / Installation', category: 'hardware' },
+  'power-repair': { label: 'Power Supply / Adapter Repair', category: 'hardware' },
+  'liquid-damage': { label: 'Liquid Damage Repair', category: 'hardware' },
+  'fan-repair': { label: 'Fan / Cooling System Repair', category: 'hardware' },
+  'virus-removal': { label: 'Virus / Malware Removal', category: 'software' },
+  'software-install': { label: 'Software Installation / Upgrade', category: 'software' },
+  'data-recovery': { label: 'Data Recovery / Backup', category: 'software' },
+  'os-repair': { label: 'Operating System Repair', category: 'software' },
+  'networking-setup': { label: 'Networking Setup / Configuration', category: 'software' },
+  'general-repair': { label: 'General PC / Laptop Repair & Maintenance', category: 'hardware' },
+  'printer-repair': { label: 'Printer Setup / Repair', category: 'hardware' }
+};
+
+// Status flow per service category
+var STATUS_FLOW = {
+  hardware: ['diagnostic', 'in-progress', 'waiting-parts', 'ready', 'completed', 'collected'],
+  software: ['diagnostic', 'in-progress', 'ready', 'completed', 'collected']
+};
+
+function getServiceCategory(serviceType) {
+  var info = SERVICE_TYPES[serviceType];
+  return info ? info.category : 'hardware';
+}
+
+function getValidStatuses(serviceType) {
+  var cat = getServiceCategory(serviceType);
+  return STATUS_FLOW[cat] || STATUS_FLOW.hardware;
+}
+
+function generateJobId(branchId) {
+  var now = new Date();
+  var date = now.getFullYear().toString() +
+    String(now.getMonth()+1).padStart(2,'0') +
+    String(now.getDate()).padStart(2,'0');
+  // Look up branch city for a clean prefix
+  var branchInfo = branchId ? db.prepare("SELECT city FROM branches WHERE id = ?").get(branchId) : null;
+  var city = branchInfo ? branchInfo.city : '';
+  var prefix = city ? city.toUpperCase().replace(/[^A-Z]/g,'').slice(0,3) : 'RC';
+  if (!prefix || prefix.length < 2) prefix = (branchId || 'RC').toString().toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,3);
+  // Count today's job cards for sequential number
+  var todayStart = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+  var count = db.prepare("SELECT COUNT(*) as cnt FROM job_cards WHERE date(created_at)=date(?)")
+    .get(todayStart);
+  var seq = String((count ? count.cnt : 0) + 1).padStart(3, '0');
+  return 'JC-' + date + '-' + prefix + '-' + seq;
+}
+
+function generatePublicToken() {
+  return crypto.randomBytes(24).toString('hex');
+}
+
+// GET /api/admin/job-cards — list (branch-scoped)
+app.get('/api/admin/job-cards', function(req, res) {
+  try {
+    var user = getUserFromRequest(req);
+    if (!user) return res.status(401).json({ error: 'Unauthorized' });
+
+    var conditions = [];
+    var params = [];
+
+    // Branch isolation
+    if (user.branch_id) {
+      conditions.push('j.branch_id = ?');
+      params.push(user.branch_id);
+    } else if (req.query.branch) {
+      conditions.push('j.branch_id = ?');
+      params.push(req.query.branch);
+    }
+
+    if (req.query.status) {
+      conditions.push('j.status = ?');
+      params.push(req.query.status);
+    }
+
+    if (req.query.search) {
+      var s = '%' + req.query.search.replace(/[%_]/g, '\\$&') + '%';
+      conditions.push("(j.id LIKE ? ESCAPE '\\' OR j.client_name LIKE ? ESCAPE '\\' OR j.client_phone LIKE ? ESCAPE '\\' OR j.device_model LIKE ? ESCAPE '\\')");
+      params.push(s, s, s, s);
+    }
+
+    var where = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';
+    var stmt = db.prepare('SELECT j.* FROM job_cards j ' + where + ' ORDER BY j.created_at DESC');
+    var rows = params.length ? stmt.all.apply(stmt, params) : stmt.all();
+
+    res.json({ success: true, jobCards: rows });
+  } catch (err) {
+    res.status(500).json({ error: err.message || 'Server error' });
+  }
+});
+
+// GET /api/admin/job-cards/:id — single card with history and branch info
+app.get('/api/admin/job-cards/:id', function(req, res) {
+  try {
+    var user = getUserFromRequest(req);
+    if (!user) return res.status(401).json({ error: 'Unauthorized' });
+
+    var row = db.prepare('SELECT j.*, b.name as branch_name, b.address as branch_address, b.phone as branch_phone, b.email as branch_email FROM job_cards j LEFT JOIN branches b ON b.id = j.branch_id WHERE j.id = ?').get(req.params.id);
+    if (!row) return res.status(404).json({ error: 'Job card not found' });
+
+    // Branch isolation
+    if (user.branch_id && row.branch_id !== user.branch_id) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    var history = db.prepare('SELECT * FROM job_card_history WHERE job_card_id = ? ORDER BY created_at ASC').all(req.params.id);
+
+    // Attach branch as object
+    row.branch = { name: row.branch_name, address: row.branch_address, phone: row.branch_phone, email: row.branch_email };
+    row.history = history;
+
+    res.json({ success: true, jobCard: row });
+  } catch (err) {
+    res.status(500).json({ error: err.message || 'Server error' });
+  }
+});
+
+// POST /api/admin/job-cards — create
+app.post('/api/admin/job-cards', function(req, res) {
+  try {
+    var user = getUserFromRequest(req);
+    if (!user) return res.status(401).json({ error: 'Unauthorized' });
+
+    var b = req.body;
+    if (!b.client_name) return res.status(400).json({ error: 'client_name is required' });
+
+    // Enforce branch_id: branch users use their own branch, admin must supply one
+    var branchId = user.branch_id || b.branch_id;
+    if (!branchId) return res.status(400).json({ error: 'branch_id is required' });
+
+    // Verify branch exists
+    var branch = db.prepare('SELECT id FROM branches WHERE id = ?').get(branchId);
+    if (!branch) return res.status(400).json({ error: 'Invalid branch_id' });
+
+    // Branch user cannot create for another branch
+    if (user.branch_id && b.branch_id && b.branch_id !== user.branch_id) {
+      return res.status(403).json({ error: 'Cannot create job cards for other branches' });
+    }
+
+    var id = generateJobId(branchId);
+    var token = generatePublicToken();
+    var status = b.status || 'diagnostic';
+
+    db.prepare(`INSERT INTO job_cards (
+      id, branch_id, client_name, client_company, client_phone, client_email, client_address,
+      device_type, device_brand, device_model, device_serial, device_condition, accessories,
+      issue_description, technician_notes, work_done, parts_used, sales_rep, technician_name,
+      status, diag_fee, total_cost, amount_paid, invoice_no, public_token, service_type
+    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).run(
+      id, branchId,
+      b.client_name, b.client_company || null, b.client_phone || null, b.client_email || null, b.client_address || null,
+      b.device_type || null, b.device_brand || null, b.device_model || null, b.device_serial || null,
+      b.device_condition || null, b.accessories || null,
+      b.issue_description || null, b.technician_notes || null, b.work_done || null, b.parts_used || null,
+      b.sales_rep || null, b.technician_name || null,
+      status,
+      parseFloat(b.diag_fee) || 0, parseFloat(b.total_cost) || 0, parseFloat(b.amount_paid) || 0,
+      b.invoice_no || null, token,
+      b.service_type || null
+    );
+
+    // Log initial status
+    db.prepare('INSERT INTO job_card_history (job_card_id, status, note, changed_by) VALUES (?, ?, ?, ?)')
+      .run(id, status, 'Job card created', user.name || user.username || 'system');
+
+    logAudit(user, 'create-job-card', 'Created job card: ' + id + ' for ' + b.client_name, req);
+    res.json({ success: true, id: id, public_token: token });
+  } catch (err) {
+    res.status(500).json({ error: err.message || 'Server error' });
+  }
+});
+
+// PUT /api/admin/job-cards/:id — update
+app.put('/api/admin/job-cards/:id', function(req, res) {
+  try {
+    var user = getUserFromRequest(req);
+    if (!user) return res.status(401).json({ error: 'Unauthorized' });
+
+    var existing = db.prepare('SELECT * FROM job_cards WHERE id = ?').get(req.params.id);
+    if (!existing) return res.status(404).json({ error: 'Job card not found' });
+
+    // Branch isolation
+    if (user.branch_id && existing.branch_id !== user.branch_id) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    var b = req.body;
+    var statusChanged = b.status && b.status !== existing.status;
+    var completedAt = existing.completed_at;
+    if (b.status === 'completed' && !completedAt) completedAt = new Date().toISOString();
+    if (b.status && b.status !== 'completed') completedAt = null;
+
+    // When status changes to 'ready', auto-generate collection code
+    var collectionCode = b.status === 'ready' ? Math.random().toString(36).substring(2, 8).toUpperCase() : null;
+    if (b.status === 'ready' && existing.collection_code) collectionCode = existing.collection_code;
+    if (b.status !== 'ready') collectionCode = existing.collection_code;
+
+    db.prepare(`UPDATE job_cards SET
+      client_name=?, client_company=?, client_phone=?, client_email=?, client_address=?,
+      device_type=?, device_brand=?, device_model=?, device_serial=?, device_condition=?, accessories=?,
+      issue_description=?, technician_notes=?, work_done=?, parts_used=?, sales_rep=?, technician_name=?,
+      status=?, diag_fee=?, total_cost=?, amount_paid=?, invoice_no=?,
+      service_type=?, collection_code=?, collector_name=?, collection_proof_path=?,
+      updated_at=datetime('now'), completed_at=?
+    WHERE id=?`).run(
+      b.client_name || existing.client_name,
+      b.client_company !== undefined ? (b.client_company || null) : existing.client_company,
+      b.client_phone !== undefined ? (b.client_phone || null) : existing.client_phone,
+      b.client_email !== undefined ? (b.client_email || null) : existing.client_email,
+      b.client_address !== undefined ? (b.client_address || null) : existing.client_address,
+      b.device_type !== undefined ? (b.device_type || null) : existing.device_type,
+      b.device_brand !== undefined ? (b.device_brand || null) : existing.device_brand,
+      b.device_model !== undefined ? (b.device_model || null) : existing.device_model,
+      b.device_serial !== undefined ? (b.device_serial || null) : existing.device_serial,
+      b.device_condition !== undefined ? (b.device_condition || null) : existing.device_condition,
+      b.accessories !== undefined ? (b.accessories || null) : existing.accessories,
+      b.issue_description !== undefined ? (b.issue_description || null) : existing.issue_description,
+      b.technician_notes !== undefined ? (b.technician_notes || null) : existing.technician_notes,
+      b.work_done !== undefined ? (b.work_done || null) : existing.work_done,
+      b.parts_used !== undefined ? (b.parts_used || null) : existing.parts_used,
+      b.sales_rep !== undefined ? (b.sales_rep || null) : existing.sales_rep,
+      b.technician_name !== undefined ? (b.technician_name || null) : existing.technician_name,
+      b.status || existing.status,
+      parseFloat(b.diag_fee) !== undefined ? parseFloat(b.diag_fee) || 0 : existing.diag_fee,
+      parseFloat(b.total_cost) !== undefined ? parseFloat(b.total_cost) || 0 : existing.total_cost,
+      parseFloat(b.amount_paid) !== undefined ? parseFloat(b.amount_paid) || 0 : existing.amount_paid,
+      b.invoice_no !== undefined ? (b.invoice_no || null) : existing.invoice_no,
+      b.service_type !== undefined ? (b.service_type || null) : existing.service_type,
+      collectionCode,
+      b.collector_name !== undefined ? (b.collector_name || null) : existing.collector_name,
+      b.collection_proof_path !== undefined ? (b.collection_proof_path || null) : existing.collection_proof_path,
+      completedAt,
+      req.params.id
+    );
+
+    // Log status change
+    if (statusChanged) {
+      db.prepare('INSERT INTO job_card_history (job_card_id, status, note, changed_by) VALUES (?, ?, ?, ?)')
+        .run(req.params.id, b.status, b.status_note || null, user.name || user.username || 'system');
+    }
+
+    logAudit(user, 'update-job-card', 'Updated job card: ' + req.params.id + (statusChanged ? ' (status: ' + existing.status + ' → ' + b.status + ')' : ''), req);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message || 'Server error' });
+  }
+});
+
+// POST /api/admin/job-cards/:id/status — add a status update entry
+app.post('/api/admin/job-cards/:id/status', function(req, res) {
+  try {
+    var user = getUserFromRequest(req);
+    if (!user) return res.status(401).json({ error: 'Unauthorized' });
+
+    var existing = db.prepare('SELECT * FROM job_cards WHERE id = ?').get(req.params.id);
+    if (!existing) return res.status(404).json({ error: 'Job card not found' });
+
+    if (user.branch_id && existing.branch_id !== user.branch_id) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    var newStatus = req.body.status;
+    var validStatuses = getValidStatuses(existing.service_type);
+    if (!newStatus || validStatuses.indexOf(newStatus) === -1) {
+      return res.status(400).json({ error: 'Invalid status for this service type' });
+    }
+
+    // Require note/comment on all status changes
+    var note = (req.body.note || '').trim();
+    if (!note) {
+      return res.status(400).json({ error: 'A comment is required when updating status' });
+    }
+
+    var completedAt = existing.completed_at;
+    if (newStatus === 'completed' && !completedAt) completedAt = new Date().toISOString();
+    if (newStatus !== 'completed') completedAt = null;
+
+    // Auto-generate collection code when status changes to 'ready'
+    var collectionCode = existing.collection_code;
+    if (newStatus === 'ready' && !collectionCode) {
+      collectionCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+    }
+
+    // Handle collection — validate
+    if (newStatus === 'collected') {
+      var inputCode = (req.body.collection_code || '').trim().toUpperCase();
+      var hasProof = req.body.collector_name && req.body.collection_proof_path;
+
+      if (collectionCode && inputCode !== collectionCode && !hasProof) {
+        return res.status(400).json({ error: 'Invalid collection code, or provide collector name + ID proof' });
+      }
+      // If code matches, auto-verify
+      if (collectionCode && inputCode === collectionCode) {
+        // Collection code matched — proceed
+      }
+    }
+
+    db.prepare("UPDATE job_cards SET status=?, completed_at=?, updated_at=datetime('now'), collection_code=? WHERE id=?")
+      .run(newStatus, completedAt, collectionCode, req.params.id);
+
+    db.prepare('INSERT INTO job_card_history (job_card_id, status, note, changed_by) VALUES (?, ?, ?, ?)')
+      .run(req.params.id, newStatus, note, user.name || user.username || 'system');
+
+    logAudit(user, 'update-job-card-status', 'Status update for ' + req.params.id + ': ' + existing.status + ' → ' + newStatus, req);
+
+    // If status is 'ready' and client has email, send collection code
+    if (newStatus === 'ready' && existing.client_email && collectionCode) {
+      try {
+        var branchInfo = db.prepare('SELECT * FROM branches WHERE id = ?').get(existing.branch_id);
+        var siteData = db.prepare("SELECT value FROM site_settings WHERE key='footer_company'").get();
+        var companyName = siteData ? siteData.value : 'Royal Computers Namibia';
+        var branchName = branchInfo ? branchInfo.name : '';
+
+        var mailOpts = {
+          from: process.env.SMTP_FROM || '"Royal Computers" <noreply@royalcomputers.na>',
+          to: existing.client_email,
+          subject: 'Your device is ready for collection - ' + existing.id,
+          text: [
+            'Dear ' + existing.client_name + ',',
+            '',
+            'Your device is ready for collection!',
+            '',
+            'Job Card: ' + existing.id,
+            'Branch: ' + branchName,
+            'Collection Code: ' + collectionCode,
+            '',
+            'Please bring this code when collecting your device.',
+            'You can also view the status at: ' + (process.env.BASE_URL || '') + '/tracking?token=' + (existing.public_token || ''),
+            '',
+            'Thank you for choosing ' + companyName + '.',
+            'Regards,',
+            companyName + ' Workshop Team'
+          ].join('\n'),
+          html: [
+            '<div style="font-family:sans-serif;max-width:500px;">',
+            '<h2 style="color:#dc2626;">Your device is ready!</h2>',
+            '<p>Dear <strong>' + esc(existing.client_name) + '</strong>,</p>',
+            '<p>Your device is ready for collection.</p>',
+            '<table style="border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin:12px 0;">',
+            '<tr><td style="padding:4px 12px 4px 0;font-weight:700;">Job Card:</td><td>' + esc(existing.id) + '</td></tr>',
+            '<tr><td style="padding:4px 12px 4px 0;font-weight:700;">Branch:</td><td>' + esc(branchName) + '</td></tr>',
+            '<tr><td style="padding:4px 12px 4px 0;font-weight:700;">Collection Code:</td><td style="font-size:24px;font-weight:900;letter-spacing:4px;color:#dc2626;">' + esc(collectionCode) + '</td></tr>',
+            '</table>',
+            '<p>Please present this code when collecting your device. You can also view the repair status online:</p>',
+            '<p><a href="' + (process.env.BASE_URL || '') + '/tracking?token=' + (existing.public_token || '') + '" style="display:inline-block;padding:12px 24px;background:#dc2626;color:#fff;text-decoration:none;border-radius:6px;font-weight:600;">Track Status</a></p>',
+            '<hr style="border:none;border-top:1px solid #e5e7eb;margin:16px 0;">',
+            '<p style="font-size:12px;color:#6b7280;">If you did not request this repair, please ignore this email.</p>',
+            '</div>'
+          ].join('')
+        };
+
+        var t = getTransporter();
+        if (t) {
+          t.sendMail(mailOpts).catch(function(mailErr) {
+            console.error('Failed to send collection email:', mailErr.message);
+          });
+        }
+      } catch (emailErr) {
+        console.error('Email error:', emailErr.message);
+      }
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message || 'Server error' });
+  }
+});
+
+// DELETE /api/admin/job-cards/:id
+app.delete('/api/admin/job-cards/:id', function(req, res) {
+  try {
+    var user = getUserFromRequest(req);
+    if (!user) return res.status(401).json({ error: 'Unauthorized' });
+
+    var existing = db.prepare('SELECT * FROM job_cards WHERE id = ?').get(req.params.id);
+    if (!existing) return res.status(404).json({ error: 'Job card not found' });
+
+    if (user.branch_id && existing.branch_id !== user.branch_id) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    db.prepare('DELETE FROM job_card_history WHERE job_card_id = ?').run(req.params.id);
+    db.prepare('DELETE FROM job_cards WHERE id = ?').run(req.params.id);
+    logAudit(user, 'delete-job-card', 'Deleted job card: ' + req.params.id + ' for ' + existing.client_name, req);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message || 'Server error' });
+  }
+});
+
+// GET /api/public/track-job?branch=&job= — public (no auth), read-only, safe fields only
+app.get('/api/public/track-job', function(req, res) {
+  try {
+    var branchId = (req.query.branch || '').trim();
+    var jobId = (req.query.job || '').trim();
+    var token = (req.query.token || '').trim();
+
+    if (!jobId) return res.status(400).json({ error: 'job parameter is required' });
+
+    var row;
+    // Allow lookup by token OR by (branch + jobId)
+    if (token) {
+      row = db.prepare('SELECT j.*, b.name as branch_name, b.address as branch_address, b.phone as branch_phone FROM job_cards j LEFT JOIN branches b ON b.id = j.branch_id WHERE j.public_token = ?').get(token);
+    } else if (branchId && jobId) {
+      row = db.prepare('SELECT j.*, b.name as branch_name, b.address as branch_address, b.phone as branch_phone FROM job_cards j LEFT JOIN branches b ON b.id = j.branch_id WHERE j.id = ? AND j.branch_id = ?').get(jobId, branchId);
+    } else {
+      return res.status(400).json({ error: 'Provide branch+job or token' });
+    }
+
+    if (!row) return res.status(404).json({ error: 'Job card not found' });
+
+    // Return only safe public fields — no internal notes, no other clients' data
+    var history = db.prepare('SELECT status, note, created_at FROM job_card_history WHERE job_card_id = ? ORDER BY created_at ASC').all(row.id);
+
+    var safeCard = {
+      id: row.id,
+      status: row.status,
+      client_name: row.client_name,
+      device_type: row.device_type,
+      device_brand: row.device_brand,
+      device_model: row.device_model,
+      device_serial: row.device_serial,
+      issue_description: row.issue_description,
+      service_type: row.service_type,
+      collection_code: row.collection_code,
+      created_at: row.created_at,
+      updated_at: row.updated_at,
+      completed_at: row.completed_at,
+      branch_name: row.branch_name,
+      branch_address: row.branch_address,
+      branch_phone: row.branch_phone,
+      public_token: row.public_token,
+      history: history
+    };
+
+    res.json({ success: true, jobCard: safeCard });
+  } catch (err) {
+    res.status(500).json({ error: err.message || 'Server error' });
+  }
+});
+
+// GET /api/service-types — public list of service types with categories
+app.get('/api/service-types', function(req, res) {
+  var types = Object.keys(SERVICE_TYPES).map(function(k) {
+    return { value: k, label: SERVICE_TYPES[k].label, category: SERVICE_TYPES[k].category };
+  });
+  res.json({ success: true, types: types });
+});
+
+// POST /api/admin/job-cards/:id/upload-proof — upload collection ID proof
+app.post('/api/admin/job-cards/:id/upload-proof', upload.single('proof'), function(req, res) {
+  try {
+    var user = getUserFromRequest(req);
+    if (!user) return res.status(401).json({ error: 'Unauthorized' });
+
+    var existing = db.prepare('SELECT * FROM job_cards WHERE id = ?').get(req.params.id);
+    if (!existing) return res.status(404).json({ error: 'Job card not found' });
+
+    if (user.branch_id && existing.branch_id !== user.branch_id) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+
+    // Update the job card with proof path and collector name
+    var collectorName = req.body.collector_name || '';
+    if (!collectorName.trim()) {
+      // Clean up uploaded file if collector name missing
+      try { fs.unlinkSync(req.file.path); } catch(e) {}
+      return res.status(400).json({ error: 'Collector name is required' });
+    }
+
+    db.prepare("UPDATE job_cards SET collector_name=?, collection_proof_path=?, updated_at=datetime('now') WHERE id=?")
+      .run(collectorName.trim(), req.file.path, req.params.id);
+
+    logAudit(user, 'upload-proof', 'Uploaded collection proof for job card ' + req.params.id + ' (collector: ' + collectorName.trim() + ')', req);
+    res.json({ success: true, path: req.file.path, collector_name: collectorName.trim() });
+  } catch (err) {
+    res.status(500).json({ error: err.message || 'Server error' });
+  }
+});
+
+/* ─── PDF Generation ─── */
+var pdfService = require('./pdf-service');
+
+// GET /api/admin/job-cards/:id/pdf — generate PDF
+app.get('/api/admin/job-cards/:id/pdf', function(req, res) {
+  try {
+    var user = getUserFromRequest(req);
+    if (!user) return res.status(401).json({ error: 'Unauthorized' });
+
+    var row = db.prepare('SELECT j.*, b.name as branch_name, b.address as branch_address, b.phone as branch_phone, b.email as branch_email FROM job_cards j LEFT JOIN branches b ON b.id = j.branch_id WHERE j.id = ?').get(req.params.id);
+    if (!row) return res.status(404).json({ error: 'Job card not found' });
+
+    if (user.branch_id && row.branch_id !== user.branch_id) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    var history = db.prepare('SELECT * FROM job_card_history WHERE job_card_id = ? ORDER BY created_at ASC').all(req.params.id);
+    var branch = { name: row.branch_name, address: row.branch_address, phone: row.branch_phone, email: row.branch_email };
+
+    pdfService.generateJobCardPDF(row, branch, history).then(function(buffer) {
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'attachment; filename="job-card-' + row.id.replace(/[^a-zA-Z0-9]/g, '-') + '.pdf"');
+      res.send(buffer);
+    }).catch(function(err) {
+      res.status(500).json({ error: 'PDF generation failed: ' + err.message });
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message || 'Server error' });
+  }
+});
+
+// GET /api/public/track-job/:token — public PDF by token
+app.get('/api/public/job-card/:token/pdf', function(req, res) {
+  try {
+    var row = db.prepare('SELECT j.*, b.name as branch_name, b.address as branch_address, b.phone as branch_phone, b.email as branch_email FROM job_cards j LEFT JOIN branches b ON b.id = j.branch_id WHERE j.public_token = ?').get(req.params.token);
+    if (!row) return res.status(404).json({ error: 'Job card not found' });
+
+    var history = db.prepare('SELECT * FROM job_card_history WHERE job_card_id = ? ORDER BY created_at ASC').all(row.id);
+    var branch = { name: row.branch_name, address: row.branch_address, phone: row.branch_phone, email: row.branch_email };
+
+    pdfService.generateJobCardPDF(row, branch, history).then(function(buffer) {
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'inline; filename="job-card-' + row.id.replace(/[^a-zA-Z0-9]/g, '-') + '.pdf"');
+      res.send(buffer);
+    }).catch(function(err) {
+      res.status(500).json({ error: 'PDF generation failed: ' + err.message });
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message || 'Server error' });
+  }
+});
+
+/* ─── Content Management API ─── */
+require('./content-api')(app, db, getUserFromRequest, hashPassword);
 
 app.listen(PORT, function () {
   console.log('Royal Computers running on http://localhost:' + PORT);

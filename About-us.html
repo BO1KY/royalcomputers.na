@@ -21,7 +21,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://embed.tawk.to">
   <link rel="dns-prefetch" href="https://embed.tawk.to">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap"></noscript>
   <link rel="stylesheet" href="css/design-tokens.css">
   <link rel="stylesheet" href="css/royal-theme.css" media="print" onload="this.media='all'">
   <link rel="stylesheet" href="css/search-dropdown.css" media="print" onload="this.media='all'">
@@ -50,7 +51,7 @@
 
 <canvas id="shader-canvas" class="shader-canvas"></canvas>
 
-<!-- SPOTLIGHT BACKGROUND -->
+
 <div class="spotlight-container-global">
   <div class="spotlight-overlay-global">
     <div class="spotlight-global spotlight-left-global"></div>
@@ -59,7 +60,7 @@
   </div>
 </div>
 
-<!-- NEWSLETTER POPUP -->
+
 <div class="newsletter-overlay" id="newsletterOverlay">
   <div class="newsletter-box">
     <button class="close-newsletter" onclick="closeNewsletter()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
@@ -74,7 +75,7 @@
   </div>
 </div>
 
-<!-- CART SIDEBAR -->
+
 <div class="cart-overlay" id="cartOverlay"></div>
 <div class="cart-sidebar" id="cartSidebar">
   <div class="cart-header">
@@ -93,7 +94,7 @@
   </div>
 </div>
 
-<!-- CHECKOUT MODAL -->
+
 <div class="modal-overlay" id="checkoutModal">
   <div class="modal-content" style="overflow-y:hidden;">
     <button class="modal-close" id="closeCheckoutBtn">&times;</button>
@@ -154,7 +155,7 @@
   </div>
 </div>
 
-<!-- QUOTE DISPLAY MODAL -->
+
 <div class="modal-overlay" id="quoteModal">
   <div class="modal-content">
     <button class="modal-close" id="closeQuoteBtn">&times;</button>
@@ -162,7 +163,7 @@
   </div>
 </div>
 
-<!-- GUIDE MODAL -->
+
 <div class="guide-overlay" id="guideModal">
   <div class="guide-modal">
     <div class="bg-header">
@@ -173,7 +174,7 @@
   </div>
 </div>
 
-<!-- HEADER -->
+
 <header>
   <div class="header-inner">
     <a href="index.html" class="logo">
@@ -193,6 +194,9 @@
       <span></span><span></span><span></span>
     </button>
     <div class="header-right">
+      <button class="cart-btn" onclick="window.location.href='tracking.html'" title="Track Repair">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4m10-10h-4M6 12H2"/></svg>
+      </button>
       <button class="cart-btn" id="openCartBtn" onclick="openCart()">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
         <span class="cart-count" id="cartCount" style="display:none;">0</span>
@@ -203,23 +207,23 @@
   </div>
 </header>
 
-<!-- BREADCRUMB -->
+
 <div class="breadcrumb">
   <a href="index.html">Home</a> &rsaquo; <span>About Us</span>
 </div>
 
-<!-- PAGE HEADER -->
+
 <div class="page-header">
   <h1>About Us</h1>
-  <p>Your trusted technology partner since 2005</p>
+  <p id="site-about-subtitle">Your trusted technology partner since 2005</p>
 </div>
 
-<!-- ABOUT CONTENT -->
+
 <div id="main-content" class="about-container">
 
-  <!-- Company Intro -->
+  
   <div class="about-grid">
-    <div class="about-text-block">
+    <div class="about-text-block" id="site-who-we-are">
       <h2>Who We Are</h2>
       <p><strong>Royal Computers Namibia</strong> is a leading IT products and services company serving the African market. We specialize in the sales of <span class="highlight-red">Computers, Accessories, Printers, Software, Consumables, Networking Equipment</span> and offer comprehensive <span class="highlight-red">Technical Support</span> across our network of branches.</p>
       <p>Since our founding in 2005, we have been committed to providing end users with the best IT solutions at competitive prices without compromising on quality. We source top-quality products from leading vendors, and all our products carry at least <strong>twelve (12) months warranty</strong>, subject to terms and conditions.</p>
@@ -236,8 +240,8 @@
     </div>
   </div>
 
-  <!-- Stats Counters -->
-  <div class="stats-grid">
+  
+  <div class="stats-grid" id="site-about-stats">
     <div class="stat-card">
       <div class="stat-number">20+</div>
       <div class="stat-label">Years Experience</div>
@@ -252,9 +256,9 @@
     </div>
   </div>
 
-  <!-- Values / Mission -->
+  
   <h2 class="faq-section-title">Our Values</h2>
-  <div class="values-grid">
+  <div class="values-grid" id="site-about-values">
     <div class="value-card">
       <div class="value-icon"><img src="ROYAL PICS/QUALITY.webp" alt="Quality" class="value-img" loading="lazy" /></div>
       <h3>Quality First</h3>
@@ -287,9 +291,9 @@
     </div>
   </div>
 
-  <!-- FAQ Accordion -->
+  
   <h2 class="faq-section-title">Frequently Asked Questions</h2>
-  <div class="faq-wrapper">
+  <div class="faq-wrapper" id="site-about-faqs">
     <div class="faq-item">
       <button class="faq-question" onclick="toggleFaq(this)">
         What products do you sell?
@@ -350,7 +354,7 @@
         <span class="faq-question-icon">&#9660;</span>
       </button>
       <div class="faq-answer">
-        <div class="faq-answer-inner">We stock over 130 laptop battery models ranging from N$595 to N$1,995. Most standard 6-cell 11.1V batteries (NTBK-BAT-01 to NTBK-BAT-99 range) are priced between N$595 and N$995. Premium and high-capacity models such as the NTBK-BAT-100 series and certain HP/Dell batteries range from N$1,095 to N$1,995. Prices vary by cell count (3-cell, 6-cell, 9-cell, or 12-cell) and brand compatibility. Browse the Battery Guide or visit our Products page for the full price list.</div>
+        <div class="faq-answer-inner">We stock 134 laptop battery models ranging from N$795 to N$1,700. Prices vary by cell count (3-cell, 6-cell, 9-cell, or 12-cell) and brand compatibility. Browse the Battery Guide or visit our Products page for the full price list.</div>
       </div>
     </div>
     <div class="faq-item">
@@ -368,14 +372,14 @@
         <span class="faq-question-icon">&#9660;</span>
       </button>
       <div class="faq-answer">
-        <div class="faq-answer-inner">We carry over 20 charger models covering all major brands. Our range includes HP (4.8x1.7mm, 7.4x5.0mm blue tip, 4.5x3.0mm), Lenovo (rectangular slim tip, 4.0x1.7mm, 7.9x5.5mm square, USB-C), Dell (7.4x5.0mm, 4.5x3.0mm), Acer (5.5x2.5mm, 5.5x1.7mm), Asus (4.0x1.35mm), Samsung (5.5x3.0mm, 3.0x1.0mm), Sony (6.0x4.4mm), universal 65W USB-C chargers, and more. Prices range from N$250 to N$795 depending on wattage and connector type. Use our Charger Guide to find the exact match for your laptop.</div>
+        <div class="faq-answer-inner">We carry 22 charger models covering all major brands. Our range includes HP (4.8x1.7mm, 7.4x5.0mm blue tip, 4.5x3.0mm), Lenovo (rectangular slim tip, 4.0x1.7mm, 7.9x5.5mm square, USB-C), Dell (7.4x5.0mm, 4.5x3.0mm), Acer (5.5x2.5mm, 5.5x1.7mm), Asus (4.0x1.35mm), Samsung (5.5x3.0mm, 3.0x1.0mm), Sony (6.0x4.4mm), universal 65W USB-C chargers, and more. Prices start from N$465 and go up to N$795 depending on wattage and connector type. Use our Charger Guide to find the exact match for your laptop.</div>
       </div>
     </div>
   </div>
 
 </div>
 
-<!-- FOOTER -->
+
 <footer>
   <div class="footer-inner">
     <div class="footer-brand">
@@ -397,6 +401,7 @@
         <li><a href="Contact-us.html">Contact Us</a></li>
         <li><a href="About-us.html">About Us</a></li>
         <li><a href="privacy-policy.html">Privacy Policy</a></li>
+        <li><a href="tracking.html">Track Repair</a></li>
         <li><a href="terms-conditions.html">Terms & Conditions</a></li>
       </ul>
     </div>
@@ -559,9 +564,11 @@
 })();
 </script>
 
+<script defer src="js/site-data.js"></script>
 <script defer src="js/api-config.js"></script>
 <script defer src="js/newsletter.js"></script>
 <script defer src="js/offline.js"></script>
 <script defer src="js/chat.js"></script>
+<script defer src="js/whatsapp-widget.js"></script>
 </body>
 </html>

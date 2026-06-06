@@ -11,7 +11,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://embed.tawk.to">
   <link rel="dns-prefetch" href="https://embed.tawk.to">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet" />
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap"></noscript>
   <link rel="stylesheet" href="css/design-tokens.css">
   <link rel="stylesheet" href="css/royal-theme.css" media="print" onload="this.media='all'">
   <link rel="stylesheet" href="css/mobile.css" media="print" onload="this.media='all'">
@@ -56,7 +57,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg,#f5f3f4);color:var(--t
     <img src="ROYAL PICS/royal logo.webp" alt="Royal Computers Namibia" class="logo" loading="lazy" />
     <h1>Unsubscribe</h1>
 
-    <!-- STEP 1: Enter Email -->
+    
     <div class="step active" id="step1">
       <p>Enter the email address you used to subscribe to the Royal Computers Namibia newsletter.</p>
       <input type="email" id="unsubEmail" placeholder="your@email.com" autocomplete="email" />
@@ -64,7 +65,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg,#f5f3f4);color:var(--t
       <button class="btn-primary" id="verifyBtn">Verify Email</button>
     </div>
 
-    <!-- STEP 2: Confirm Unsubscribe -->
+    
     <div class="step" id="step2">
       <p>You are currently subscribed with:</p>
       <div class="email-display" id="confirmedEmail"></div>
@@ -74,7 +75,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg,#f5f3f4);color:var(--t
       <button class="btn-secondary" id="cancelBtn">Cancel</button>
     </div>
 
-    <!-- STEP 3: Done -->
+    
     <div class="step" id="step3">
       <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:16px;"><polyline points="20 6 9 17 4 12"/></svg>
       <h1 style="color:#16a34a;">Unsubscribed</h1>
@@ -191,8 +192,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg,#f5f3f4);color:var(--t
     });
   </script>
   <script defer src="js/loader.js"></script>
+  <script defer src="js/site-data.js"></script>
   <script defer src="js/api-config.js"></script>
   <script defer src="js/offline.js"></script>
 <script defer src="js/chat.js"></script>
+<script defer src="js/whatsapp-widget.js"></script>
 </body>
 </html>
+

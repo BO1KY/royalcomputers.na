@@ -23,9 +23,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://embed.tawk.to">
   <link rel="dns-prefetch" href="https://embed.tawk.to">
-  <link
-    href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap"
-    rel="stylesheet" />
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap"></noscript>
   <link rel="stylesheet" href="css/design-tokens.css">
   <link rel="stylesheet" href="css/royal-theme.css" media="print" onload="this.media='all'">
   <link rel="stylesheet" href="css/search-dropdown.css" media="print" onload="this.media='all'">
@@ -64,7 +63,7 @@
   </div>
 
 
-  <!-- NEWSLETTER POPUP -->
+  
   <div class="newsletter-overlay" id="newsletterOverlay">
     <div class="newsletter-box">
       <button class="close-newsletter" onclick="closeNewsletter()"><svg width="14" height="14" viewBox="0 0 24 24"
@@ -83,7 +82,7 @@
     </div>
   </div>
 
-  <!-- CART OVERLAY & SIDEBAR -->
+  
   <div class="cart-overlay" id="cartOverlay"></div>
   <div class="cart-sidebar" id="cartSidebar">
     <div class="cart-header">
@@ -102,7 +101,7 @@
     </div>
   </div>
 
-  <!-- CHECKOUT MODAL -->
+  
   <div class="modal-overlay" id="checkoutModal">
     <div class="modal-content" style="overflow-y:hidden;">
       <button class="modal-close" id="closeCheckoutBtn">&times;</button>
@@ -164,7 +163,7 @@
     </div>
   </div>
 
-  <!-- QUOTE DISPLAY MODAL -->
+  
   <div class="modal-overlay" id="quoteModal">
     <div class="modal-content">
       <button class="modal-close" id="closeQuoteBtn">&times;</button>
@@ -172,7 +171,7 @@
     </div>
   </div>
 
-  <!-- GUIDE MODAL -->
+  
   <div class="guide-overlay" id="guideModal">
     <div class="guide-modal">
       <div class="bg-header">
@@ -183,7 +182,7 @@
     </div>
   </div>
 
-  <!-- HEADER -->
+  
   <header>
     <div class="header-inner">
       <a href="index.html" class="logo">
@@ -203,6 +202,9 @@
         <span></span><span></span><span></span>
       </button>
       <div class="header-right">
+        <button class="cart-btn" onclick="window.location.href='tracking.html'" title="Track Repair">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4m10-10h-4M6 12H2"/></svg>
+        </button>
         <button class="cart-btn" id="openCartBtn" onclick="openCart()">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round">
@@ -218,21 +220,21 @@
     </div>
   </header>
 
-  <!-- BREADCRUMB -->
+  
   <div class="breadcrumb">
     <a href="index.html">Home</a> &rsaquo; <span>Contact Us</span>
   </div>
 
-  <!-- PAGE HEADER -->
+  
   <div class="page-header">
     <h1>Contact Us</h1>
     <p>We'd love to hear from you</p>
   </div>
 
-  <!-- CONTACT LAYOUT -->
+  
   <div id="main-content" class="contact-page">
 
-    <!-- BRANCH CARDS (top) -->
+    
     <div class="branches-right" id="branchesContainer">
       <div class="skeleton-branch">
         <div class="skeleton-branch-img"></div>
@@ -254,7 +256,7 @@
       </div>
     </div>
 
-    <!-- Contact Form (below) -->
+    
     <div class="contact-form-card">
       <h2>Send us a message</h2>
       <form id="contactForm" onsubmit="return handleContactSubmit(event)">
@@ -295,7 +297,7 @@
 
   </div>
 
-  <!-- FOOTER -->
+  
   <footer>
     <div class="footer-inner">
       <div class="footer-brand">
@@ -333,6 +335,7 @@
           <li><a href="products.html">Products</a></li>
           <li><a href="Contact-us.html">Contact Us</a></li>
           <li><a href="About-us.html">About Us</a></li>
+          <li><a href="tracking.html">Track Repair</a></li>
           <li><a href="terms-conditions.html">Terms & Conditions</a></li>
         </ul>
       </div>
@@ -481,7 +484,7 @@
   <script defer src="js/guides-modal.js"></script>
   <script defer src="js/mobile-nav.js"></script>
 
-  <!-- SERVICE WORKER REGISTRATION -->
+  
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {
@@ -541,10 +544,12 @@
     });
   </script>
 
+<script defer src="js/site-data.js"></script>
 <script defer src="js/api-config.js"></script>
 <script defer src="js/newsletter.js"></script>
 <script defer src="js/offline.js"></script>
 <script defer src="js/chat.js"></script>
+<script defer src="js/whatsapp-widget.js"></script>
 </body>
 
 </html>
