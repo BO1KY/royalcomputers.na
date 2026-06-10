@@ -1,0 +1,13 @@
+review:
+  auto_review: true
+  target_branches:
+    - main
+  block_on:
+    - security
+  inline_comments: true
+  summary: true
+  high_level_summary: true
+  sequence_diagrams: true
+
+chat:
+  auto_reply: true
