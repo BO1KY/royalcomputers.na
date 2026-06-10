@@ -22,7 +22,8 @@ var SERVICE_TYPES = [
   { value: 'software-install', label: 'Software Installation / Upgrade', category: 'software' },
   { value: 'data-recovery', label: 'Data Recovery / Backup', category: 'software' },
   { value: 'os-repair', label: 'Operating System Repair', category: 'software' },
-  { value: 'networking-setup', label: 'Networking Setup / Configuration', category: 'software' }
+  { value: 'networking-setup', label: 'Networking Setup / Configuration', category: 'software' },
+  { value: '__custom__', label: 'Other (Custom Service)...', category: 'hardware' }
 ];
 
 var STATUS_FLOW = {
@@ -59,9 +60,16 @@ function showJobCardForm(id) {
   var techName = jc ? jc.technician_name : (_currentUser && _currentUser.name ? _currentUser.name : '');
 
   // Build service type dropdown
+  var customServiceType = '';
   var stOpts = SERVICE_TYPES.map(function(s) {
     return '<option value="' + s.value + '"' + (s.value === selectedServiceType ? ' selected' : '') + '>' + esc(s.label) + '</option>';
   }).join('');
+  // If editing with a custom service type not in predefined list, add it as an option
+  var predefined = SERVICE_TYPES.some(function(s) { return s.value === selectedServiceType; });
+  if (!predefined && selectedServiceType) {
+    customServiceType = selectedServiceType;
+    stOpts += '<option value="__custom__" selected>Other (Custom Service)...</option>';
+  }
 
   var html = [
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">',
@@ -72,8 +80,11 @@ function showJobCardForm(id) {
     jcLabel('Email', 'jcfEmail', null, jcInput('jcfEmail', jc ? jc.client_email : '')),
     jcLabel('Address', 'jcfAddress', '1/-1', jcInput('jcfAddress', jc ? jc.client_address : '')),
     jcLabel('Service Type *', 'jcfServiceType', '1/-1',
-      '<select id="jcfServiceType" ' + jcStyle() + ' onchange="onServiceTypeChange()">' + stOpts + '</select>'),
-    jcLabel('Device Type', 'jcfDevType', null, jcInput('jcfDevType', jc ? jc.device_type : '', 'Auto-filled from service type')),
+      '<select id="jcfServiceType" ' + jcStyle() + ' onchange="onServiceTypeChange()">' + stOpts + '</select>' +
+      '<input id="jcfCustomServiceType" placeholder="Enter custom service type..."' +
+        (customServiceType ? ' value="' + esc(customServiceType) + '"' : '') +
+        ' style="display:' + (customServiceType ? 'block' : 'none') + ';margin-top:4px;">'),
+    jcLabel('Device Type', 'jcfDevType', null, jcInput('jcfDevType', jc ? jc.device_type : '', 'e.g. Laptop, Cellphone, Printer, Monitor')),
     jcLabel('Brand', 'jcfDevBrand', null, jcInput('jcfDevBrand', jc ? jc.device_brand : '', 'Dell, HP, Canon, Samsung...')),
     jcLabel('Model', 'jcfDevModel', null, jcInput('jcfDevModel', jc ? jc.device_model : '')),
     jcLabel('Serial Number', 'jcfDevSerial', null, jcInput('jcfDevSerial', jc ? jc.device_serial : '')),
@@ -88,7 +99,8 @@ function showJobCardForm(id) {
     jcLabel('Status', 'jcfStatus', null, jcStatusSelect(jc ? jc.status : 'diagnostic', selectedServiceType)),
     jcLabel('Invoice No', 'jcfInvoiceNo', null, jcInput('jcfInvoiceNo', jc ? jc.invoice_no : '')),
     jcLabel('Diagnostic Fee (N$)', 'jcfDiagFee', null, jcNumber('jcfDiagFee', jc ? jc.diag_fee : 0)),
-    jcLabel('Total Cost (N$)', 'jcfTotalCost', null, jcNumber('jcfTotalCost', jc ? jc.total_cost : 0)),
+    jcLabel('Repair Cost (N$)', 'jcfTotalCost', null, jcNumber('jcfTotalCost', jc ? jc.total_cost : 0)),
+    '<div style="grid-column:1/-1;"><div style="background:#f3f4f6;border-radius:6px;padding:8px 12px;display:flex;justify-content:space-between;font-size:14px;font-weight:700;"><span>Grand Total:</span><span id="jcfGrandTotal">N$ ' + ((jc ? (jc.diag_fee||0) + (jc.total_cost||0) : 0)).toFixed(2) + '</span></div></div>' +
     jcLabel('Amount Paid (N$)', 'jcfAmountPaid', null, jcNumber('jcfAmountPaid', jc ? jc.amount_paid : 0)),
     '</div>',
     '<div style="display:flex;gap:8px;margin-top:16px;">',
@@ -102,6 +114,18 @@ function showJobCardForm(id) {
   // Auto-fill device type from service type
   setTimeout(onServiceTypeChange, 50);
 
+  // Auto-calculate grand total
+  function updateGrandTotal() {
+    var diag = parseFloat(document.getElementById('jcfDiagFee')?.value) || 0;
+    var repair = parseFloat(document.getElementById('jcfTotalCost')?.value) || 0;
+    var gt = document.getElementById('jcfGrandTotal');
+    if (gt) gt.textContent = 'N$ ' + (diag + repair).toFixed(2);
+  }
+  var diagInput = document.getElementById('jcfDiagFee');
+  var repairInput = document.getElementById('jcfTotalCost');
+  if (diagInput) diagInput.addEventListener('input', updateGrandTotal);
+  if (repairInput) repairInput.addEventListener('input', updateGrandTotal);
+
   document.getElementById('saveJcBtn').addEventListener('click', function() {
     var data = {
       client_name: val('jcfClientName'),
@@ -109,7 +133,11 @@ function showJobCardForm(id) {
       client_phone: val('jcfPhone') || null,
       client_email: val('jcfEmail') || null,
       client_address: val('jcfAddress') || null,
-      service_type: val('jcfServiceType') || null,
+      service_type: (function() {
+        var st = val('jcfServiceType');
+        if (st === '__custom__') return val('jcfCustomServiceType') || null;
+        return st || null;
+      })(),
       device_type: val('jcfDevType') || null,
       device_brand: val('jcfDevBrand') || null,
       device_model: val('jcfDevModel') || null,
@@ -129,7 +157,10 @@ function showJobCardForm(id) {
       amount_paid: parseFloat(val('jcfAmountPaid')) || 0
     };
     if (!data.client_name) { alert('Client name is required.'); return; }
-    if (!data.service_type) { alert('Please select a service type.'); return; }
+    if (!data.service_type) {
+      if (val('jcfServiceType') === '__custom__') { alert('Please enter a custom service type.'); return; }
+      alert('Please select a service type.'); return;
+    }
 
     if (jc) {
       apiFetch(API_BASE + '/api/admin/job-cards/' + encodeURIComponent(jc.id), addToken(data), 'PUT')
@@ -186,19 +217,38 @@ function onServiceTypeChange() {
   var info = SERVICE_TYPES.find(function(s) { return s.value === val; });
   var label = info ? info.label : '';
 
-  // Auto-fill device type
+  // Show/hide custom service type input
+  var customInput = document.getElementById('jcfCustomServiceType');
+  if (customInput) {
+    customInput.style.display = val === '__custom__' ? 'block' : 'none';
+  }
+
+  // Derive device type from service type (e.g. 'laptop', 'cellphone', etc.)
   var devType = document.getElementById('jcfDevType');
-  if (devType && label) {
-    // Only auto-fill if the field is empty or was previously auto-filled
+  if (devType) {
     if (!devType.value || !devType.getAttribute('data-manual')) {
-      devType.value = label;
+      var parts = val.split('-');
+      var derived = '';
+      if (val === '__custom__') {
+        derived = '';
+      } else {
+        derived = parts.length > 1 && ['laptop','phone','cellphone','printer'].indexOf(parts[0]) !== -1
+          ? parts[0].charAt(0).toUpperCase() + parts[0].slice(1)
+          : '';
+        if (derived === 'Phone') derived = 'Cellphone';
+        if (val.indexOf('laptop') !== -1 || val.indexOf('keyboard') !== -1 || val.indexOf('fan') !== -1) derived = 'Laptop';
+        if (val.indexOf('phone') !== -1) derived = 'Cellphone';
+        if (val.indexOf('printer') !== -1) derived = 'Printer';
+        if (val.indexOf('networking') !== -1) derived = 'Networking';
+      }
+      devType.value = derived;
     }
   }
 
   // Update status options based on service type category
   var statusSel = document.getElementById('jcfStatus');
   if (statusSel) {
-    var statuses = getStatusesForServiceType(val);
+    var statuses = getStatusesForServiceType(val === '__custom__' ? 'general-repair' : val);
     statusSel.innerHTML = statuses.map(function(s) {
       return '<option value="' + s + '">' + statusLabel(s) + '</option>';
     }).join('');
@@ -217,8 +267,9 @@ function viewJobCard(id) {
     }
     var j = data.jobCard;
     var sc = statusColor(j.status);
-    var balance = (j.total_cost || 0) - (j.amount_paid || 0);
-    var trackUrl = window.location.origin + '/tracking?job=' + encodeURIComponent(j.id) + '&branch=' + encodeURIComponent(j.branch_id);
+    var grandTotal = (j.diag_fee || 0) + (j.total_cost || 0);
+    var balance = grandTotal - (j.amount_paid || 0);
+    var trackUrl = window.location.origin + '/tracking?token=' + (j.public_token || '');
 
     var stLabel = getServiceTypeLabel(j.service_type);
     var stInfo = SERVICE_TYPES.find(function(s) { return s.value === j.service_type; });
@@ -226,12 +277,18 @@ function viewJobCard(id) {
 
     var histHtml = '';
     if (j.history && j.history.length) {
+      var statusIcons = { 'diagnostic': '\uD83D\uDD0D', 'in-progress': '\uD83D\uDD27', 'in_progress': '\uD83D\uDD27', 'completed': '\u2705', 'collected': '\uD83D\uDCE6', 'pending': '\u23F3', 'ready': '\uD83C\uDFAF' };
       histHtml = j.history.map(function(h) {
-        return '<div style="display:flex;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;">' +
-          '<span style="color:var(--text-dim);white-space:nowrap;min-width:150px;">' + esc((h.created_at || '').substring(0, 16)) + '</span>' +
-          '<span style="font-weight:600;">' + esc(statusLabel(h.status)) + '</span>' +
-          (h.note ? '<span style="color:var(--text-dim);flex:1;">\u2014 ' + esc(h.note) + '</span>' : '') +
-          '<span style="color:var(--text-dim);font-size:11px;margin-left:auto;">by ' + esc(h.changed_by || 'system') + '</span>' +
+        return '<div style="display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);font-size:13px;">' +
+          '<span style="font-size:18px;line-height:1.4;">' + (statusIcons[h.status] || '\uD83D\uDCCB') + '</span>' +
+          '<div style="flex:1;">' +
+            '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:baseline;">' +
+              '<span style="font-weight:700;color:var(--text);">' + esc(statusLabel(h.status)) + '</span>' +
+              '<span style="color:var(--text-dim);font-size:11px;">' + esc((h.created_at || '').substring(0, 16)) + '</span>' +
+              '<span style="color:var(--text-dim);font-size:11px;">by ' + esc(h.changed_by || 'system') + '</span>' +
+            '</div>' +
+            (h.note ? '<div style="margin-top:4px;color:var(--text-dim);line-height:1.4;">' + esc(h.note) + '</div>' : '') +
+          '</div>' +
           '</div>';
       }).join('');
     } else {
@@ -252,6 +309,7 @@ function viewJobCard(id) {
           (hasCode ? '<div style="font-size:13px;margin-bottom:4px;"><strong>Collection Code:</strong> <code style="background:#f0fdf4;padding:2px 8px;border-radius:4px;font-size:14px;font-weight:700;color:#dc2626;">' + esc(j.collection_code) + '</code></div>' : '') +
           (hasCollector ? '<div style="font-size:13px;"><strong>Collected By:</strong> ' + esc(j.collector_name) + '</div>' : '') +
           (j.collection_proof_path ? '<div style="font-size:13px;margin-top:4px;"><strong>ID Proof:</strong> <a href="#" onclick="viewProof(\'' + esc(j.collection_proof_path.replace(/\\/g, '/')) + '\');return false;" style="color:#2563eb;">View Document</a></div>' : '') +
+          (j.collection_signature_path ? '<div style="font-size:13px;margin-top:4px;"><strong>Signed Job Card:</strong> <a href="#" onclick="viewProof(\'' + esc(j.collection_signature_path.replace(/\\/g, '/')) + '\');return false;" style="color:#2563eb;">View Document</a></div>' : '') +
         '</div>';
     }
 
@@ -294,8 +352,9 @@ function viewJobCard(id) {
           j.parts_used ? '<strong>Parts:</strong> ' + esc(j.parts_used) : ''
         ]) +
         jcInfoBox('Cost Summary',
-          '<div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span>Diag Fee:</span><span>N$' + (j.diag_fee||0).toFixed(2) + '</span></div>' +
-          '<div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span>Total Cost:</span><span>N$' + (j.total_cost||0).toFixed(2) + '</span></div>' +
+          '<div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span>Diagnostic Fee:</span><span>N$' + (j.diag_fee||0).toFixed(2) + '</span></div>' +
+          '<div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span>Repair Cost:</span><span>N$' + (j.total_cost||0).toFixed(2) + '</span></div>' +
+          '<div style="display:flex;justify-content:space-between;margin-bottom:4px;font-weight:700;border-top:1px solid var(--border);padding-top:4px;"><span>Grand Total:</span><span style="color:#1a1a2e;">N$' + ((j.diag_fee||0) + (j.total_cost||0)).toFixed(2) + '</span></div>' +
           '<div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span>Amount Paid:</span><span>N$' + (j.amount_paid||0).toFixed(2) + '</span></div>' +
           '<div style="display:flex;justify-content:space-between;font-weight:700;border-top:1px solid var(--border);padding-top:6px;"><span>Balance Due:</span><span style="color:' + (balance > 0 ? '#d32f2f' : '#16a34a') + ';">N$' + balance.toFixed(2) + '</span></div>'
         ) +
@@ -352,102 +411,225 @@ function showCollectionForm(j) {
 
   var html =
     '<div style="padding:10px;">' +
-      '<h4 style="margin:0 0 16px;font-size:16px;">' + '\u{1F4CB}' + ' Device Collection</h4>' +
+      '<h3 style="margin:0 0 4px;font-size:18px;">' + '\u{1F4CB}' + ' Device Collection</h3>' +
       '<p style="font-size:13px;color:var(--text-dim);margin:0 0 16px;">Job Card: <strong>' + esc(j.id) + '</strong></p>';
 
   if (hasCode) {
     html +=
-      '<div style="margin-bottom:16px;">' +
-        '<label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px;">Option 1: Enter Collection Code</label>' +
-        '<p style="font-size:12px;color:var(--text-dim);margin:0 0 8px;">The client should have received a code via email when the device was marked ready.</p>' +
-        '<input type="text" id="collectionCodeInput" placeholder="Enter 6-character code" style="padding:10px;border:1.5px solid var(--border);border-radius:6px;font-size:16px;font-weight:700;letter-spacing:4px;text-transform:uppercase;width:200px;font-family:inherit;">' +
+      '<div style="margin-bottom:16px;padding:14px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;">' +
+        '<label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px;">Option 1: Collection Code</label>' +
+        '<p style="font-size:12px;color:var(--text-dim);margin:0 0 8px;">Enter the 6-character code sent to the client\'s email.</p>' +
+        '<input type="text" id="collectionCodeInput" placeholder="e.g. AB12CD" style="padding:10px;border:1.5px solid var(--border);border-radius:6px;font-size:16px;font-weight:700;letter-spacing:4px;text-transform:uppercase;width:180px;font-family:inherit;">' +
       '</div>' +
-      '<div style="text-align:center;font-size:13px;color:var(--text-dim);margin:8px 0;">' +
-        '<span style="background:#f3f4f6;padding:4px 12px;border-radius:4px;">— OR —</span>' +
-      '</div>';
+      '<div style="text-align:center;font-size:12px;color:var(--text-dim);margin:8px 0;">— OR —</div>';
   }
 
   html +=
-    '<div style="margin-top:16px;">' +
-      '<label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px;">Option 2: Collector Information &amp; ID Proof</label>' +
-      '<input type="text" id="collectorNameInput" placeholder="Full name of person collecting" style="display:block;width:100%;padding:10px;margin-bottom:10px;border:1.5px solid var(--border);border-radius:6px;font-size:14px;font-family:inherit;box-sizing:border-box;">' +
-      '<div style="margin-bottom:10px;">' +
-        '<label style="display:block;font-size:12px;color:var(--text-dim);margin-bottom:4px;">Upload ID / Driver\'s License / Passport</label>' +
-        '<input type="file" id="proofUpload" accept="image/*,.pdf" capture="environment" style="display:block;width:100%;padding:8px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;font-family:inherit;">' +
-        '<div id="uploadPreview" style="margin-top:8px;display:none;"></div>' +
+    '<div style="margin-top:12px;">' +
+      '<label style="font-size:13px;font-weight:600;display:block;margin-bottom:8px;">Option 2: Collector Info &amp; Scanned Documents</label>' +
+      '<input type="text" id="collectorNameInput" placeholder="Full name of person collecting *" style="display:block;width:100%;padding:10px;margin-bottom:10px;border:1.5px solid var(--border);border-radius:6px;font-size:14px;font-family:inherit;box-sizing:border-box;">' +
+      // ID Proof section
+      '<div style="margin-bottom:10px;padding:12px;background:#f9fafb;border-radius:8px;border:1px solid #e5e7eb;">' +
+        '<label style="font-size:12px;font-weight:600;display:block;margin-bottom:6px;">Step 1: Scan / Upload Customer ID Proof</label>' +
+        '<div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;">' +
+          '<button type="button" class="proofSrcBtn" data-src="camera" style="padding:7px 12px;border:1.5px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;font-size:11px;font-family:inherit;">' + '\u{1F4F7}' + ' Camera</button>' +
+          '<button type="button" class="proofSrcBtn" data-src="scanner" style="padding:7px 12px;border:1.5px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;font-size:11px;font-family:inherit;">' + '\u{1F5A8}\uFE0F' + ' Scanner</button>' +
+          '<button type="button" class="proofSrcBtn" data-src="file" style="padding:7px 12px;border:1.5px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;font-size:11px;font-family:inherit;">' + '\u{1F4C1}' + ' Browse</button>' +
+        '</div>' +
+        '<input type="file" id="proofUpload" accept="image/*,.pdf" style="position:fixed;left:-9999px;top:-9999px;opacity:0;width:1px;height:1px;pointer-events:none;">' +
+        '<div id="proofStatus" style="font-size:11px;color:var(--text-dim);">No ID proof selected</div>' +
+        '<div id="proofPreview" style="display:none;margin-top:6px;"></div>' +
+      '</div>' +
+      // Signed Job Card section
+      '<div style="margin-bottom:10px;padding:12px;background:#f9fafb;border-radius:8px;border:1px solid #e5e7eb;">' +
+        '<label style="font-size:12px;font-weight:600;display:block;margin-bottom:6px;">Step 2: Scan / Upload Signed Job Card</label>' +
+        '<div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;">' +
+          '<button type="button" class="sigSrcBtn" data-src="camera" style="padding:7px 12px;border:1.5px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;font-size:11px;font-family:inherit;">' + '\u{1F4F7}' + ' Camera</button>' +
+          '<button type="button" class="sigSrcBtn" data-src="scanner" style="padding:7px 12px;border:1.5px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;font-size:11px;font-family:inherit;">' + '\u{1F5A8}\uFE0F' + ' Scanner</button>' +
+          '<button type="button" class="sigSrcBtn" data-src="file" style="padding:7px 12px;border:1.5px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;font-size:11px;font-family:inherit;">' + '\u{1F4C1}' + ' Browse</button>' +
+        '</div>' +
+        '<input type="file" id="sigUpload" accept="image/*,.pdf" style="position:fixed;left:-9999px;top:-9999px;opacity:0;width:1px;height:1px;pointer-events:none;">' +
+        '<div id="sigStatus" style="font-size:11px;color:var(--text-dim);">No signed job card selected</div>' +
+        '<div id="sigPreview" style="display:none;margin-top:6px;"></div>' +
       '</div>' +
     '</div>' +
     '<div style="display:flex;gap:8px;margin-top:16px;">' +
       '<button id="confirmCollectionBtn" style="padding:10px 24px;background:#16a34a;color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-family:inherit;">' + '\u2705' + ' Confirm Collection</button>' +
-      '<button onclick="viewJobCard(\'' + esc(j.id) + '\')" style="padding:10px 24px;background:var(--dark-3,#f3f4f6);color:var(--text,#111);border:1px solid var(--border,#ddd);border-radius:6px;font-weight:500;cursor:pointer;font-family:inherit;">Cancel</button>' +
+      '<button onclick="closeCollectionOverlay();viewJobCard(\'' + esc(j.id) + '\')" style="padding:10px 24px;background:var(--dark-3,#f3f4f6);color:var(--text,#111);border:1px solid var(--border,#ddd);border-radius:6px;font-weight:500;cursor:pointer;font-family:inherit;">Cancel</button>' +
     '</div>' +
     '</div>';
 
-  // Show in a small overlay or replace the status section
-  var content = document.getElementById('jobCardViewContent');
-  content.innerHTML = content.innerHTML + '<div id="collectionOverlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:1001;display:flex;align-items:center;justify-content:center;overflow-y:auto;padding:20px;">' +
-    '<div style="background:#fff;border-radius:12px;max-width:500px;width:100%;padding:24px;box-shadow:0 8px 32px rgba(0,0,0,0.2);">' + html + '</div></div>';
+  closeCollectionOverlay();
+  var overlay = document.createElement('div');
+  overlay.id = 'collectionOverlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:1001;display:flex;align-items:center;justify-content:center;overflow-y:auto;padding:20px;';
+  overlay.innerHTML = '<div style="background:#fff;border-radius:12px;max-width:500px;width:100%;padding:24px;box-shadow:0 8px 32px rgba(0,0,0,0.2);">' + html + '</div>';
+  document.body.appendChild(overlay);
 
-  // Preview upload
-  var fileInput = document.getElementById('proofUpload');
-  if (fileInput) {
-    fileInput.addEventListener('change', function() {
-      var preview = document.getElementById('uploadPreview');
+  var proofInput = document.getElementById('proofUpload');
+  var sigInput = document.getElementById('sigUpload');
+
+  // Helper: wire up a group of buttons to trigger file input or camera
+  function wireScanButtons(btnClass, input, statusId, previewId) {
+    var isProof = btnClass === 'proofSrcBtn';
+    document.querySelectorAll('.' + btnClass).forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var src = this.dataset.src;
+        var statusEl = document.getElementById(statusId);
+        if (src === 'camera') {
+          openCamera(function(blob) {
+            var file = new File([blob], (isProof ? 'id-proof' : 'signed-card') + '.jpg', { type: 'image/jpeg' });
+            var dt = new DataTransfer();
+            dt.items.add(file);
+            input.files = dt.files;
+            var changeEvent = new Event('change', { bubbles: true });
+            input.dispatchEvent(changeEvent);
+          }, statusEl);
+        } else if (src === 'scanner') {
+          input.value = '';
+          input.removeAttribute('capture');
+          input.setAttribute('accept', 'image/*,.pdf');
+          statusEl.textContent = 'Select scanner from the file picker...';
+          input.click();
+        } else {
+          input.value = '';
+          input.removeAttribute('capture');
+          input.setAttribute('accept', 'image/*,.pdf');
+          statusEl.textContent = 'Browse and select a file...';
+          input.click();
+        }
+      });
+    });
+    input.addEventListener('change', function() {
       if (this.files && this.files[0]) {
-        var reader = new FileReader();
-        reader.onload = function(e) {
-          preview.innerHTML = '<img src="' + e.target.result + '" style="max-width:100%;max-height:200px;border-radius:6px;border:1px solid var(--border);">';
-          preview.style.display = 'block';
-        };
-        reader.readAsDataURL(this.files[0]);
-      } else {
-        preview.style.display = 'none';
+        document.getElementById(statusId).textContent = 'Selected: ' + this.files[0].name + ' (' + (this.files[0].size / 1024).toFixed(1) + ' KB)';
+        var prev = document.getElementById(previewId);
+        if (this.files[0].type.startsWith('image/')) {
+          var r = new FileReader();
+          r.onload = function(e) {
+            prev.innerHTML = '<img src="' + e.target.result + '" style="max-width:100%;max-height:140px;border-radius:6px;border:1px solid var(--border);">';
+            prev.style.display = 'block';
+          };
+          r.readAsDataURL(this.files[0]);
+        } else {
+          prev.innerHTML = '\u{1F4C4} <span style="font-size:13px;color:var(--text-dim);">PDF document selected</span>';
+          prev.style.display = 'block';
+        }
       }
     });
   }
 
+  // Open device camera, capture a photo, return blob via callback
+  function openCamera(callback, statusEl) {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      statusEl.textContent = 'Camera not supported on this device/browser.';
+      return;
+    }
+    var video = document.createElement('video');
+    video.setAttribute('autoplay', '');
+    video.setAttribute('playsinline', '');
+    video.style.cssText = 'width:100%;max-width:400px;border-radius:8px;background:#000;';
+    var canvas = document.createElement('canvas');
+    var snapBtn = document.createElement('button');
+    snapBtn.textContent = '\u{1F4F7} Capture Photo';
+    snapBtn.style.cssText = 'padding:10px 24px;background:var(--red,#e5383b);color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-family:inherit;font-size:14px;margin-top:8px;';
+    var closeBtn = document.createElement('button');
+    closeBtn.textContent = '\u274C Cancel';
+    closeBtn.style.cssText = 'padding:10px 24px;background:#f3f4f6;color:#111;border:1px solid #ddd;border-radius:8px;cursor:pointer;font-family:inherit;font-size:14px;margin-top:8px;margin-left:8px;';
+    var camBox = document.createElement('div');
+    camBox.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:2000;display:flex;align-items:center;justify-content:center;padding:20px;';
+    camBox.innerHTML = '<div style="background:#fff;border-radius:12px;padding:20px;text-align:center;max-width:440px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,0.3);"></div>';
+    var box = camBox.firstChild;
+    box.appendChild(video);
+    box.appendChild(document.createElement('br'));
+    box.appendChild(snapBtn);
+    box.appendChild(closeBtn);
+    document.body.appendChild(camBox);
+    var stream = null;
+
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } } })
+      .then(function(s) {
+        stream = s;
+        video.srcObject = s;
+        video.play();
+        statusEl.textContent = 'Camera opened. Position document and capture.';
+      })
+      .catch(function() {
+        statusEl.textContent = 'Could not open camera. Check permissions.';
+        camBox.remove();
+      });
+
+    function stopCam() {
+      if (stream) stream.getTracks().forEach(function(t) { t.stop(); });
+      camBox.remove();
+    }
+
+    snapBtn.addEventListener('click', function() {
+      canvas.width = video.videoWidth || 1280;
+      canvas.height = video.videoHeight || 720;
+      canvas.getContext('2d').drawImage(video, 0, 0);
+      canvas.toBlob(function(blob) {
+        stopCam();
+        if (blob) callback(blob);
+      }, 'image/jpeg', 0.85);
+    });
+
+    closeBtn.addEventListener('click', stopCam);
+  }
+
+  wireScanButtons('proofSrcBtn', proofInput, 'proofStatus', 'proofPreview');
+  wireScanButtons('sigSrcBtn', sigInput, 'sigStatus', 'sigPreview');
+
+  // === Confirm Collection ===
   document.getElementById('confirmCollectionBtn').addEventListener('click', function() {
     var code = document.getElementById('collectionCodeInput') ? document.getElementById('collectionCodeInput').value.trim().toUpperCase() : '';
     var collector = document.getElementById('collectorNameInput') ? document.getElementById('collectorNameInput').value.trim() : '';
-    var proofFile = document.getElementById('proofUpload') ? document.getElementById('proofUpload').files[0] : null;
+    var proofFile = proofInput.files[0];
+    var sigFile = sigInput.files[0];
 
     if (hasCode && code && code === j.collection_code) {
-      // Code matched - simple collection
       apiFetch(API_BASE + '/api/admin/job-cards/' + encodeURIComponent(j.id) + '/status', addToken({ status: 'collected', note: note || 'Device collected via code verification', collection_code: code }), 'POST')
-        .then(function() { viewJobCard(j.id); })
+        .then(function() { closeCollectionOverlay(); viewJobCard(j.id); })
         .catch(function(err) { alert('Error: ' + err.message); });
-    } else if (collector && proofFile) {
-      // Upload proof first, then update status
-      var formData = new FormData();
-      formData.append('proof', proofFile);
-      formData.append('collector_name', collector);
-
-      var uploadBtn = document.getElementById('confirmCollectionBtn');
-      uploadBtn.disabled = true;
-      uploadBtn.textContent = 'Uploading...';
-
-      fetch(API_BASE + '/api/admin/job-cards/' + encodeURIComponent(j.id) + '/upload-proof?token=' + encodeURIComponent(getSessionToken()), {
-        method: 'POST',
-        body: formData
-      })
-      .then(function(r) { return r.json(); })
-      .then(function(uploadResp) {
-        if (!uploadResp.success) throw new Error(uploadResp.error || 'Upload failed');
-        return apiFetch(API_BASE + '/api/admin/job-cards/' + encodeURIComponent(j.id) + '/status', addToken({
-          status: 'collected',
-          note: note || 'Device collected by ' + collector + ' (ID proof uploaded)',
-          collector_name: collector,
-          collection_proof_path: uploadResp.path
-        }), 'POST');
-      })
-      .then(function() { viewJobCard(j.id); })
-      .catch(function(err) { alert('Error: ' + err.message); uploadBtn.disabled = false; uploadBtn.textContent = '\u2705 Confirm Collection'; });
-    } else if (hasCode && code && code !== j.collection_code) {
-      alert('Invalid collection code. Please check with the client or use the ID proof option.');
-    } else {
-      alert('Please either enter the collection code OR provide collector name + ID proof.');
+      return;
     }
+
+    if (!collector) { alert('Please enter the name of the person collecting the device.'); return; }
+    if (!proofFile && !sigFile) { alert('Please scan or upload at least the ID proof or the signed job card.'); return; }
+
+    var formData = new FormData();
+    formData.append('collector_name', collector);
+    if (proofFile) formData.append('proof', proofFile);
+    if (sigFile) formData.append('signature', sigFile);
+
+    var uploadBtn = document.getElementById('confirmCollectionBtn');
+    uploadBtn.disabled = true;
+    uploadBtn.textContent = 'Uploading...';
+
+    fetch(API_BASE + '/api/admin/job-cards/' + encodeURIComponent(j.id) + '/upload-proof', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + getSessionToken() },
+      body: formData
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(uploadResp) {
+      if (!uploadResp.success) throw new Error(uploadResp.error || 'Upload failed');
+      return apiFetch(API_BASE + '/api/admin/job-cards/' + encodeURIComponent(j.id) + '/status', addToken({
+        status: 'collected',
+        note: note || 'Device collected by ' + collector + (proofFile ? ' (ID proof)' : '') + (sigFile ? ' (signed card)' : ''),
+        collector_name: collector,
+        collection_proof_path: uploadResp.proof_path || null,
+        collection_signature_path: uploadResp.signature_path || null
+      }), 'POST');
+    })
+    .then(function() { closeCollectionOverlay(); viewJobCard(j.id); })
+    .catch(function(err) { alert('Error: ' + err.message); uploadBtn.disabled = false; uploadBtn.textContent = '\u2705 Confirm Collection'; });
   });
+}
+
+function closeCollectionOverlay() {
+  var el = document.getElementById('collectionOverlay');
+  if (el) el.remove();
 }
 
 function viewProof(path) {
@@ -475,7 +657,8 @@ function printJobCard(id) {
     var j = data.jobCard;
     var w = window.open('', '_blank');
     if (!w) { alert('Please allow pop-ups for this site to print job cards.'); return; }
-    var balance = (j.total_cost || 0) - (j.amount_paid || 0);
+    var grandTotal = (j.diag_fee || 0) + (j.total_cost || 0);
+    var balance = grandTotal - (j.amount_paid || 0);
 
     var tl = '';
     if (j.history && j.history.length) {
@@ -581,7 +764,9 @@ function printJobCard(id) {
         dl('Work Done.....', j.work_done || '') +
         blankLine() +
         dl('Parts Used.....', j.parts_used || '') +
-        dlR('Invoice No.....', j.invoice_no || '', 'Cost N$.....', (j.total_cost||0).toFixed(2)) +
+        dl('Diag Fee N$.....', (j.diag_fee||0).toFixed(2)) +
+        dlR('Repair Cost N$.....', (j.total_cost||0).toFixed(2), 'Invoice No.....', j.invoice_no || '') +
+        '<div style="font-weight:700;font-size:13px;margin:6px 0;">Grand Total: N$ ' + grandTotal.toFixed(2) + '</div>' +
         dl('Remarks.....', j.technician_notes || '') +
       '</div>' +
 

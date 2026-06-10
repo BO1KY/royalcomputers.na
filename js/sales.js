@@ -1,1 +1,266 @@
-window.SALES={active:[],loaded:!1,load:function(e){var o=this;fetch("/api/sales").then(function(i){return i.json()}).then(function(i){o.active=i&&i.sales||[],o.loaded=!0,e&&e(o.active)}).catch(function(){o.loaded=!0,e&&e([])})},getSaleFor:function(e){return this.loaded&&this.active.find(function(o){return o.product_id===e})||null},applyToProduct:function(e){if(!e||!this.loaded)return e;var o=this.getSaleFor(e.id);if(!o){var i=window._productOverrides||{};return i[e.id]&&i[e.id].price&&(e=Object.assign({},e),e.variants=e.variants.map(function(n){return Object.assign({},n,{price:i[e.id].price})})),e}return e=Object.assign({},e),e._sale=o,e.badge=o.label||"sale",e.oldPrice=e.oldPrice||o.old_price||e.variants[0].price,e.variants=e.variants.map(function(n){return Object.assign({},n,{price:o.sale_price})}),e},getActiveSales:function(){return this.active},hasActiveSales:function(){return this.active.length>0},closeSalePopup:function(){document.getElementById("salePopup").classList.remove("open"),sessionStorage.setItem("sale_popup_shown","1")},showSalePopup:function(e){if(!sessionStorage.getItem("sale_popup_shown")&&!(!e||!e.length)){var o=document.getElementById("salePopupBody"),i=document.getElementById("salePopupMedia");if(o){var n="";e.forEach(function(s){var d=(window.PRODUCTS_DB||[]).find(function(c){return c.id===s.product_id});n+='<div style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--gray-200);">',d&&(n+="<strong>"+d.name+"</strong><br>"),n+='<span style="color:var(--accent);font-weight:700;">N$'+s.sale_price+"</span>",s.old_price&&(n+=' <span style="text-decoration:line-through;color:var(--gray-400);font-size:13px;">N$'+s.old_price+"</span>"),n+="</div>"}),o.innerHTML=n,e[0].ad_image?i.innerHTML='<img src="'+e[0].ad_image+'" alt="Sale" loading="lazy" style="max-width:100%;border-radius:var(--radius-sm);max-height:180px;object-fit:cover;" />':e[0].ad_video&&(i.innerHTML='<video src="'+e[0].ad_video+'" autoplay muted loop style="max-width:100%;border-radius:var(--radius-sm);max-height:180px;object-fit:cover;"></video>'),setTimeout(function(){document.getElementById("salePopup").classList.add("open")},1500)}}},loadAll:function(e){var o=this;Promise.all([fetch("/api/product-overrides").then(function(i){return i.json().then(function(n){return n&&n.overrides||[]}).catch(function(){return[]})}),fetch("/api/sales").then(function(i){return i.json().then(function(n){return n&&n.sales||[]}).catch(function(){return[]})}),fetch("/api/custom-products").then(function(i){return i.json().then(function(n){return n&&n.products||[]}).catch(function(){return[]})})]).then(function(i){var n=i[0],s=i[1],d=i[2];window._productOverrides={},n.forEach(function(t){window._productOverrides[t.product_id]=t}),o.active=s,o.loaded=!0;var c=window.PRODUCTS_DB;if(c){d.forEach(function(t){var a=[];try{a=JSON.parse(t.variants_json||"[]")}catch{a=[{label:"Default",price:0}]}var r={id:t.id,name:t.name,category:t.category||"Uncategorized",image:t.image||"",badge:t.badge||null,date:t.date||null,description:t.description||"",compatibility:t.compatibility||"",specs:t.specs||"",variants:a},p=c.findIndex(function(f){return f.id===t.id});p>=0?c[p]=r:c.push(r)});var l={};n.forEach(function(t){t.hidden&&(l[t.product_id]=!0)});for(var u=0;u<c.length;)l[c[u].id]?c.splice(u,1):u++;s.forEach(function(t){var a=c.find(function(r){return r.id===t.product_id});a&&(a._sale=t,a.badge=t.label||"sale",a.oldPrice=a.oldPrice||t.old_price||a.variants[0].price,a.variants.forEach(function(r){r.price=t.sale_price}))}),n.forEach(function(t){if(!t.hidden){var a=c.find(function(r){return r.id===t.product_id});if(a&&(t.price&&a.variants.forEach(function(r){r.price=t.price}),t.description&&(a.description=t.description),t.compatibility&&(a.compatibility=t.compatibility),t.specs&&(a.specs=t.specs),t.name&&(a.name=t.name),t.image&&(a.image=t.image,a.variants.forEach(function(r){r.image&&(r.image=t.image)})),t.variants_json))try{a.variants=JSON.parse(t.variants_json)}catch{}}})}e&&e({overrides:n,sales:s})})}},window.closeSalePopup=function(){window.SALES.closeSalePopup()};
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[c];
+  });
+}
+
+window.SALES = {
+  active: [],
+  loaded: false,
+
+  load: function (callback) {
+    var self = this;
+    fetch('/api/sales')
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        self.active = (data && data.sales) || [];
+        self.loaded = true;
+        if (callback) callback(self.active);
+      })
+      .catch(function () {
+        self.loaded = true;
+        if (callback) callback([]);
+      });
+  },
+
+  getSaleFor: function (productId) {
+    return (
+      (this.loaded &&
+        this.active.find(function (s) {
+          return s.product_id === productId;
+        })) ||
+      null
+    );
+  },
+
+  applyToProduct: function (product) {
+    if (!product || !this.loaded) return product;
+    var sale = this.getSaleFor(product.id);
+    if (!sale) {
+      // Guard: _productOverrides may not exist in the codebase
+      var overrides = window._productOverrides || {};
+      if (overrides[product.id] && overrides[product.id].price) {
+        product = Object.assign({}, product);
+        product.variants = product.variants.map(function (v) {
+          return Object.assign({}, v, { price: overrides[product.id].price });
+        });
+      }
+      return product;
+    }
+    product = Object.assign({}, product);
+    product._sale = sale;
+    product.badge = sale.label || 'sale';
+    product.oldPrice =
+      product.oldPrice || sale.old_price || product.variants[0].price;
+    product.variants = product.variants.map(function (v) {
+      return Object.assign({}, v, { price: sale.sale_price });
+    });
+    return product;
+  },
+
+  getActiveSales: function () {
+    return this.active;
+  },
+
+  hasActiveSales: function () {
+    return this.active.length > 0;
+  },
+
+  closeSalePopup: function () {
+    document.getElementById('salePopup').classList.remove('open');
+    sessionStorage.setItem('sale_popup_shown', '1');
+  },
+
+  showSalePopup: function (sales) {
+    if (sessionStorage.getItem('sale_popup_shown')) return;
+    if (!sales || !sales.length) return;
+
+    var body = document.getElementById('salePopupBody');
+    var media = document.getElementById('salePopupMedia');
+    if (!body) return;
+
+    var html = '';
+    sales.forEach(function (s) {
+      var product = (window.PRODUCTS_DB || []).find(function (p) {
+        return p.id === s.product_id;
+      });
+      html +=
+        '<div style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--gray-200);">';
+      if (product) {
+        html += '<strong>' + escapeHtml(product.name) + '</strong><br>';
+      }
+      html +=
+        '<span style="color:var(--red);font-weight:700;">N$' +
+        escapeHtml(s.sale_price) +
+        '</span>';
+      if (s.old_price) {
+        html +=
+          ' <span style="text-decoration:line-through;color:var(--gray-400);font-size:13px;">N$' +
+          escapeHtml(s.old_price) +
+          '</span>';
+      }
+      html += '</div>';
+    });
+    body.innerHTML = html;
+
+    if (sales[0].ad_image) {
+      media.innerHTML =
+        '<img src="' +
+        escapeHtml(sales[0].ad_image) +
+        '" alt="Sale" loading="lazy" style="max-width:100%;border-radius:var(--radius-sm);max-height:180px;object-fit:cover;" />';
+    } else if (sales[0].ad_video) {
+      media.innerHTML =
+        '<video src="' +
+        escapeHtml(sales[0].ad_video) +
+        '" autoplay muted loop style="max-width:100%;border-radius:var(--radius-sm);max-height:180px;object-fit:cover;"></video>';
+    }
+
+    setTimeout(function () {
+      document.getElementById('salePopup').classList.add('open');
+    }, 1500);
+  },
+
+  loadAll: function (callback) {
+    var self = this;
+    Promise.all([
+      fetch('/api/product-overrides')
+        .then(function (r) {
+          return r
+            .json()
+            .then(function (d) {
+              return (d && d.overrides) || [];
+            })
+            .catch(function () {
+              return [];
+            });
+        }),
+      fetch('/api/sales')
+        .then(function (r) {
+          return r
+            .json()
+            .then(function (d) {
+              return (d && d.sales) || [];
+            })
+            .catch(function () {
+              return [];
+            });
+        }),
+      fetch('/api/custom-products')
+        .then(function (r) {
+          return r
+            .json()
+            .then(function (d) {
+              return (d && d.products) || [];
+            })
+            .catch(function () {
+              return [];
+            });
+        }),
+    ]).then(function (results) {
+      var overrides = results[0];
+      var sales = results[1];
+      var customProducts = results[2];
+
+      window._productOverrides = {};
+      overrides.forEach(function (o) {
+        window._productOverrides[o.product_id] = o;
+      });
+
+      self.active = sales;
+      self.loaded = true;
+
+      var db = window.PRODUCTS_DB;
+      if (db) {
+        customProducts.forEach(function (cp) {
+          var variants = [];
+          try {
+            variants = JSON.parse(cp.variants_json || '[]');
+          } catch (e) {
+            variants = [{ label: 'Default', price: 0 }];
+          }
+          var product = {
+            id: cp.id,
+            name: cp.name,
+            category: cp.category || 'Uncategorized',
+            image: cp.image || '',
+            badge: cp.badge || null,
+            date: cp.date || null,
+            description: cp.description || '',
+            compatibility: cp.compatibility || '',
+            specs: cp.specs || '',
+            variants: variants,
+          };
+          var idx = db.findIndex(function (p) {
+            return p.id === cp.id;
+          });
+          if (idx >= 0) {
+            db[idx] = product;
+          } else {
+            db.push(product);
+          }
+        });
+
+        var hidden = {};
+        overrides.forEach(function (o) {
+          if (o.hidden) hidden[o.product_id] = true;
+        });
+        for (var i = 0; i < db.length; ) {
+          if (hidden[db[i].id]) {
+            db.splice(i, 1);
+          } else {
+            i++;
+          }
+        }
+
+        sales.forEach(function (s) {
+          var p = db.find(function (x) {
+            return x.id === s.product_id;
+          });
+          if (p) {
+            p._sale = s;
+            p.badge = s.label || 'sale';
+            p.oldPrice =
+              p.oldPrice || s.old_price || p.variants[0].price;
+            p.variants.forEach(function (v) {
+              v.price = s.sale_price;
+            });
+          }
+        });
+
+        overrides.forEach(function (o) {
+          if (o.hidden) return;
+          var p = db.find(function (x) {
+            return x.id === o.product_id;
+          });
+          if (!p) return;
+          if (o.price) {
+            p.variants.forEach(function (v) {
+              v.price = o.price;
+            });
+          }
+          if (o.description) p.description = o.description;
+          if (o.compatibility) p.compatibility = o.compatibility;
+          if (o.specs) p.specs = o.specs;
+          if (o.name) p.name = o.name;
+          if (o.image) {
+            p.image = o.image;
+            p.variants.forEach(function (v) {
+              if (v.image) v.image = o.image;
+            });
+          }
+          if (o.variants_json) {
+            try {
+              p.variants = JSON.parse(o.variants_json);
+            } catch (e) {}
+          }
+        });
+      }
+
+      if (callback) callback({ overrides: overrides, sales: sales });
+    });
+  },
+};
+
+window.closeSalePopup = function () {
+  window.SALES.closeSalePopup();
+};

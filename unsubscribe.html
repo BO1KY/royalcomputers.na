@@ -11,80 +11,196 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://embed.tawk.to">
   <link rel="dns-prefetch" href="https://embed.tawk.to">
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap"></noscript>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap"></noscript>
   <link rel="stylesheet" href="css/design-tokens.css">
   <link rel="stylesheet" href="css/royal-theme.css" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="css/search-dropdown.css" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="css/animations.css" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="css/checkout-wizard.css" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="css/enhanced-ui.css" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="css/interactive-components.css" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="css/ecommerce-features.css" media="print" onload="this.media='all'">
   <link rel="stylesheet" href="css/mobile.css" media="print" onload="this.media='all'">
+  <link rel="manifest" href="js/manifest.json" />
+  <link rel="apple-touch-icon" href="ROYAL PICS/royal logo.webp" />
   <style>
-.page-loader{position:fixed!important;inset:0!important;z-index:99999!important;background:#ffffff!important;display:flex!important;align-items:center!important;justify-content:center!important}
+.page-loader{position:fixed!important;inset:0!important;z-index:99999!important;background:var(--bg-backdrop)!important;display:flex!important;align-items:center!important;justify-content:center!important}
 .loader-spinner{width:48px;height:48px;border:4px solid #ddd;border-top-color:#e5383b;border-radius:50%;animation:loaderSpin .8s linear infinite}
 @keyframes loaderSpin{to{transform:rotate(360deg)}}
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'DM Sans',sans-serif;background:var(--bg,#f5f3f4);color:var(--text,#1a1a2e);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
-.card{background:var(--white,#fff);border-radius:var(--radius-xl,16px);padding:40px 36px;max-width:460px;width:100%;box-shadow:0 8px 40px rgba(0,0,0,0.08);text-align:center}
-.card .logo{width:140px;height:auto;margin-bottom:16px}
-.card h1{font-size:22px;font-weight:700;margin-bottom:6px}
-.card>p{font-size:14px;color:var(--text-dim,#666);margin-bottom:24px;line-height:1.5}
+.unsubscribe-wrapper{max-width:460px;margin:60px auto;padding:0 20px}
+.unsubscribe-card{background:var(--card-bg);border-radius:var(--card-radius);padding:var(--card-padding);box-shadow:var(--shadow-popup);text-align:center}
+.unsubscribe-card .logo{width:140px;height:auto;margin-bottom:16px}
+.unsubscribe-card h1{font-size:var(--font-size-3xl);font-weight:var(--font-weight-bold);margin-bottom:6px}
+.unsubscribe-card>p{font-size:var(--font-size-md);color:var(--text-dim);margin-bottom:24px;line-height:var(--line-height-base)}
 .step{display:none}
 .step.active{display:block}
-.step p{font-size:14px;color:var(--text-dim,#666);margin-bottom:16px;line-height:1.5}
-.step input{width:100%;padding:12px 16px;border:2px solid var(--border,#ddd);border-radius:8px;font-size:15px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s;margin-bottom:12px}
-.step input:focus{border-color:var(--red,#e5383b)}
-.email-display{background:var(--bg,#f5f3f4);border:1px solid var(--border,#ddd);border-radius:8px;padding:12px 16px;font-size:15px;font-weight:600;color:var(--text,#1a1a2e);margin-bottom:16px;word-break:break-all}
-.btn-primary,.btn-danger,.btn-secondary{width:100%;padding:12px;border:none;border-radius:8px;font-size:15px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:opacity .2s;margin-bottom:8px}
-.btn-primary{background:var(--red,#e5383b);color:#fff}
-.btn-primary:hover{opacity:.9}
-.btn-primary:disabled{opacity:.5;cursor:default}
-.btn-danger{background:var(--red,#e5383b);color:#fff}
-.btn-danger:hover{opacity:.9}
-.btn-secondary{background:var(--bg,#f5f3f4);color:var(--text,#1a1a2e);border:2px solid var(--border,#ddd)}
-.btn-secondary:hover{border-color:var(--red,#e5383b);color:var(--red,#e5383b)}
-.message{font-size:13px;margin-bottom:12px;min-height:20px}
-.message.error{color:var(--red,#e5383b)}
-.message.success{color:#16a34a}
-.back{display:inline-block;margin-top:12px;font-size:13px;color:var(--text-dim,#666);text-decoration:none}
-.back:hover{color:var(--red,#e5383b)}
-@media(max-width:480px){.card{padding:28px 20px;border-radius:12px}}
+.step p{font-size:var(--font-size-md);color:var(--text-dim);margin-bottom:16px;line-height:var(--line-height-base)}
+.step input{width:100%;padding:var(--input-padding);border:2px solid var(--input-border);border-radius:var(--input-radius);font-size:var(--input-font-size);font-family:var(--font-body);outline:none;transition:border-color var(--transition-fast);margin-bottom:12px}
+.step input:focus{border-color:var(--input-border-focus)}
+.email-display{background:var(--bg-muted);border:1px solid var(--border-gray);border-radius:var(--input-radius);padding:12px 16px;font-size:var(--font-size-lg);font-weight:var(--font-weight-semibold);color:var(--text);margin-bottom:16px;word-break:break-all}
+.unsubscribe-card .btn-primary,
+.unsubscribe-card .btn-danger,
+.unsubscribe-card .btn-secondary{width:100%;padding:12px;border:none;border-radius:var(--input-radius);font-size:var(--input-font-size);font-weight:var(--font-weight-semibold);font-family:var(--font-body);cursor:pointer;transition:opacity var(--transition-fast);margin-bottom:8px}
+.unsubscribe-card .btn-primary{background:var(--btn-primary-bg);color:var(--btn-primary-text)}
+.unsubscribe-card .btn-primary:hover{opacity:.9}
+.unsubscribe-card .btn-primary:disabled{opacity:.5;cursor:default}
+.unsubscribe-card .btn-danger{background:var(--btn-primary-bg);color:var(--btn-primary-text)}
+.unsubscribe-card .btn-danger:hover{opacity:.9}
+.unsubscribe-card .btn-secondary{background:var(--btn-secondary-bg);color:var(--btn-secondary-text);border:2px solid var(--btn-secondary-border)}
+.unsubscribe-card .btn-secondary:hover{border-color:var(--red);color:var(--red)}
+.message{font-size:var(--font-size-base);margin-bottom:12px;min-height:20px}
+.message.error{color:var(--error)}
+.message.success{color:var(--success)}
+.back{display:inline-block;margin-top:12px;font-size:var(--font-size-base);color:var(--text-dim);text-decoration:none}
+.back:hover{color:var(--red)}
+@media(max-width:480px){.unsubscribe-card{padding:28px 20px;border-radius:var(--radius)}}
 </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link" style="position:absolute;top:-99999px">Skip to main content</a>
+
   <div class="page-loader" id="pageLoader">
     <div class="loader-spinner"></div>
     <div class="loader-text">Loading…</div>
   </div>
-  <div class="card">
-    <img src="ROYAL PICS/royal logo.webp" alt="Royal Computers Namibia" class="logo" loading="lazy" />
-    <h1>Unsubscribe</h1>
 
-    
-    <div class="step active" id="step1">
-      <p>Enter the email address you used to subscribe to the Royal Computers Namibia newsletter.</p>
-      <input type="email" id="unsubEmail" placeholder="your@email.com" autocomplete="email" />
-      <div class="message" id="step1Message"></div>
-      <button class="btn-primary" id="verifyBtn">Verify Email</button>
+  <canvas id="shader-canvas" class="shader-canvas"></canvas>
+
+  <div class="spotlight-container-global">
+    <div class="spotlight-overlay-global">
+      <div class="spotlight-global spotlight-left-global"></div>
+      <div class="spotlight-global spotlight-mid-global"></div>
+      <div class="spotlight-global spotlight-right-global"></div>
     </div>
-
-    
-    <div class="step" id="step2">
-      <p>You are currently subscribed with:</p>
-      <div class="email-display" id="confirmedEmail"></div>
-      <p style="font-size:13px;color:var(--red, #e5383b);opacity:.8;margin-bottom:16px;">This action cannot be undone. You will no longer receive newsletters from Royal Computers Namibia.</p>
-      <div class="message" id="step2Message"></div>
-      <button class="btn-danger" id="confirmUnsubBtn">Yes, Unsubscribe Me</button>
-      <button class="btn-secondary" id="cancelBtn">Cancel</button>
-    </div>
-
-    
-    <div class="step" id="step3">
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:16px;"><polyline points="20 6 9 17 4 12"/></svg>
-      <h1 style="color:#16a34a;">Unsubscribed</h1>
-      <p id="successMessage">You have been successfully unsubscribed from the Royal Computers Namibia newsletter.</p>
-      <a href="index.html" class="back" style="margin-top:12px;">&larr; Back to Home</a>
-    </div>
-
-    <a href="index.html" class="back" id="bottomBack">&larr; Back to Home</a>
   </div>
+
+  <header>
+    <div class="header-inner">
+      <a href="index.html" class="logo">
+        <img src="ROYAL PICS/royal logo.webp" alt="Royal Computers Namibia" />
+      </a>
+      <nav>
+        <button class="nav-close" aria-label="Close menu">&times;</button>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="products.html">Products</a></li>
+          <li><a href="deals.html">Deals</a></li>
+          <li><a href="Contact-us.html">Contact</a></li>
+          <li><a href="About-us.html">About Us</a></li>
+        </ul>
+      </nav>
+      <button class="mobile-toggle" id="mobileToggle" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="header-right">
+        <button class="cart-btn" onclick="window.location.href='tracking.html'" title="Track Repair">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4m10-10h-4M6 12H2"/></svg>
+        </button>
+        <button class="cart-btn" id="openCartBtn" onclick="openCart()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="9" cy="21" r="1" />
+            <circle cx="20" cy="21" r="1" />
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+          </svg>
+          <span class="cart-count" id="cartCount" style="display:none;">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="breadcrumb">
+    <a href="index.html">Home</a> &rsaquo; <span>Unsubscribe</span>
+  </div>
+
+  <div class="page-header">
+    <h1>Unsubscribe</h1>
+    <p>Manage your newsletter preferences</p>
+  </div>
+
+  <div id="main-content" class="unsubscribe-wrapper">
+    <div class="unsubscribe-card">
+      <img src="ROYAL PICS/royal logo.webp" alt="Royal Computers Namibia" class="logo" loading="lazy" />
+
+      
+      <div class="step active" id="step1">
+        <p>Enter the email address you used to subscribe to the Royal Computers Namibia newsletter.</p>
+        <input type="email" id="unsubEmail" placeholder="your@email.com" autocomplete="email" />
+        <div class="message" id="step1Message"></div>
+        <button class="btn-primary" id="verifyBtn">Verify Email</button>
+      </div>
+
+      
+      <div class="step" id="step2">
+        <p>You are currently subscribed with:</p>
+        <div class="email-display" id="confirmedEmail"></div>
+        <p style="font-size:13px;color:var(--red);opacity:.8;margin-bottom:16px;">This action cannot be undone. You will no longer receive newsletters from Royal Computers Namibia.</p>
+        <div class="message" id="step2Message"></div>
+        <button class="btn-danger" id="confirmUnsubBtn">Yes, Unsubscribe Me</button>
+        <button class="btn-secondary" id="cancelBtn">Cancel</button>
+      </div>
+
+      
+      <div class="step" id="step3">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:16px;"><polyline points="20 6 9 17 4 12"/></svg>
+        <h1 style="color:var(--success);font-size:var(--font-size-3xl);">Unsubscribed</h1>
+        <p id="successMessage" style="color:var(--text-dim);font-size:var(--font-size-md);">You have been successfully unsubscribed from the Royal Computers Namibia newsletter.</p>
+        <a href="index.html" class="back" style="margin-top:12px;">&larr; Back to Home</a>
+      </div>
+
+      <a href="index.html" class="back" id="bottomBack">&larr; Back to Home</a>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div class="footer-brand-body">
+          <div class="footer-brand-name">Royal Computers Namibia</div>
+          <p>Leading the way in digital lifestyle</p>
+          <div style="margin-top:12px;">
+            <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> GF Shop 12 Gustav Voigts Center, Independence Ave, Windhoek</div>
+            <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg> 061228179</div>
+            <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.832-1.438A9.956 9.956 0 0 0 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18c-1.889 0-3.633-.656-5.008-1.756l-.36-.268-3.008.894.894-3.008-.268-.36A7.94 7.94 0 0 1 4 12c0-4.411 3.589-8 8-8s8 3.589 8 8-3.589 8-8 8z"/></svg> +264813631483</div>
+            <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> windhoek@netmac.co.za</div>
+          </div>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Pages</h4>
+        <ul>
+          <li><a href="products.html">Products</a></li>
+          <li><a href="Contact-us.html">Contact Us</a></li>
+          <li><a href="About-us.html">About Us</a></li>
+          <li><a href="privacy-policy.html">Privacy Policy</a></li>
+          <li><a href="tracking.html">Track Repair</a></li>
+          <li><a href="terms-conditions.html">Terms & Conditions</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Branches</h4>
+        <ul>
+          <li><a href="Contact-us.html">Windhoek</a></li>
+          <li><a href="Contact-us.html">Swakopmund</a></li>
+          <li><a href="Contact-us.html">Oshakati</a></li>
+          <li><a href="Contact-us.html">Walvis Bay</a></li>
+          <li><a href="Contact-us.html">Tsumeb</a></li>
+          <li><a href="Contact-us.html">Grove Mall, Windhoek</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Social</h4>
+        <ul>
+          <li><a href="https://www.facebook.com/RoyalComputersNamibia/" target="_blank"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle;margin-right:6px;"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>Facebook</a></li>
+          <li><a href="https://www.instagram.com/royalcomputernam/" target="_blank"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>Instagram</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>Copyright &copy; Royal Computers Namibia</span>
+      <span><a href="terms-conditions.html">Terms and conditions</a> apply</span>
+    </div>
+  </footer>
 
   <script>
     var step1 = document.getElementById('step1');
@@ -191,9 +307,33 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg,#f5f3f4);color:var(--t
       verifiedEmail = '';
     });
   </script>
+  <script defer src="js/main.js"></script>
+  <script src="js/cart.js"></script>
+  <script defer src="js/quote.js"></script>
+  <script src="js/products-data.js"></script>
+  <script defer src="js/pages-data.js"></script>
+  <script defer src="js/search-engine.js"></script>
+  <script defer src="js/search-dropdown.js"></script>
+  <script defer src="js/shader-background.js"></script>
+  <script defer src="js/cart-ui.js"></script>
+  <script defer src="js/cart-badge-sync.js"></script>
+  <script defer src="js/animations.js"></script>
   <script defer src="js/loader.js"></script>
+  <script defer src="js/guides-modal.js"></script>
+  <script defer src="js/mobile-nav.js"></script>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('js/sw.js')
+          .then(reg => console.log('[SW] Registered, scope:', reg.scope))
+          .catch(err => console.warn('[SW] Registration failed:', err));
+      });
+    }
+  </script>
   <script defer src="js/site-data.js"></script>
   <script defer src="js/api-config.js"></script>
+  <script defer src="js/newsletter.js"></script>
   <script defer src="js/offline.js"></script>
 <script defer src="js/chat.js"></script>
 <script defer src="js/whatsapp-widget.js"></script>

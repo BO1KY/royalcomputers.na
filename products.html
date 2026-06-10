@@ -36,9 +36,14 @@
   <link rel="stylesheet" href="css/pc-builder.css" media="print" onload="this.media='all'">
   <link rel="stylesheet" href="css/mobile.css" media="print" onload="this.media='all'">
     <style>
-.page-loader{position:fixed!important;inset:0!important;z-index:99999!important;background:#ffffff!important;display:flex!important;align-items:center!important;justify-content:center!important}
+.page-loader{position:fixed!important;inset:0!important;z-index:99999!important;background:var(--bg-backdrop)!important;display:flex!important;align-items:center!important;justify-content:center!important}
 .loader-spinner{width:48px;height:48px;border:4px solid #ddd;border-top-color:#e5383b;border-radius:50%;animation:loaderSpin .8s linear infinite}
 @keyframes loaderSpin{to{transform:rotate(360deg)}}
+.link-red{color:#e5383b}
+.terms-label{margin:0;font-size:13px}
+.sale-popup-box{max-width:520px;text-align:center}
+.sale-emoji{font-size:48px;margin-bottom:8px}
+select.form-input{appearance:none;background:var(--dark-3);padding-right:36px}
 
 .products-container{max-width:1200px;margin:0 auto 80px;padding:0 28px}
 .products-grid#infinityScrollContainer{gap:48px 24px;padding-top:40px}
@@ -184,10 +189,10 @@
 
 
 <div class="newsletter-overlay" id="salePopup">
-  <div class="newsletter-box" style="max-width:520px;text-align:center;">
+  <div class="newsletter-box sale-popup-box">
     <button class="close-newsletter" onclick="closeSalePopup()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-    <div style="font-size:48px;margin-bottom:8px;">🏷️</div>
-    <h3 style="color:var(--accent);margin:0 0 8px;">Special Offers!</h3>
+    <div class="sale-emoji">🏷️</div>
+    <h3 style="color:var(--red);margin:0 0 8px;">Special Offers!</h3>
     <div id="salePopupBody" style="font-size:14px;line-height:1.6;margin-bottom:16px;"></div>
     <div id="salePopupMedia" style="margin-bottom:16px;"></div>
     <a href="deals.html" class="nl-subscribe">Shop Deals</a>
@@ -204,7 +209,7 @@
       <input type="email" id="nlEmail" placeholder="Enter your email" />
       <button type="submit" id="nlSubscribeBtn">Subscribe</button>
     </div>
-    <p class="privacy">No spam, ever. <a href="unsubscribe.html" style="color:#e5383b;">Unsubscribe anytime</a>.</p>
+    <p class="privacy">No spam, ever. <a href="unsubscribe.html" class="link-red">Unsubscribe anytime</a>.</p>
   </div>
 </div>
 
@@ -271,7 +276,7 @@
         </div>
         <div class="form-group">
           <label class="form-label" for="branchSelect">Collection Branch *</label>
-          <select id="branchSelect" class="form-input" style="appearance: none; background: var(--dark-3); padding-right: 36px;" required>
+          <select id="branchSelect" class="form-input branch-select" required>
             <option value="branch-001" selected>Gustav Voigts Centre, Windhoek</option>
             <option value="branch-002">Swakopmund</option>
             <option value="branch-003">Oshakati</option>
@@ -290,7 +295,7 @@
         </div>
         <div class="form-group form-checkbox">
           <input type="checkbox" id="termsCheckbox">
-          <label for="termsCheckbox" style="margin: 0; font-size: 13px;">I agree to the terms and conditions</label>
+          <label for="termsCheckbox" class="terms-label">I agree to the terms and conditions</label>
         </div>
         <div class="checkout-actions">
           <button type="button" class="btn-cancel" id="cancelCheckoutBtn">Cancel</button>
@@ -323,7 +328,7 @@
         </div>
         <div class="form-group">
           <label class="form-label" for="quoteInfoBranch">Collection Branch *</label>
-          <select id="quoteInfoBranch" class="form-input" style="appearance: none; background: var(--dark-3); padding-right: 36px;" required>
+          <select id="quoteInfoBranch" class="form-input" required>
             <option value="" selected>Select a branch...</option>
             <option value="branch-001">Gustav Voigts Centre, Windhoek</option>
             <option value="branch-002">Swakopmund</option>
@@ -418,7 +423,7 @@
 <div id="main-content" class="shop-topbar">
   <div class="shop-title-block">
     <h1>All Products</h1>
-    <div class="breadcrumb"><a href="index.html">Home</a><span>/</span><span>Products</span></div>
+    <div class="breadcrumb"><a href="index.html">Home</a><span>›</span><span>Products</span></div>
   </div>
   <div class="shop-controls">
     <div class="search-products" id="searchProductsWrap">
@@ -482,13 +487,13 @@
   <div class="footer-inner">
     <div class="footer-brand">
       <div class="footer-brand-body">
-        <div class="footer-brand-name">Royal Computers Namibia</div>
-        <p>Leading the way in digital lifestyle</p>
+        <div class="footer-brand-name" id="site-footer-company">Royal Computers Namibia</div>
+        <p id="site-footer-tagline">Leading the way in digital lifestyle</p>
         <div style="margin-top:12px;">
-          <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> GF Shop 12 Gustav Voigts Center, Independence Ave, Windhoek</div>
-          <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg> 061228179</div>
-          <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.832-1.438A9.956 9.956 0 0 0 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18c-1.889 0-3.633-.656-5.008-1.756l-.36-.268-3.008.894.894-3.008-.268-.36A7.94 7.94 0 0 1 4 12c0-4.411 3.589-8 8-8s8 3.589 8 8-3.589 8-8 8z"/></svg> +264813631483</div>
-          <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> windhoek@netmac.co.za</div>
+          <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> <span id="site-footer-address">GF Shop 12 Gustav Voigts Center, Independence Ave, Windhoek</span></div>
+          <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg> <span id="site-footer-phone">061228179</span></div>
+          <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.832-1.438A9.956 9.956 0 0 0 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18c-1.889 0-3.633-.656-5.008-1.756l-.36-.268-3.008.894.894-3.008-.268-.36A7.94 7.94 0 0 1 4 12c0-4.411 3.589-8 8-8s8 3.589 8 8-3.589 8-8 8z"/></svg> <span id="site-footer-whatsapp">+264813631483</span></div>
+          <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> <span id="site-footer-email">windhoek@netmac.co.za</span></div>
         </div>
       </div>
     </div>
@@ -517,13 +522,13 @@
     <div class="footer-col">
       <h4>Social</h4>
       <ul>
-        <li><a href="https://www.facebook.com/RoyalComputersNamibia/" target="_blank"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle;margin-right:6px;"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>Facebook</a></li>
-        <li><a href="https://www.instagram.com/royalcomputernam/" target="_blank"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>Instagram</a></li>
+        <li><a href="https://www.facebook.com/RoyalComputersNamibia/" target="_blank" id="site-footer-facebook"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle;margin-right:6px;"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>Facebook</a></li>
+        <li><a href="https://www.instagram.com/royalcomputernam/" target="_blank" id="site-footer-instagram"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>Instagram</a></li>
       </ul>
     </div>
   </div>
   <div class="footer-bottom">
-    <span>Copyright © Royal Computers Namibia</span>
+    <span id="site-footer-copyright">Copyright © Royal Computers Namibia</span>
     <span><a href="terms-conditions.html">Terms and conditions</a> apply</span>
   </div>
 </footer>
@@ -567,39 +572,6 @@
       });
     }
   });
-</script>
-
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function () {
-      navigator.serviceWorker.register('js/sw.js')
-        .then(reg  => console.log('[SW] Registered, scope:', reg.scope))
-        .catch(err => console.warn('[SW] Registration failed:', err));
-    });
-  }
-</script>
-
-<script>
-  function closeNewsletter() {
-    document.getElementById('newsletterOverlay').classList.remove('open');
-    var count = parseInt(localStorage.getItem('nl_close_count') || '0', 10) + 1;
-    localStorage.setItem('nl_close_count', String(count));
-    setTimeout(function() {
-      var el = document.getElementById('newsletterOverlay');
-      if (el && !localStorage.getItem('nl_subscribed')) el.classList.add('open');
-    }, count * 30000);
-  }
-  if (!localStorage.getItem('nl_subscribed')) {
-    setTimeout(function() {
-      var el = document.getElementById('newsletterOverlay');
-      if (el) el.classList.add('open');
-    }, 60000);
-  }
-  document.getElementById('newsletterOverlay').addEventListener('click', function(e) {
-    if (e.target === this) closeNewsletter();
-  });
-
-
 </script>
 
 <script>
@@ -1648,7 +1620,7 @@
     if (!previewContent) return;
     const printWindow = window.open('', '', 'width=1000,height=700');
     printWindow.document.write('<!DOCTYPE html><html><head><title>Quote</title><style>
-.page-loader{position:fixed!important;inset:0!important;z-index:99999!important;background:#ffffff!important;display:flex!important;align-items:center!important;justify-content:center!important}
+.page-loader{position:fixed!important;inset:0!important;z-index:99999!important;background:var(--bg-backdrop)!important;display:flex!important;align-items:center!important;justify-content:center!important}
 .loader-spinner{width:48px;height:48px;border:4px solid #ddd;border-top-color:#e5383b;border-radius:50%;animation:loaderSpin .8s linear infinite}
 @keyframes loaderSpin{to{transform:rotate(360deg)}}
 </style>
@@ -1656,7 +1628,7 @@
     printWindow.document.write(previewContent.innerHTML);
     if (previewContent.querySelector('style')) {
       printWindow.document.write('<style>
-.page-loader{position:fixed!important;inset:0!important;z-index:99999!important;background:#ffffff!important;display:flex!important;align-items:center!important;justify-content:center!important}
+.page-loader{position:fixed!important;inset:0!important;z-index:99999!important;background:var(--bg-backdrop)!important;display:flex!important;align-items:center!important;justify-content:center!important}
 .loader-spinner{width:48px;height:48px;border:4px solid #ddd;border-top-color:#e5383b;border-radius:50%;animation:loaderSpin .8s linear infinite}
 @keyframes loaderSpin{to{transform:rotate(360deg)}}
 </style>

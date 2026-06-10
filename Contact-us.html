@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta http-equiv="Content-Security-Policy"
-    content="default-src 'self'; script-src 'self' 'unsafe-inline'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self';" />
+    content="default-src 'self'; script-src 'self' 'unsafe-inline' https://embed.tawk.to; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://embed.tawk.to; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://embed.tawk.to; frame-src https://embed.tawk.to;" />
   <title>Contact Us – Royal Computers Namibia</title>
   <meta name="description"
     content="Get in touch with Royal Computers Namibia. Visit our branches in Windhoek, Swakopmund, Walvis Bay, Oshakati, Tsumeb, and Grove Mall. Call, email, or WhatsApp us.">
@@ -27,13 +27,14 @@
     rel="stylesheet" />
   <link rel="stylesheet" href="css/design-tokens.css">
   <link rel="stylesheet" href="css/royal-theme.css" media="print" onload="this.media='all'">
-  <link rel="stylesheet" href="css/search-dropdown.css">
-  <link rel="stylesheet" href="css/print-quote.css">
-  <link rel="stylesheet" href="css/animations.css">
-  <link rel="stylesheet" href="css/checkout-wizard.css" />
-  <link rel="stylesheet" href="css/enhanced-ui.css">
-  <link rel="stylesheet" href="css/interactive-components.css">
-  <link rel="stylesheet" href="css/ecommerce-features.css">
+  <link rel="stylesheet" href="css/search-dropdown.css" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="css/print-quote.css" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="css/animations.css" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="css/checkout-wizard.css" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="css/enhanced-ui.css" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="css/interactive-components.css" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="css/ecommerce-features.css" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="css/mobile.css" media="print" onload="this.media='all'">
   <link rel="manifest" href="js/manifest.json" />
   <link rel="apple-touch-icon" href="ROYAL PICS/royal logo.webp" />
   <style>
@@ -364,17 +365,23 @@
         <img src="ROYAL PICS/royal logo.webp" alt="Royal Computers Namibia" />
       </a>
       <nav>
+        <button class="nav-close" aria-label="Close menu">&times;</button>
         <ul>
           <li><a href="index.html">Home</a></li>
           <li><a href="products.html">Products</a></li>
+          <li><a href="deals.html">Deals</a></li>
           <li><a href="Contact-us.html" class="active">Contact</a></li>
           <li><a href="About-us.html">About Us</a></li>
+          <li><a href="tracking.html">Track Repair</a></li>
         </ul>
       </nav>
       <button class="mobile-toggle" id="mobileToggle" aria-label="Menu">
         <span></span><span></span><span></span>
       </button>
       <div class="header-right">
+        <button class="cart-btn" onclick="window.location.href='tracking.html'">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        </button>
         <button class="cart-btn" id="openCartBtn" onclick="openCart()">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round">
@@ -384,7 +391,6 @@
           </svg>
           <span class="cart-count" id="cartCount" style="display:none;">0</span>
         </button>
-
       </div>
 
     </div>
@@ -611,6 +617,12 @@
   <script defer src="js/loader.js"></script>
   <script defer src="js/guides-modal.js"></script>
   <script defer src="js/mobile-nav.js"></script>
+  <script defer src="js/site-data.js"></script>
+  <script defer src="js/api-config.js"></script>
+  <script defer src="js/newsletter.js"></script>
+  <script defer src="js/offline.js"></script>
+  <script defer src="js/chat.js"></script>
+  <script defer src="js/whatsapp-widget.js"></script>
 
   <!-- SERVICE WORKER REGISTRATION -->
   <script>

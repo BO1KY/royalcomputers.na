@@ -1,4 +1,4 @@
-module.exports = function (app, db, getUserFromRequest, hashPassword) {
+module.exports = function (app, db, getUserFromRequest, hashPassword, logAudit, sendError, seedBranchPassword, seedAdminPassword, seedSuperAdminPassword) {
 
   /* ─── Content Management Tables ─── */
   db.exec("CREATE TABLE IF NOT EXISTS site_settings (key TEXT PRIMARY KEY, value TEXT, updated_at TEXT DEFAULT (datetime('now')))");
@@ -28,20 +28,20 @@ module.exports = function (app, db, getUserFromRequest, hashPassword) {
       branchUsers.forEach(function(bu) {
         var branch = db.prepare("SELECT name FROM branches WHERE id = ?").get(bu.branch_id);
         var name = branch ? branch.name : bu.branch_id;
-        var hash = hashPassword('branch123');
+        var hash = hashPassword(seedBranchPassword);
         insertUser.run(bu.username, hash, name, JSON.stringify({ job_cards: true, users: true, sales: true, livechat: true }), bu.branch_id, 'manager');
       });
       branchUsers.forEach(function(bu) {
         var branch = db.prepare("SELECT name FROM branches WHERE id = ?").get(bu.branch_id);
         var name = branch ? 'Admin - ' + branch.name : 'Admin - ' + bu.branch_id;
-        var hash = hashPassword('admin123');
+        var hash = hashPassword(seedAdminPassword);
         var adminUsername = 'admin-' + bu.username.replace('@netmac.co.za','').replace('@netmec.co.za','');
         try { insertUser.run(adminUsername, hash, name, JSON.stringify({ job_cards: true, users: true, sales: true, livechat: true, subscribers: true, messages: true, campaigns: true, products: true, content: true }), bu.branch_id, 'manager'); } catch(e) {}
       });
       try {
         var adminExists = db.prepare("SELECT id FROM users WHERE username = 'admin'").get();
-        if (!adminExists) {
-          insertUser.run('admin', hashPassword('Matheus@108'), 'Super Admin', JSON.stringify({ subscribers: true, messages: true, campaigns: true, products: true, sales: true, livechat: true, users: true, content: true, job_cards: true }), null, 'manager');
+        if (!adminExists && seedSuperAdminPassword) {
+          insertUser.run('admin', hashPassword(seedSuperAdminPassword), 'Super Admin', JSON.stringify({ subscribers: true, messages: true, campaigns: true, products: true, sales: true, livechat: true, users: true, content: true, job_cards: true }), null, 'manager');
         }
       } catch(e) {}
     }
@@ -138,7 +138,7 @@ module.exports = function (app, db, getUserFromRequest, hashPassword) {
         settings: settingsObj
       });
     } catch (err) {
-      res.status(500).json({ error: err.message || 'Server error' });
+      sendError(res, err);
     }
   });
 
@@ -148,12 +148,13 @@ module.exports = function (app, db, getUserFromRequest, hashPassword) {
       if (!getUserFromRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
       var rows = db.prepare("SELECT * FROM branches ORDER BY sort_order ASC").all();
       res.json({ success: true, branches: rows });
-    } catch (err) { res.status(500).json({ error: err.message || 'Server error' }); }
+    } catch (err) { sendError(res, err); }
   });
 
   app.post('/api/admin/branches', function (req, res) {
     try {
-      if (!getUserFromRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+      var admin = getUserFromRequest(req);
+      if (!admin) return res.status(401).json({ error: 'Unauthorized' });
       var b = req.body;
       if (!b.id || !b.name || !b.city || !b.address) return res.status(400).json({ error: 'id, name, city, and address are required' });
       db.prepare("INSERT INTO branches (id, name, city, address, phone, whatsapp, email, latitude, longitude, hours, description, image, is_headquarters, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").run(
@@ -161,32 +162,37 @@ module.exports = function (app, db, getUserFromRequest, hashPassword) {
         b.latitude || null, b.longitude || null, b.hours || null, b.description || null,
         b.image || null, b.is_headquarters ? 1 : 0, b.sort_order || 0
       );
+      logAudit(admin, 'create-branch', 'Created branch: ' + b.id + ' - ' + b.name, req);
       res.json({ success: true });
     } catch (err) {
       if (err.message && err.message.includes('UNIQUE constraint')) return res.status(409).json({ error: 'Branch ID already exists' });
-      res.status(500).json({ error: err.message || 'Server error' });
+      sendError(res, err);
     }
   });
 
   app.put('/api/admin/branches/:id', function (req, res) {
     try {
-      if (!getUserFromRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+      var admin = getUserFromRequest(req);
+      if (!admin) return res.status(401).json({ error: 'Unauthorized' });
       var b = req.body;
       db.prepare("UPDATE branches SET name=?, city=?, address=?, phone=?, whatsapp=?, email=?, latitude=?, longitude=?, hours=?, description=?, image=?, is_headquarters=?, sort_order=? WHERE id=?").run(
-        b.name, b.city, b.address, b.phone || null, b.whatsapp || null, b.email || null,
+        b.name, b.city, b.address || null, b.phone || null, b.whatsapp || null, b.email || null,
         b.latitude || null, b.longitude || null, b.hours || null, b.description || null,
         b.image || null, b.is_headquarters ? 1 : 0, b.sort_order || 0, req.params.id
       );
+      logAudit(admin, 'update-branch', 'Updated branch: ' + req.params.id, req);
       res.json({ success: true });
-    } catch (err) { res.status(500).json({ error: err.message || 'Server error' }); }
+    } catch (err) { sendError(res, err); }
   });
 
   app.delete('/api/admin/branches/:id', function (req, res) {
     try {
-      if (!getUserFromRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+      var admin = getUserFromRequest(req);
+      if (!admin) return res.status(401).json({ error: 'Unauthorized' });
       db.prepare("DELETE FROM branches WHERE id=?").run(req.params.id);
+      logAudit(admin, 'delete-branch', 'Deleted branch: ' + req.params.id, req);
       res.json({ success: true });
-    } catch (err) { res.status(500).json({ error: err.message || 'Server error' }); }
+    } catch (err) { sendError(res, err); }
   });
 
   /* ─── Categories CRUD ─── */
@@ -195,41 +201,47 @@ module.exports = function (app, db, getUserFromRequest, hashPassword) {
       if (!getUserFromRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
       var rows = db.prepare("SELECT * FROM categories ORDER BY sort_order ASC").all();
       res.json({ success: true, categories: rows });
-    } catch (err) { res.status(500).json({ error: err.message || 'Server error' }); }
+    } catch (err) { sendError(res, err); }
   });
 
   app.post('/api/admin/categories', function (req, res) {
     try {
-      if (!getUserFromRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+      var admin = getUserFromRequest(req);
+      if (!admin) return res.status(401).json({ error: 'Unauthorized' });
       var b = req.body;
       if (!b.id || !b.name) return res.status(400).json({ error: 'id and name are required' });
       db.prepare("INSERT INTO categories (id, name, description, image, link, sort_order) VALUES (?, ?, ?, ?, ?, ?)").run(
         b.id, b.name, b.description || null, b.image || null, b.link || null, b.sort_order || 0
       );
+      logAudit(admin, 'create-category', 'Created category: ' + b.id + ' - ' + b.name, req);
       res.json({ success: true });
     } catch (err) {
       if (err.message && err.message.includes('UNIQUE constraint')) return res.status(409).json({ error: 'Category ID already exists' });
-      res.status(500).json({ error: err.message || 'Server error' });
+      sendError(res, err);
     }
   });
 
   app.put('/api/admin/categories/:id', function (req, res) {
     try {
-      if (!getUserFromRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+      var admin = getUserFromRequest(req);
+      if (!admin) return res.status(401).json({ error: 'Unauthorized' });
       var b = req.body;
       db.prepare("UPDATE categories SET name=?, description=?, image=?, link=?, sort_order=? WHERE id=?").run(
         b.name, b.description || null, b.image || null, b.link || null, b.sort_order || 0, req.params.id
       );
+      logAudit(admin, 'update-category', 'Updated category: ' + req.params.id, req);
       res.json({ success: true });
-    } catch (err) { res.status(500).json({ error: err.message || 'Server error' }); }
+    } catch (err) { sendError(res, err); }
   });
 
   app.delete('/api/admin/categories/:id', function (req, res) {
     try {
-      if (!getUserFromRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+      var admin = getUserFromRequest(req);
+      if (!admin) return res.status(401).json({ error: 'Unauthorized' });
       db.prepare("DELETE FROM categories WHERE id=?").run(req.params.id);
+      logAudit(admin, 'delete-category', 'Deleted category: ' + req.params.id, req);
       res.json({ success: true });
-    } catch (err) { res.status(500).json({ error: err.message || 'Server error' }); }
+    } catch (err) { sendError(res, err); }
   });
 
   /* ─── Services CRUD ─── */
@@ -238,41 +250,47 @@ module.exports = function (app, db, getUserFromRequest, hashPassword) {
       if (!getUserFromRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
       var rows = db.prepare("SELECT * FROM services ORDER BY sort_order ASC").all();
       res.json({ success: true, services: rows });
-    } catch (err) { res.status(500).json({ error: err.message || 'Server error' }); }
+    } catch (err) { sendError(res, err); }
   });
 
   app.post('/api/admin/services', function (req, res) {
     try {
-      if (!getUserFromRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+      var admin = getUserFromRequest(req);
+      if (!admin) return res.status(401).json({ error: 'Unauthorized' });
       var b = req.body;
       if (!b.id || !b.name) return res.status(400).json({ error: 'id and name are required' });
       db.prepare("INSERT INTO services (id, name, description, image, sort_order) VALUES (?, ?, ?, ?, ?)").run(
         b.id, b.name, b.description || null, b.image || null, b.sort_order || 0
       );
+      logAudit(admin, 'create-service', 'Created service: ' + b.id + ' - ' + b.name, req);
       res.json({ success: true });
     } catch (err) {
       if (err.message && err.message.includes('UNIQUE constraint')) return res.status(409).json({ error: 'Service ID already exists' });
-      res.status(500).json({ error: err.message || 'Server error' });
+      sendError(res, err);
     }
   });
 
   app.put('/api/admin/services/:id', function (req, res) {
     try {
-      if (!getUserFromRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+      var admin = getUserFromRequest(req);
+      if (!admin) return res.status(401).json({ error: 'Unauthorized' });
       var b = req.body;
       db.prepare("UPDATE services SET name=?, description=?, image=?, sort_order=? WHERE id=?").run(
         b.name, b.description || null, b.image || null, b.sort_order || 0, req.params.id
       );
+      logAudit(admin, 'update-service', 'Updated service: ' + req.params.id, req);
       res.json({ success: true });
-    } catch (err) { res.status(500).json({ error: err.message || 'Server error' }); }
+    } catch (err) { sendError(res, err); }
   });
 
   app.delete('/api/admin/services/:id', function (req, res) {
     try {
-      if (!getUserFromRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+      var admin = getUserFromRequest(req);
+      if (!admin) return res.status(401).json({ error: 'Unauthorized' });
       db.prepare("DELETE FROM services WHERE id=?").run(req.params.id);
+      logAudit(admin, 'delete-service', 'Deleted service: ' + req.params.id, req);
       res.json({ success: true });
-    } catch (err) { res.status(500).json({ error: err.message || 'Server error' }); }
+    } catch (err) { sendError(res, err); }
   });
 
   /* ─── FAQs CRUD ─── */
@@ -281,41 +299,47 @@ module.exports = function (app, db, getUserFromRequest, hashPassword) {
       if (!getUserFromRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
       var rows = db.prepare("SELECT * FROM faqs ORDER BY sort_order ASC").all();
       res.json({ success: true, faqs: rows });
-    } catch (err) { res.status(500).json({ error: err.message || 'Server error' }); }
+    } catch (err) { sendError(res, err); }
   });
 
   app.post('/api/admin/faqs', function (req, res) {
     try {
-      if (!getUserFromRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+      var admin = getUserFromRequest(req);
+      if (!admin) return res.status(401).json({ error: 'Unauthorized' });
       var b = req.body;
       if (!b.id || !b.question || !b.answer) return res.status(400).json({ error: 'id, question, and answer are required' });
       db.prepare("INSERT INTO faqs (id, question, answer, sort_order) VALUES (?, ?, ?, ?)").run(
         b.id, b.question, b.answer, b.sort_order || 0
       );
+      logAudit(admin, 'create-faq', 'Created FAQ: ' + b.id, req);
       res.json({ success: true });
     } catch (err) {
       if (err.message && err.message.includes('UNIQUE constraint')) return res.status(409).json({ error: 'FAQ ID already exists' });
-      res.status(500).json({ error: err.message || 'Server error' });
+      sendError(res, err);
     }
   });
 
   app.put('/api/admin/faqs/:id', function (req, res) {
     try {
-      if (!getUserFromRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+      var admin = getUserFromRequest(req);
+      if (!admin) return res.status(401).json({ error: 'Unauthorized' });
       var b = req.body;
       db.prepare("UPDATE faqs SET question=?, answer=?, sort_order=? WHERE id=?").run(
         b.question, b.answer, b.sort_order || 0, req.params.id
       );
+      logAudit(admin, 'update-faq', 'Updated FAQ: ' + req.params.id, req);
       res.json({ success: true });
-    } catch (err) { res.status(500).json({ error: err.message || 'Server error' }); }
+    } catch (err) { sendError(res, err); }
   });
 
   app.delete('/api/admin/faqs/:id', function (req, res) {
     try {
-      if (!getUserFromRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+      var admin = getUserFromRequest(req);
+      if (!admin) return res.status(401).json({ error: 'Unauthorized' });
       db.prepare("DELETE FROM faqs WHERE id=?").run(req.params.id);
+      logAudit(admin, 'delete-faq', 'Deleted FAQ: ' + req.params.id, req);
       res.json({ success: true });
-    } catch (err) { res.status(500).json({ error: err.message || 'Server error' }); }
+    } catch (err) { sendError(res, err); }
   });
 
   /* ─── Hero Banners CRUD ─── */
@@ -324,43 +348,49 @@ module.exports = function (app, db, getUserFromRequest, hashPassword) {
       if (!getUserFromRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
       var rows = db.prepare("SELECT * FROM hero_banners ORDER BY sort_order ASC").all();
       res.json({ success: true, banners: rows });
-    } catch (err) { res.status(500).json({ error: err.message || 'Server error' }); }
+    } catch (err) { sendError(res, err); }
   });
 
   app.post('/api/admin/hero-banners', function (req, res) {
     try {
-      if (!getUserFromRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+      var admin = getUserFromRequest(req);
+      if (!admin) return res.status(401).json({ error: 'Unauthorized' });
       var b = req.body;
       if (!b.id || !b.image) return res.status(400).json({ error: 'id and image are required' });
       db.prepare("INSERT INTO hero_banners (id, image, title, subtitle, cta_text, cta_link, is_active, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?)").run(
         b.id, b.image, b.title || null, b.subtitle || null, b.cta_text || null, b.cta_link || null,
         b.is_active !== undefined ? (b.is_active ? 1 : 0) : 1, b.sort_order || 0
       );
+      logAudit(admin, 'create-banner', 'Created banner: ' + b.id, req);
       res.json({ success: true });
     } catch (err) {
       if (err.message && err.message.includes('UNIQUE constraint')) return res.status(409).json({ error: 'Banner ID already exists' });
-      res.status(500).json({ error: err.message || 'Server error' });
+      sendError(res, err);
     }
   });
 
   app.put('/api/admin/hero-banners/:id', function (req, res) {
     try {
-      if (!getUserFromRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+      var admin = getUserFromRequest(req);
+      if (!admin) return res.status(401).json({ error: 'Unauthorized' });
       var b = req.body;
       db.prepare("UPDATE hero_banners SET image=?, title=?, subtitle=?, cta_text=?, cta_link=?, is_active=?, sort_order=? WHERE id=?").run(
         b.image, b.title || null, b.subtitle || null, b.cta_text || null, b.cta_link || null,
         b.is_active !== undefined ? (b.is_active ? 1 : 0) : 1, b.sort_order || 0, req.params.id
       );
+      logAudit(admin, 'update-banner', 'Updated banner: ' + req.params.id, req);
       res.json({ success: true });
-    } catch (err) { res.status(500).json({ error: err.message || 'Server error' }); }
+    } catch (err) { sendError(res, err); }
   });
 
   app.delete('/api/admin/hero-banners/:id', function (req, res) {
     try {
-      if (!getUserFromRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+      var admin = getUserFromRequest(req);
+      if (!admin) return res.status(401).json({ error: 'Unauthorized' });
       db.prepare("DELETE FROM hero_banners WHERE id=?").run(req.params.id);
+      logAudit(admin, 'delete-banner', 'Deleted banner: ' + req.params.id, req);
       res.json({ success: true });
-    } catch (err) { res.status(500).json({ error: err.message || 'Server error' }); }
+    } catch (err) { sendError(res, err); }
   });
 
   /* ─── About Stats CRUD ─── */
@@ -369,41 +399,47 @@ module.exports = function (app, db, getUserFromRequest, hashPassword) {
       if (!getUserFromRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
       var rows = db.prepare("SELECT * FROM about_stats ORDER BY sort_order ASC").all();
       res.json({ success: true, stats: rows });
-    } catch (err) { res.status(500).json({ error: err.message || 'Server error' }); }
+    } catch (err) { sendError(res, err); }
   });
 
   app.post('/api/admin/about-stats', function (req, res) {
     try {
-      if (!getUserFromRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+      var admin = getUserFromRequest(req);
+      if (!admin) return res.status(401).json({ error: 'Unauthorized' });
       var b = req.body;
       if (!b.id || !b.label || !b.value) return res.status(400).json({ error: 'id, label, and value are required' });
       db.prepare("INSERT INTO about_stats (id, label, value, icon, sort_order) VALUES (?, ?, ?, ?, ?)").run(
         b.id, b.label, b.value, b.icon || null, b.sort_order || 0
       );
+      logAudit(admin, 'create-stat', 'Created stat: ' + b.id + ' - ' + b.label, req);
       res.json({ success: true });
     } catch (err) {
       if (err.message && err.message.includes('UNIQUE constraint')) return res.status(409).json({ error: 'Stat ID already exists' });
-      res.status(500).json({ error: err.message || 'Server error' });
+      sendError(res, err);
     }
   });
 
   app.put('/api/admin/about-stats/:id', function (req, res) {
     try {
-      if (!getUserFromRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+      var admin = getUserFromRequest(req);
+      if (!admin) return res.status(401).json({ error: 'Unauthorized' });
       var b = req.body;
       db.prepare("UPDATE about_stats SET label=?, value=?, icon=?, sort_order=? WHERE id=?").run(
         b.label, b.value, b.icon || null, b.sort_order || 0, req.params.id
       );
+      logAudit(admin, 'update-stat', 'Updated stat: ' + req.params.id, req);
       res.json({ success: true });
-    } catch (err) { res.status(500).json({ error: err.message || 'Server error' }); }
+    } catch (err) { sendError(res, err); }
   });
 
   app.delete('/api/admin/about-stats/:id', function (req, res) {
     try {
-      if (!getUserFromRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+      var admin = getUserFromRequest(req);
+      if (!admin) return res.status(401).json({ error: 'Unauthorized' });
       db.prepare("DELETE FROM about_stats WHERE id=?").run(req.params.id);
+      logAudit(admin, 'delete-stat', 'Deleted stat: ' + req.params.id, req);
       res.json({ success: true });
-    } catch (err) { res.status(500).json({ error: err.message || 'Server error' }); }
+    } catch (err) { sendError(res, err); }
   });
 
   /* ─── About Values CRUD ─── */
@@ -412,41 +448,47 @@ module.exports = function (app, db, getUserFromRequest, hashPassword) {
       if (!getUserFromRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
       var rows = db.prepare("SELECT * FROM about_values ORDER BY sort_order ASC").all();
       res.json({ success: true, values: rows });
-    } catch (err) { res.status(500).json({ error: err.message || 'Server error' }); }
+    } catch (err) { sendError(res, err); }
   });
 
   app.post('/api/admin/about-values', function (req, res) {
     try {
-      if (!getUserFromRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+      var admin = getUserFromRequest(req);
+      if (!admin) return res.status(401).json({ error: 'Unauthorized' });
       var b = req.body;
       if (!b.id || !b.title) return res.status(400).json({ error: 'id and title are required' });
       db.prepare("INSERT INTO about_values (id, title, description, icon, sort_order) VALUES (?, ?, ?, ?, ?)").run(
         b.id, b.title, b.description || null, b.icon || null, b.sort_order || 0
       );
+      logAudit(admin, 'create-value', 'Created value: ' + b.id + ' - ' + b.title, req);
       res.json({ success: true });
     } catch (err) {
       if (err.message && err.message.includes('UNIQUE constraint')) return res.status(409).json({ error: 'Value ID already exists' });
-      res.status(500).json({ error: err.message || 'Server error' });
+      sendError(res, err);
     }
   });
 
   app.put('/api/admin/about-values/:id', function (req, res) {
     try {
-      if (!getUserFromRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+      var admin = getUserFromRequest(req);
+      if (!admin) return res.status(401).json({ error: 'Unauthorized' });
       var b = req.body;
       db.prepare("UPDATE about_values SET title=?, description=?, icon=?, sort_order=? WHERE id=?").run(
         b.title, b.description || null, b.icon || null, b.sort_order || 0, req.params.id
       );
+      logAudit(admin, 'update-value', 'Updated value: ' + req.params.id, req);
       res.json({ success: true });
-    } catch (err) { res.status(500).json({ error: err.message || 'Server error' }); }
+    } catch (err) { sendError(res, err); }
   });
 
   app.delete('/api/admin/about-values/:id', function (req, res) {
     try {
-      if (!getUserFromRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+      var admin = getUserFromRequest(req);
+      if (!admin) return res.status(401).json({ error: 'Unauthorized' });
       db.prepare("DELETE FROM about_values WHERE id=?").run(req.params.id);
+      logAudit(admin, 'delete-value', 'Deleted value: ' + req.params.id, req);
       res.json({ success: true });
-    } catch (err) { res.status(500).json({ error: err.message || 'Server error' }); }
+    } catch (err) { sendError(res, err); }
   });
 
   /* ─── Site Settings ─── */
@@ -457,28 +499,32 @@ module.exports = function (app, db, getUserFromRequest, hashPassword) {
       var settings = {};
       rows.forEach(function (s) { settings[s.key] = s.value; });
       res.json({ success: true, settings: settings });
-    } catch (err) { res.status(500).json({ error: err.message || 'Server error' }); }
+    } catch (err) { sendError(res, err); }
   });
 
   app.put('/api/admin/settings', function (req, res) {
     try {
-      if (!getUserFromRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+      var admin = getUserFromRequest(req);
+      if (!admin) return res.status(401).json({ error: 'Unauthorized' });
       var settings = req.body.settings || {};
       Object.keys(settings).forEach(function (key) {
         if (settings[key] !== null && settings[key] !== undefined) {
           db.prepare("INSERT INTO site_settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value, updated_at=datetime('now')").run(key, String(settings[key]));
         }
       });
+      logAudit(admin, 'update-settings', 'Updated site settings (' + Object.keys(settings).length + ' keys)', req);
       res.json({ success: true });
-    } catch (err) { res.status(500).json({ error: err.message || 'Server error' }); }
+    } catch (err) { sendError(res, err); }
   });
 
   app.delete('/api/admin/settings/:key', function (req, res) {
     try {
-      if (!getUserFromRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+      var admin = getUserFromRequest(req);
+      if (!admin) return res.status(401).json({ error: 'Unauthorized' });
       db.prepare("DELETE FROM site_settings WHERE key=?").run(req.params.key);
+      logAudit(admin, 'delete-setting', 'Deleted setting: ' + req.params.key, req);
       res.json({ success: true });
-    } catch (err) { res.status(500).json({ error: err.message || 'Server error' }); }
+    } catch (err) { sendError(res, err); }
   });
 
   // Job cards are managed in index.js

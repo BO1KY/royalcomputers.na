@@ -1,0 +1,44 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🔍 Running pre-commit security checks..."
+
+# Check staged JS files for syntax errors
+staged_js=$(git diff --cached --name-only --diff-filter=ACM -- '*.js' '*.mjs')
+if [ -n "$staged_js" ]; then
+  for f in $staged_js; do
+    if [ -f "$f" ]; then
+      node --check "$f" 2>/dev/null
+      if [ $? -ne 0 ]; then
+        echo "❌ Syntax error in $f"
+        exit 1
+      fi
+    fi
+  done
+  echo "✅ JS syntax OK"
+fi
+
+# Check staged CSS files
+staged_css=$(git diff --cached --name-only --diff-filter=ACM -- '*.css')
+if [ -n "$staged_css" ]; then
+  for f in $staged_css; do
+    if [ -f "$f" ]; then
+      node -e "require('fs').readFileSync('$f','utf8')" 2>/dev/null
+    fi
+  done
+  echo "✅ CSS files readable"
+fi
+
+# Check for potential secrets in staged files
+staged_all=$(git diff --cached --name-only --diff-filter=ACM)
+if [ -n "$staged_all" ]; then
+  # Warn about common secret patterns
+  secrets=$(git diff --cached --diff-filter=ACM -U0 | grep -iE '(password|secret|api.?key|token).*[''"][A-Za-z0-9_\-]{20,}[''"]' | grep -v 'process.env\|process\.env\|\.env\.\|env\.' || true)
+  if [ -n "$secrets" ]; then
+    echo "⚠️  WARNING: Possible secrets detected in staged changes:"
+    echo "$secrets"
+    echo "Please verify these are not hardcoded credentials."
+  fi
+fi
+
+echo "✅ Pre-commit checks passed"

@@ -2,12 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://embed.tawk.to; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://embed.tawk.to; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.tawk.to wss://*.tawk.to https://va.tawk.to https://tawk.to; frame-src 'self' https://*.tawk.to https://tawk.to; base-uri 'self'; form-action 'self'" />
   <title>Track Your Repair - Royal Computers</title>
+  <meta name="description" content="Track the current status of your repair job at Royal Computers Namibia.">
+  <link rel="canonical" href="https://netmac.co.za/tracking.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap"></noscript>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap"></noscript>
   <link rel="stylesheet" href="css/design-tokens.css">
   <link rel="stylesheet" href="css/royal-theme.css" media="print" onload="this.media='all'">
   <link rel="stylesheet" href="css/search-dropdown.css" media="print" onload="this.media='all'">
@@ -18,62 +21,108 @@
   <link rel="stylesheet" href="css/interactive-components.css" media="print" onload="this.media='all'">
   <link rel="stylesheet" href="css/ecommerce-features.css" media="print" onload="this.media='all'">
   <link rel="stylesheet" href="css/mobile.css" media="print" onload="this.media='all'">
-  <link rel="icon" href="ROYAL PICS/logo.webp" type="image/webp">
+  <link rel="manifest" href="js/manifest.json" />
+  <link rel="apple-touch-icon" href="ROYAL PICS/royal logo.webp" />
   <style>
-    :root { --bg: #f8f9fa; --card-bg: #fff; --primary: #dc2626; --primary-hover: #b91c1c; --text: #1a1a2e; --text-dim: #6b7280; --border: #e5e7eb; }
-    body { background: var(--bg); font-family: 'DM Sans', sans-serif; margin: 0; min-height: 100vh; display: flex; flex-direction: column; }
+.page-loader{position:fixed!important;inset:0!important;z-index:99999!important;background:var(--bg-backdrop)!important;display:flex!important;align-items:center!important;justify-content:center!important}
+.loader-spinner{width:48px;height:48px;border:4px solid #ddd;border-top-color:#e5383b;border-radius:50%;animation:loaderSpin .8s linear infinite}
+@keyframes loaderSpin{to{transform:rotate(360deg)}}
+.link-red{color:#e5383b}
+.terms-label{margin:0;font-size:13px}
+select.form-input{appearance:none;background:var(--dark-3);padding-right:36px}
     .tracking-wrapper { flex: 1; max-width: 800px; margin: 40px auto; padding: 0 20px; width: 100%; box-sizing: border-box; }
-    .tracking-card { background: var(--card-bg); border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); padding: 40px; }
-    .tracking-card h1 { font-size: 28px; margin: 0 0 8px; color: var(--text); }
-    .tracking-card p { color: var(--text-dim); font-size: 15px; margin: 0 0 28px; line-height: 1.6; }
+    .tracking-card { background: var(--dark-card); border-radius: var(--radius-lg); box-shadow: var(--shadow-card); padding: var(--card-padding); }
+    .tracking-card h1 { font-size: var(--font-size-4xl); margin: 0 0 8px; color: var(--text); }
+    .tracking-card p { color: var(--text-dim); font-size: var(--font-size-lg); margin: 0 0 28px; line-height: var(--line-height-relaxed); }
     .search-form { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 32px; }
-    .search-form select, .search-form input { flex: 1; min-width: 180px; padding: 14px 16px; border: 2px solid var(--border); border-radius: 10px; font-size: 15px; font-family: inherit; background: var(--card-bg); color: var(--text); transition: border-color .2s; }
+    .search-form select, .search-form input { flex: 1; min-width: 180px; padding: 14px 16px; border: 2px solid var(--border-gray); border-radius: 10px; font-size: var(--font-size-lg); font-family: inherit; background: var(--dark-card); color: var(--text); transition: border-color var(--transition-fast); }
     .search-form select:focus, .search-form input:focus { outline: none; border-color: var(--primary); }
-    .search-form button { padding: 14px 32px; background: var(--primary); color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit; transition: background .2s; white-space: nowrap; }
-    .search-form button:hover { background: var(--primary-hover); }
+    .search-form button { padding: 14px 32px; background: var(--primary); color: #fff; border: none; border-radius: 10px; font-size: var(--font-size-lg); font-weight: var(--font-weight-semibold); cursor: pointer; font-family: inherit; transition: background var(--transition-fast); white-space: nowrap; }
+    .search-form button:hover { background: var(--primary-dark); }
     .search-form button:disabled { opacity: .6; cursor: not-allowed; }
-    #trackingError { color: #d32f2f; font-size: 14px; margin: -20px 0 20px; display: none; }
+    #trackingError { color: var(--error); font-size: var(--font-size-md); margin: -20px 0 20px; display: none; }
     #trackingResult { display: none; }
-    .result-header { border-bottom: 2px solid var(--border); padding-bottom: 16px; margin-bottom: 24px; }
-    .result-header .job-id { font-size: 20px; font-weight: 700; color: var(--text); }
-    .result-header .job-id code { color: var(--primary); font-weight: 700; }
-    .result-header .status-badge { display: inline-block; margin-top: 8px; padding: 6px 18px; border-radius: 20px; font-size: 14px; font-weight: 600; }
+    .result-header { border-bottom: 2px solid var(--border-gray); padding-bottom: 16px; margin-bottom: 24px; }
+    .result-header .job-id { font-size: var(--font-size-2xl); font-weight: var(--font-weight-bold); color: var(--text); }
+    .result-header .job-id code { color: var(--primary); font-weight: var(--font-weight-bold); }
+    .result-header .status-badge { display: inline-block; margin-top: 8px; padding: 6px 18px; border-radius: var(--radius-full); font-size: var(--font-size-md); font-weight: var(--font-weight-semibold); }
     .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
-    .info-box { background: #f8f9fa; border-radius: 10px; padding: 16px; }
-    .info-box h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .5px; color: var(--text-dim); margin: 0 0 8px; }
-    .info-box .value { font-size: 14px; color: var(--text); line-height: 1.6; }
-    .issue-box { background: #f8f9fa; border-radius: 10px; padding: 16px; margin-bottom: 24px; }
-    .issue-box h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .5px; color: var(--text-dim); margin: 0 0 8px; }
-    .issue-box .value { font-size: 14px; color: var(--text); line-height: 1.6; }
+    .info-box { background: var(--bg-muted); border-radius: 10px; padding: 16px; }
+    .info-box h3 { font-size: var(--font-size-sm); text-transform: uppercase; letter-spacing: var(--letter-spacing-wide); color: var(--text-dim); margin: 0 0 8px; }
+    .info-box .value { font-size: var(--font-size-md); color: var(--text); line-height: var(--line-height-relaxed); }
+    .issue-box { background: var(--bg-muted); border-radius: 10px; padding: 16px; margin-bottom: 24px; }
+    .issue-box h3 { font-size: var(--font-size-sm); text-transform: uppercase; letter-spacing: var(--letter-spacing-wide); color: var(--text-dim); margin: 0 0 8px; }
+    .issue-box .value { font-size: var(--font-size-md); color: var(--text); line-height: var(--line-height-relaxed); }
     .timeline-horizontal { display: flex; gap: 0; margin-bottom: 24px; overflow-x: auto; padding: 8px 0; -webkit-overflow-scrolling: touch; }
-    .timeline-step { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 80px; position: relative; }
-    .timeline-step .step-icon { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; background: var(--border); color: #9ca3af; border: 2px solid #d1d5db; position: relative; z-index: 1; transition: all .3s; }
-    .timeline-step.done .step-icon { background: #16a34a; color: #fff; border-color: #16a34a; }
-    .timeline-step.current .step-icon { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(220,38,38,0.2); }
-    .timeline-step .step-label { font-size: 10px; font-weight: 600; color: var(--text-dim); margin-top: 6px; text-align: center; white-space: nowrap; }
-    .timeline-step.done .step-label { color: #16a34a; }
-    .timeline-step.current .step-label { color: var(--primary); font-weight: 700; }
-    .timeline-step .step-date { font-size: 9px; color: var(--text-dim); margin-top: 2px; text-align: center; }
-    .timeline-step .step-note { font-size: 9px; color: var(--text-dim); margin-top: 1px; text-align: center; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .timeline-connector { flex: 1; height: 2px; background: var(--border); align-self: center; margin: 0 -1px; position: relative; top: -18px; z-index: 0; }
-    .timeline-connector.done { background: #16a34a; }
-    .timeline-connector.current { background: linear-gradient(90deg, #16a34a 50%, var(--border) 50%); }
+    .timeline-step { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: var(--timeline-step-min-width); position: relative; }
+    .timeline-step .step-icon { width: var(--timeline-icon-size); height: var(--timeline-icon-size); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: var(--font-size-xl); background: var(--border); color: var(--gray-400); border: 2px solid var(--border-dark); position: relative; z-index: 1; transition: all var(--transition); }
+    .timeline-step.done .step-icon { background: var(--timeline-icon-done-bg); color: #fff; border-color: var(--success); }
+    .timeline-step.current .step-icon { background: var(--timeline-icon-current-bg); color: #fff; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(229,56,59,0.2); }
+    .timeline-step .step-label { font-size: var(--font-size-xs); font-weight: var(--font-weight-semibold); color: var(--text-dim); margin-top: 6px; text-align: center; white-space: nowrap; }
+    .timeline-step.done .step-label { color: var(--success); }
+    .timeline-step.current .step-label { color: var(--primary); font-weight: var(--font-weight-bold); }
+    .timeline-step .step-date { font-size: var(--font-size-2xs); color: var(--text-dim); margin-top: 2px; text-align: center; }
+    .timeline-step .step-note { font-size: var(--font-size-2xs); color: var(--text-dim); margin-top: 1px; text-align: center; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .timeline-connector { flex: 1; height: var(--timeline-connector-height); background: var(--border); align-self: center; margin: 0 -1px; position: relative; top: -18px; z-index: 0; }
+    .timeline-connector.done { background: var(--success); }
+    .timeline-connector.current { background: linear-gradient(90deg, var(--success) 50%, var(--border) 50%); }
     .loading-spinner { text-align: center; padding: 40px; color: var(--text-dim); }
     .loading-spinner::after { content: ''; display: inline-block; width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin .8s linear infinite; margin-bottom: 8px; }
     @keyframes spin { to { transform: rotate(360deg); } }
-    header { background: #fff; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
-    .header-inner { max-width: 1200px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; height: 64px; }
-    .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); }
-    .logo img { height: 36px; width: auto; }
-    .header-right { display: flex; align-items: center; gap: 8px; }
-    .track-btn { display: flex; align-items: center; justify-content: center; padding: 8px; border-radius: 8px; color: var(--text-dim); text-decoration: none; transition: all .2s; }
-    .track-btn:hover { color: var(--text); background: #f3f4f6; }
-
     @media (max-width: 768px) { nav { display: none; } .nav-toggle { display: block; } }
     @media (max-width: 600px) { .tracking-card { padding: 24px; } .search-form { flex-direction: column; } .search-form select, .search-form input { min-width: auto; width: 100%; } .info-grid { grid-template-columns: 1fr; } .timeline-horizontal { gap: 4px; } .timeline-step { min-width: 60px; } .timeline-step .step-label { font-size: 8px; } .timeline-step .step-icon { width: 28px; height: 28px; font-size: 12px; } }
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link" style="position:absolute;top:-99999px">Skip to main content</a>
+
+  <div class="page-loader" id="pageLoader">
+    <div class="loader-spinner"></div>
+    <div class="loader-text">Loading…</div>
+  </div>
+
+  <canvas id="shader-canvas" class="shader-canvas"></canvas>
+
+  <div class="spotlight-container-global">
+    <div class="spotlight-overlay-global">
+      <div class="spotlight-global spotlight-left-global"></div>
+      <div class="spotlight-global spotlight-mid-global"></div>
+      <div class="spotlight-global spotlight-right-global"></div>
+    </div>
+  </div>
+
+  <div class="newsletter-overlay" id="newsletterOverlay">
+    <div class="newsletter-box">
+      <button class="close-newsletter" onclick="closeNewsletter()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg></button>
+      <img src="ROYAL PICS/royal logo.webp" alt="Royal Computers Namibia" class="nl-logo" loading="lazy" />
+      <h3>Stay in the Loop</h3>
+      <p>Get exclusive deals, new arrivals, and tech tips delivered to your inbox.</p>
+      <div class="nl-input-group">
+        <input type="email" id="nlEmail" placeholder="Enter your email" />
+        <button type="submit" id="nlSubscribeBtn">Subscribe</button>
+      </div>
+      <p class="privacy">No spam, ever. <a href="unsubscribe.html" class="link-red">Unsubscribe anytime</a>.</p>
+    </div>
+  </div>
+
+  <div class="cart-overlay" id="cartOverlay"></div>
+  <div class="cart-sidebar" id="cartSidebar">
+    <div class="cart-header">
+      <h2 id="cartHeaderTitle">Shopping Cart</h2>
+      <button class="cart-close" id="closeCartBtn" onclick="closeCart()">&times;</button>
+    </div>
+    <div class="cart-items" id="cartItems"></div>
+    <div class="cart-footer">
+      <div class="cart-total">
+        <span>Total:</span>
+        <span id="cartTotalPrice">N$0.00</span>
+      </div>
+      <button class="btn-clear-cart" id="clearCartBtn">Clear Cart</button>
+      <button class="btn-checkout" id="checkoutBtn" onclick="handleCheckout()">Generate Quote</button>
+      <button class="btn-continue" id="continueShopping" onclick="closeCart()">Continue Shopping</button>
+    </div>
+  </div>
+
   <header>
     <div class="header-inner">
       <a href="index.html" class="logo">
@@ -82,20 +131,20 @@
       <nav>
         <button class="nav-close" aria-label="Close menu">&times;</button>
         <ul>
-          <li><a href="index.html">Home</a></li>
-          <li><a href="products.html">Products</a></li>
-          <li><a href="deals.html">Deals</a></li>
-          <li><a href="Contact-us.html">Contact</a></li>
-          <li><a href="About-us.html">About Us</a></li>
-        </ul>
-      </nav>
-      <button class="mobile-toggle" id="mobileToggle" aria-label="Menu">
-        <span></span><span></span><span></span>
-      </button>
-      <div class="header-right">
-        <a href="tracking.html" class="track-btn" title="Track Repair">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="products.html">Products</a></li>
+        <li><a href="deals.html">Deals</a></li>
+        <li><a href="Contact-us.html">Contact</a></li>
+        <li><a href="About-us.html">About Us</a></li>
+      </ul>
+    </nav>
+    <button class="mobile-toggle" id="mobileToggle" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="header-right">
+      <button class="cart-btn" onclick="window.location.href='tracking.html'" title="Track Repair">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4m10-10h-4M6 12H2"/></svg>
-        </a>
+        </button>
         <button class="cart-btn" id="openCartBtn" onclick="openCart()">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
           <span class="cart-count" id="cartCount" style="display:none;">0</span>
@@ -104,7 +153,7 @@
     </div>
   </header>
 
-  <div class="tracking-wrapper">
+  <div class="tracking-wrapper" id="main-content">
     <div class="tracking-card">
       <h1>Track Your Repair</h1>
       <p id="trackingIntro">Enter your branch and job card number to check the current status of your device repair.</p>
@@ -154,9 +203,79 @@
           <div class="value" id="rIssueDesc"></div>
         </div>
 
-        <h3 style="font-size:14px;color:var(--text-dim);margin:0 0 8px;">Repair Progress</h3>
+        <h3 style="font-size:14px;color:var(--text-dim);margin:32px 0 12px;">Repair Progress</h3>
         <div id="rTimeline"></div>
       </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="checkoutModal">
+    <div class="modal-content" style="overflow-y:hidden;">
+      <button class="modal-close" id="closeCheckoutBtn">&times;</button>
+      <div class="checkout-form">
+        <h2>Order Information</h2>
+        <form id="checkoutFormElement">
+          <div class="form-group">
+            <label class="form-label" for="emailInput">Email Address *</label>
+            <input type="email" id="emailInput" class="form-input" placeholder="your@email.com" required>
+            <div class="form-error" id="emailError"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="phoneInput">Phone Number *</label>
+            <input type="tel" id="phoneInput" class="form-input" placeholder="+264 61 234 5678" required>
+            <div class="form-error" id="phoneError"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="nameInput">Full Name</label>
+            <input type="text" id="nameInput" class="form-input" placeholder="Your name">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="companyInput">Company (Optional)</label>
+            <input type="text" id="companyInput" class="form-input" placeholder="Your company name">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="addressInput">Address (Optional)</label>
+            <textarea id="addressInput" placeholder="Your street address..."></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="branchSelect">Collection Branch *</label>
+            <select id="branchSelect" class="form-input" required></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="notesInput">Special Requests / Notes</label>
+            <textarea id="notesInput" placeholder="Any special notes for your order..."></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="additionalDetailsInput">Additional Customer Details</label>
+            <textarea id="additionalDetailsInput" placeholder="Add any additional information you'd like included on the quote (ID number, reference, etc.)..."></textarea>
+          </div>
+          <div class="form-group form-checkbox">
+            <input type="checkbox" id="termsCheckbox">
+            <label for="termsCheckbox" class="terms-label">I agree to the terms and conditions</label>
+          </div>
+          <div class="checkout-actions">
+            <button type="button" class="btn-cancel" id="cancelCheckoutBtn" onclick="closeCheckout()">Cancel</button>
+            <button type="submit" class="btn-generate" id="generateQuoteBtn">Generate Quote</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="quoteModal">
+    <div class="modal-content">
+      <button class="modal-close" id="closeQuoteBtn">&times;</button>
+      <div class="quote-display" id="quoteContent"></div>
+    </div>
+  </div>
+
+  <div class="guide-overlay" id="guideModal">
+    <div class="guide-modal">
+      <div class="bg-header">
+        <h3 id="guideModalTitle">Guide</h3>
+        <button class="bg-close" onclick="closeGuideModal()">&times;</button>
+      </div>
+      <div class="bg-body" id="guideModalBody"></div>
     </div>
   </div>
 
@@ -210,6 +329,8 @@
     </div>
   </footer>
 
+  <script src="js/main.js"></script>
+  <script src="js/cart.js"></script>
   <script>
     var API_BASE = location.origin === 'null' ? '' : (location.origin + '');
 
@@ -260,12 +381,13 @@
       document.getElementById('rDateCreated').textContent = (j.created_at || '').substring(0, 10);
       document.getElementById('rIssueDesc').textContent = j.issue_description || 'N/A';
 
-      // Set PDF download link
+      // Set PDF download link — hide if no public token (PDF not available)
       var pdfLink = document.getElementById('pdfDownloadLink');
       if (j.public_token) {
         pdfLink.href = API_BASE + '/api/public/job-card/' + encodeURIComponent(j.public_token) + '/pdf';
+        pdfLink.style.display = 'inline-flex';
       } else {
-        pdfLink.href = API_BASE + '/api/public/track-job?branch=' + encodeURIComponent(j.branch_id || '') + '&job=' + encodeURIComponent(j.id) + '&format=pdf';
+        pdfLink.style.display = 'none';
       }
 
       var timelineEl = document.getElementById('rTimeline');
@@ -387,8 +509,29 @@
 
     loadBranches();
   </script>
-  <script src="js/cart.js"></script>
-  <script src="js/mobile-nav.js"></script>
+  <script>
+    // ── CHECKOUT (minimal stubs) ──
+    function handleCheckout() { window.location.href = 'Contact-us.html'; }
+    function closeCheckout() { document.getElementById('checkoutModal').classList.remove('open'); }
+    function closeQuote() { document.getElementById('quoteModal').classList.remove('open'); }
+  </script>
+  <script defer src="js/quote.js"></script>
+  <script src="js/products-data.js"></script>
+  <script defer src="js/pages-data.js"></script>
+  <script defer src="js/search-engine.js"></script>
+  <script defer src="js/search-dropdown.js"></script>
+  <script defer src="js/shader-background.js"></script>
+  <script defer src="js/cart-ui.js"></script>
+  <script defer src="js/cart-badge-sync.js"></script>
+  <script defer src="js/animations.js"></script>
+  <script defer src="js/loader.js"></script>
+  <script defer src="js/guides-modal.js"></script>
+  <script defer src="js/mobile-nav.js"></script>
+  <script defer src="js/site-data.js"></script>
+  <script defer src="js/api-config.js"></script>
+  <script defer src="js/newsletter.js"></script>
+  <script defer src="js/offline.js"></script>
+  <script defer src="js/chat.js"></script>
 <script defer src="js/whatsapp-widget.js"></script>
 </body>
 </html>

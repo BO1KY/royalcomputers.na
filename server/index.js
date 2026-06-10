@@ -3,6 +3,8 @@ var cors = require('cors');
 var crypto = require('crypto');
 var path = require('path');
 var fs = require('fs');
+var os = require('os');
+var cp = require('child_process');
 var Database = require('better-sqlite3');
 var nodemailer = require('nodemailer');
 var multer = require('multer');
@@ -13,6 +15,18 @@ var app = express();
 var PORT = process.env.PORT || 3000;
 var ADMIN_HASH = process.env.ADMIN_PASSWORD_HASH;
 var DB_PATH = process.env.DB_PATH || path.join(__dirname, 'data.db');
+var SEED_BRANCH_PASSWORD = process.env.SEED_BRANCH_PASSWORD;
+var SEED_ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD;
+var SEED_SUPER_ADMIN_PASSWORD = process.env.SEED_SUPER_ADMIN_PASSWORD || '';
+if (!SEED_BRANCH_PASSWORD || !SEED_ADMIN_PASSWORD) {
+  if (process.env.NODE_ENV === 'production') {
+    console.error('FATAL: SEED_BRANCH_PASSWORD and SEED_ADMIN_PASSWORD must be set in production.');
+    process.exit(1);
+  }
+  SEED_BRANCH_PASSWORD = SEED_BRANCH_PASSWORD || 'insecure-dev-only-branch-123';
+  SEED_ADMIN_PASSWORD = SEED_ADMIN_PASSWORD || 'insecure-dev-only-admin-123';
+  console.warn('WARNING: Using insecure default seed passwords (dev mode only). Set SEED_BRANCH_PASSWORD and SEED_ADMIN_PASSWORD env vars.');
+}
 
 var sessions = new Map();
 var SESSION_TTL = 120 * 60 * 1000;
@@ -123,17 +137,42 @@ try { db.exec("ALTER TABLE audit_log ADD COLUMN user_agent TEXT"); } catch(e) {}
 var storage = multer.diskStorage({
   destination: function (req, file, cb) { cb(null, UPLOADS_DIR); },
   filename: function (req, file, cb) {
-    // All uploaded images are converted to .webp on the server, so save with .webp extension
-    cb(null, Date.now() + '-' + crypto.randomBytes(6).toString('hex') + '.webp');
+    var ext = path.extname(file.originalname).toLowerCase();
+    // Save with original extension; endpoints that use sharp conversion handle .webp separately
+    cb(null, Date.now() + '-' + crypto.randomBytes(6).toString('hex') + ext);
   }
 });
 function imageFilter(req, file, cb) {
-  var allowed = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.svg', '.tiff', '.tif'];
+  var allowed = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.tiff', '.tif'];
   var ext = path.extname(file.originalname).toLowerCase();
   if (allowed.indexOf(ext) >= 0) { cb(null, true); }
-  else { cb(new Error('Only image files are allowed (jpg, jpeg, png, gif, webp, bmp, svg, tiff).')); }
+  else { cb(new Error('Only image files are allowed (jpg, jpeg, png, gif, webp, bmp, tiff). SVGs and PDFs are not accepted.')); }
 }
-var upload = multer({ storage: storage, limits: { fileSize: 50 * 1024 * 1024 }, fileFilter: imageFilter });
+var upload = multer({ storage: storage, limits: { fileSize: 10 * 1024 * 1024 }, fileFilter: imageFilter });
+
+// Validate file content via magic bytes (runs after multer saves the file)
+function validateMagicBytes(filePath) {
+  var fd = fs.openSync(filePath, 'r');
+  var buf = Buffer.alloc(12);
+  fs.readSync(fd, buf, 0, 12, 0);
+  fs.closeSync(fd);
+  // JPEG: FF D8 FF
+  if (buf[0] === 0xFF && buf[1] === 0xD8 && buf[2] === 0xFF) return true;
+  // PNG: 89 50 4E 47 0D 0A 1A 0A
+  if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4E && buf[3] === 0x47) return true;
+  // GIF: 47 49 46 38
+  if (buf[0] === 0x47 && buf[1] === 0x49 && buf[2] === 0x46 && buf[3] === 0x38) return true;
+  // BMP: 42 4D
+  if (buf[0] === 0x42 && buf[1] === 0x4D) return true;
+  // TIFF (LE): 49 49 2A 00
+  if (buf[0] === 0x49 && buf[1] === 0x49 && buf[2] === 0x2A && buf[3] === 0x00) return true;
+  // TIFF (BE): 4D 4D 00 2A
+  if (buf[0] === 0x4D && buf[1] === 0x4D && buf[2] === 0x00 && buf[3] === 0x2A) return true;
+  // WebP: RIFF (52 49 46 46) .... WEBP (57 45 42 50 at offset 8)
+  if (buf[0] === 0x52 && buf[1] === 0x49 && buf[2] === 0x46 && buf[3] === 0x46 &&
+      buf[8] === 0x57 && buf[9] === 0x45 && buf[10] === 0x42 && buf[11] === 0x50) return true;
+  return false;
+}
 
 var transporter = null;
 function getTransporter() {
@@ -155,6 +194,7 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json({ limit: '5mb' }));
+app.use(express.urlencoded({ extended: false }));
 
 // General API rate limiter (per-IP, 120 requests per minute)
 var apiLimiter = new Map();
@@ -196,6 +236,9 @@ app.use(function (req, res, next) {
   res.setHeader('X-XSS-Protection', '1; mode=block');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+  res.setHeader('X-Permitted-Cross-Domain-Policies', 'none');
+  res.setHeader('Cross-Origin-Resource-Policy', 'same-origin');
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
   next();
 });
 
@@ -211,9 +254,10 @@ app.use(express.static(path.join(__dirname, '..')));
 
 app.get('*', function (req, res, next) {
   if (req.path.indexOf('.') !== -1 || req.path === '/') return next();
-  var htmlPath = path.join(__dirname, '..', req.path + '.html');
+  if (req.path.indexOf('..') !== -1 || req.path.indexOf('~') !== -1) return next();
+  var htmlPath = req.path + '.html';
   try {
-    if (fs.existsSync(htmlPath)) return res.sendFile(htmlPath);
+    if (fs.existsSync(path.join(__dirname, '..', htmlPath))) return res.sendFile(htmlPath, { root: path.join(__dirname, '..') });
   } catch (_) {}
   next();
 });
@@ -222,13 +266,18 @@ function sha256(str) {
   return crypto.createHash('sha256').update(str).digest('hex');
 }
 
-// Master password uses scrypt; falls back to SHA-256 for migration
+// Master password verification — scrypt only.
+// SHA-256 fallback REMOVED for security.
+// If ADMIN_HASH is a legacy SHA-256 hash, migrate it to scrypt:
+//   1. Set a new password via env: ADMIN_PASSWORD_HASH=salt:scrypt64hash
+//   2. Or use the helper: node -e "console.log(require('crypto').randomBytes(16).toString('hex')+':'+require('crypto').scryptSync('your-password',require('crypto').randomBytes(16).toString('hex'),64).toString('hex'))"
 function verifyMasterPassword(password) {
   if (!ADMIN_HASH) return false;
-  if (ADMIN_HASH.indexOf(':') > 0) {
-    return verifyPassword(password, ADMIN_HASH);
+  if (ADMIN_HASH.indexOf(':') < 0) {
+    console.error('SECURITY: ADMIN_PASSWORD_HASH is a legacy SHA-256 hash. Migrate to scrypt immediately.');
+    return false;
   }
-  return sha256(password) === ADMIN_HASH;
+  return verifyPassword(password, ADMIN_HASH);
 }
 
 // Simple in-memory rate limiter (per-IP, sliding window)
@@ -240,6 +289,26 @@ function checkRateLimit(ip) {
   entry.count++;
   loginAttempts.set(ip, entry);
   return entry.count <= 10;
+}
+
+function esc(str) {
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// Origin/Referer check for CSRF protection on public endpoints
+function validateSameOrigin(req) {
+  var origin = req.headers['origin'];
+  var referer = req.headers['referer'];
+  var host = req.headers['host'];
+  // If no Origin and no Referer, allow (browser always sends Origin/Referer for cross-origin POSTs)
+  if (!origin && !referer) return true;
+  // Check if origin/referer matches the host
+  var allowed = (origin || referer || '').toLowerCase();
+  // Accept same-origin requests: origin matches host
+  if (allowed.indexOf('://' + host) > 0 || allowed.indexOf('://www.' + host) > 0) return true;
+  // Allow localhost in non-production
+  if (process.env.NODE_ENV !== 'production' && allowed.indexOf('://localhost') > 0) return true;
+  return false;
 }
 
 function hashPassword(password) {
@@ -255,6 +324,74 @@ function verifyPassword(password, stored) {
   return hash === parts[1];
 }
 
+function sendError(res, err) {
+  console.error(err);
+  res.status(500).json({ error: 'Internal server error' });
+}
+
+function statusLabel(s) {
+  return (s || '').replace(/-/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
+}
+
+function sendTrackingEmail(jobCard, statusUpdateMsg) {
+  try {
+    if (!jobCard.client_email) return;
+    var branchInfo = db.prepare('SELECT * FROM branches WHERE id = ?').get(jobCard.branch_id);
+    var siteData = db.prepare("SELECT value FROM site_settings WHERE key='footer_company'").get();
+    var companyName = siteData ? siteData.value : 'Royal Computers Namibia';
+    var branchName = branchInfo ? branchInfo.name : '';
+    var baseUrl = 'https://netmac.co.za';
+    var trackUrl = baseUrl + '/tracking?token=' + (jobCard.public_token || '');
+
+    var mailOpts = {
+      from: process.env.SMTP_FROM || '"Royal Computers" <noreply@royalcomputers.na>',
+      to: jobCard.client_email,
+      subject: (statusUpdateMsg || 'Job Card Created') + ' - ' + jobCard.id,
+      text: [
+        'Dear ' + jobCard.client_name + ',',
+        '',
+        statusUpdateMsg || 'Your job card has been created.',
+        '',
+        'Job Card: ' + jobCard.id,
+        'Branch: ' + branchName,
+        'Status: ' + statusLabel(jobCard.status),
+        '',
+        'Track your repair status online:',
+        trackUrl,
+        '',
+        'Thank you for choosing ' + companyName + '.',
+        'Regards,',
+        companyName + ' Workshop Team'
+      ].join('\n'),
+      html: [
+        '<div style="font-family:sans-serif;max-width:500px;">',
+        '<h2 style="color:#dc2626;">' + esc(statusUpdateMsg || 'Job Card Created') + '</h2>',
+        '<p>Dear <strong>' + esc(jobCard.client_name) + '</strong>,</p>',
+        '<p>' + esc(statusUpdateMsg || 'Your job card has been created.') + '</p>',
+        '<table style="border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin:12px 0;">',
+        '<tr><td style="padding:4px 12px 4px 0;font-weight:700;">Job Card:</td><td>' + esc(jobCard.id) + '</td></tr>',
+        '<tr><td style="padding:4px 12px 4px 0;font-weight:700;">Branch:</td><td>' + esc(branchName) + '</td></tr>',
+        '<tr><td style="padding:4px 12px 4px 0;font-weight:700;">Status:</td><td>' + esc(statusLabel(jobCard.status)) + '</td></tr>',
+        '</table>',
+        '<p>You can track your repair status anytime:</p>',
+        '<p><a href="' + trackUrl + '" style="display:inline-block;padding:12px 24px;background:#dc2626;color:#fff;text-decoration:none;border-radius:6px;font-weight:600;">Track Repair Status</a></p>',
+        '<hr style="border:none;border-top:1px solid #e5e7eb;margin:16px 0;">',
+        '<p style="font-size:12px;color:#6b7280;">If you did not request this repair, please ignore this email.</p>',
+        '</div>'
+      ].join('')
+    };
+
+    var t = getTransporter();
+    if (t) {
+      t.sendMail(mailOpts).catch(function(mailErr) {
+        console.error('Failed to send tracking email:', mailErr.message);
+      });
+    }
+  } catch (emailErr) {
+    console.error('Tracking email error:', emailErr.message);
+  }
+}
+
 function logAudit(user, action, details, req) {
   try {
     var ip = req ? (req.ip || req.connection.remoteAddress || '') : '';
@@ -268,20 +405,8 @@ function logAudit(user, action, details, req) {
 function getTokenFromRequest(req) {
   var auth = req.headers && req.headers.authorization;
   if (auth && auth.startsWith('Bearer ')) return auth.slice(7);
-  if (req.body && req.body.token) return req.body.token;
-  // Security: query param tokens removed to prevent leakage in logs/referrers
-  return null;
-}
-
-function getUserFromToken(body) {
-  if (body && body.token && sessions.has(body.token)) {
-    var s = sessions.get(body.token);
-    if (Date.now() < s.expires) {
-      s.expires = Date.now() + SESSION_TTL;
-      return s.user || null;
-    }
-    sessions.delete(body.token);
-  }
+  // Allow query param token for GET requests only (needed for PDF download links)
+  if (req.method === 'GET' && req.query && req.query.token) return req.query.token;
   return null;
 }
 
@@ -296,18 +421,6 @@ function getUserFromRequest(req) {
     sessions.delete(token);
   }
   return null;
-}
-
-function authorize(body) {
-  if (body && body.token && sessions.has(body.token)) {
-    var s = sessions.get(body.token);
-    if (Date.now() < s.expires) {
-      s.expires = Date.now() + SESSION_TTL;
-      return true;
-    }
-    sessions.delete(body.token);
-  }
-  return false;
 }
 
 function authorizeRequest(req) {
@@ -358,7 +471,7 @@ app.post('/api/admin/login', function (req, res) {
     logAudit(null, 'login-failed', 'Failed login attempt from ' + ip + ' user: ' + (b ? b.username || 'unknown' : 'unknown'), req);
     return res.status(401).json({ error: 'Incorrect username or password.' });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
@@ -368,7 +481,7 @@ app.get('/api/admin/me', function (req, res) {
     if (!user) return res.status(401).json({ error: 'Unauthorized' });
     res.json({ success: true, user: user });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
@@ -387,7 +500,7 @@ app.get('/api/admin/users', function (req, res) {
     }
     res.json({ success: true, users: users });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
@@ -410,7 +523,7 @@ app.post('/api/admin/users', function (req, res) {
     logAudit(admin, 'create-user', 'Created user: ' + b.username + ' (ID: ' + result.lastInsertRowid + ')', req);
     res.json({ success: true, id: result.lastInsertRowid });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
@@ -443,7 +556,7 @@ app.put('/api/admin/users/:id', function (req, res) {
     logAudit(admin, 'update-user', 'Updated user ID ' + req.params.id + ' (' + existing.username + ')', req);
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
@@ -463,7 +576,7 @@ app.delete('/api/admin/users/:id', function (req, res) {
     logAudit(admin, 'delete-user', 'Deleted user ID ' + req.params.id + ' (' + (delUser ? delUser.username : 'unknown') + ')', req);
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
@@ -480,7 +593,7 @@ app.post('/api/admin/request-password-reset', function (req, res) {
     db.prepare("INSERT INTO password_resets (username, branch_id) VALUES (?, ?)").run(user.username, user.branch_id);
     res.json({ success: true, message: 'Reset request submitted. An admin will review it shortly.' });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
@@ -497,7 +610,7 @@ app.get('/api/admin/password-resets', function (req, res) {
     }
     res.json({ success: true, resets: rows });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
@@ -509,14 +622,14 @@ app.post('/api/admin/password-resets/:id/approve', function (req, res) {
     var reset = db.prepare("SELECT * FROM password_resets WHERE id = ? AND status = 'pending'").get(req.params.id);
     if (!reset) return res.status(404).json({ error: 'Reset request not found or already resolved' });
     if (admin.branch_id && reset.branch_id !== admin.branch_id) return res.status(403).json({ error: 'Cannot reset passwords for other branches' });
-    var newPassword = req.body.password || 'branch123';
+    var newPassword = req.body.password || SEED_BRANCH_PASSWORD;
     var password_hash = hashPassword(newPassword);
     db.prepare("UPDATE users SET password_hash = ? WHERE username = ?").run(password_hash, reset.username);
     db.prepare("UPDATE password_resets SET status = 'approved', resolved_at = datetime('now'), resolved_by = ? WHERE id = ?").run(admin.username || 'admin', req.params.id);
     logAudit(admin, 'approve-password-reset', 'Approved reset for user: ' + reset.username + ' (ID: ' + req.params.id + ')', req);
-    res.json({ success: true, message: 'Password reset successfully. New password: ' + newPassword });
+    res.json({ success: true, message: 'Password reset successfully.' });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
@@ -532,7 +645,7 @@ app.post('/api/admin/password-resets/:id/reject', function (req, res) {
     logAudit(admin, 'reject-password-reset', 'Rejected reset for user: ' + reset.username + ' (ID: ' + req.params.id + ')', req);
     res.json({ success: true, message: 'Reset request rejected.' });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
@@ -542,7 +655,7 @@ app.get('/api/admin/campaign-templates', function(req, res) {
     if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
     var rows = db.prepare('SELECT * FROM campaign_templates ORDER BY created_at DESC').all();
     res.json({ success: true, templates: rows });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { sendError(res, err); }
 });
 app.post('/api/admin/campaign-templates', function(req, res) {
   try {
@@ -552,7 +665,7 @@ app.post('/api/admin/campaign-templates', function(req, res) {
     db.prepare('INSERT INTO campaign_templates (name, type, subject, html) VALUES (?,?,?,?)').run(b.name, b.type||'general', b.subject||'', b.html||'');
     logAudit(admin, 'create-campaign-template', 'Created template: "' + (b.name || 'untitled') + '"', req);
     res.json({ success: true });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { sendError(res, err); }
 });
 app.put('/api/admin/campaign-templates/:id', function(req, res) {
   try {
@@ -562,7 +675,7 @@ app.put('/api/admin/campaign-templates/:id', function(req, res) {
     db.prepare('UPDATE campaign_templates SET name=?, type=?, subject=?, html=? WHERE id=?').run(b.name, b.type||'general', b.subject||'', b.html||'', req.params.id);
     logAudit(admin, 'update-campaign-template', 'Updated template ID ' + req.params.id, req);
     res.json({ success: true });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { sendError(res, err); }
 });
 app.delete('/api/admin/campaign-templates/:id', function(req, res) {
   try {
@@ -571,7 +684,7 @@ app.delete('/api/admin/campaign-templates/:id', function(req, res) {
     db.prepare('DELETE FROM campaign_templates WHERE id=?').run(req.params.id);
     logAudit(admin, 'delete-campaign-template', 'Deleted template ID ' + req.params.id, req);
     res.json({ success: true });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { sendError(res, err); }
 });
 
 // ─── Campaign History ───
@@ -580,7 +693,7 @@ app.get('/api/admin/campaigns', function(req, res) {
     if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
     var rows = db.prepare('SELECT * FROM campaigns ORDER BY created_at DESC').all();
     res.json({ success: true, campaigns: rows });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { sendError(res, err); }
 });
 
 // ─── Subscriber management ───
@@ -593,7 +706,7 @@ app.post('/api/admin/subscribers', function(req, res) {
     db.prepare('INSERT OR IGNORE INTO subscribers (email, source, notes) VALUES (?,?,?)').run(email, 'manual', req.body.notes || null);
     logAudit(admin, 'add-subscriber', 'Added subscriber: ' + email, req);
     res.json({ success: true });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { sendError(res, err); }
 });
 app.post('/api/admin/subscribers/bulk-delete', function(req, res) {
   try {
@@ -605,7 +718,7 @@ app.post('/api/admin/subscribers/bulk-delete', function(req, res) {
     tx();
     logAudit(admin, 'bulk-delete-subscribers', 'Deleted ' + emails.length + ' subscribers', req);
     res.json({ success: true, deleted: emails.length });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { sendError(res, err); }
 });
 
 // ─── Messages management ───
@@ -616,7 +729,7 @@ app.put('/api/admin/messages/:id/read', function(req, res) {
     db.prepare("UPDATE messages SET is_read=1 WHERE id=?").run(req.params.id);
     logAudit(admin, 'mark-message-read', 'Marked message ID ' + req.params.id + ' as read', req);
     res.json({ success: true });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { sendError(res, err); }
 });
 app.delete('/api/admin/messages/:id', function(req, res) {
   try {
@@ -625,7 +738,7 @@ app.delete('/api/admin/messages/:id', function(req, res) {
     db.prepare('DELETE FROM messages WHERE id=?').run(req.params.id);
     logAudit(admin, 'delete-message', 'Deleted message ID ' + req.params.id, req);
     res.json({ success: true });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { sendError(res, err); }
 });
 app.post('/api/admin/messages/bulk-delete', function(req, res) {
   try {
@@ -637,7 +750,7 @@ app.post('/api/admin/messages/bulk-delete', function(req, res) {
     tx();
     logAudit(admin, 'bulk-delete-messages', 'Deleted ' + ids.length + ' messages', req);
     res.json({ success: true, deleted: ids.length });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { sendError(res, err); }
 });
 
 // ─── Audit log ───
@@ -665,10 +778,272 @@ app.get('/api/admin/audit-log', function(req, res) {
     }
 
     var where = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';
-    var rows = db.prepare('SELECT * FROM audit_log ' + where + ' ORDER BY created_at DESC LIMIT 500').all.apply(null, params.length ? [params] : []);
-    var total = db.prepare('SELECT COUNT(*) as cnt FROM audit_log ' + where).get.apply(null, params.length ? [params] : []);
+    var stmt = db.prepare('SELECT * FROM audit_log ' + where + ' ORDER BY created_at DESC LIMIT 500');
+    var cntStmt = db.prepare('SELECT COUNT(*) as cnt FROM audit_log ' + where);
+    var rows = params.length ? stmt.all.apply(stmt, params) : stmt.all();
+    var total = params.length ? cntStmt.get.apply(cntStmt, params) : cntStmt.get();
     res.json({ success: true, entries: rows, total: total ? total.cnt : rows.length });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { sendError(res, err); }
+});
+
+// ─── System Health ───
+app.get('/api/admin/system-health', function(req, res) {
+  try {
+    if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+
+    var cpus = os.cpus();
+    var cpuCount = cpus.length;
+    var cpuModel = cpus.length ? cpus[0].model : 'N/A';
+
+    // Real CPU load (1-minute average as percentage of cores)
+    var loadAvg = os.loadavg ? os.loadavg() : [0, 0, 0];
+    var cpuUsagePercent = 0;
+    if (loadAvg[0] > 0) {
+      cpuUsagePercent = Math.min(100, Math.round((loadAvg[0] / (cpuCount || 1)) * 100));
+    } else {
+      // Fallback: calculate from cumulative cpu times (Windows etc.)
+      var totalIdle = 0, totalTick = 0;
+      cpus.forEach(function(cpu) {
+        for (var type in cpu.times) { totalTick += cpu.times[type]; }
+        totalIdle += cpu.times.idle;
+      });
+      cpuUsagePercent = Math.round((1 - totalIdle / totalTick) * 100);
+    }
+
+    var totalMem = os.totalmem();
+    var freeMem = os.freemem();
+    var usedMem = totalMem - freeMem;
+    var memPercent = Math.round((usedMem / totalMem) * 100);
+
+    var uptimeSeconds = os.uptime();
+    var uptimeDays = Math.floor(uptimeSeconds / 86400);
+    var uptimeHours = Math.floor((uptimeSeconds % 86400) / 3600);
+    var uptimeMinutes = Math.floor((uptimeSeconds % 3600) / 60);
+
+    // Disk usage via native fs.statfsSync (Node 18+) with PowerShell fallback
+    var diskInfo = { total: 0, used: 0, free: 0, percent: 0 };
+    try {
+      if (typeof fs.statfsSync === 'function') {
+        var diskPath = path.parse(DB_PATH || process.cwd()).root || '/';
+        var s = fs.statfsSync(diskPath);
+        diskInfo.total = s.blocks * s.bsize;
+        diskInfo.free = s.bfree * s.bsize;
+        diskInfo.used = diskInfo.total - diskInfo.free;
+        diskInfo.percent = diskInfo.total ? Math.round((diskInfo.used / diskInfo.total) * 100) : 0;
+      } else {
+        throw new Error('statfs not available');
+      }
+    } catch (e) {
+      // Fallback using child_process
+      try {
+        if (process.platform === 'win32') {
+          var out = cp.execSync('powershell -NoProfile -Command "Get-CimInstance Win32_LogicalDisk -Filter DriveType=3 | Select-Object Size,FreeSpace | ConvertTo-Csv -NoHeader"', { encoding: 'utf8', timeout: 8000 });
+          out.trim().split('\n').forEach(function(line) {
+            var parts = line.trim().split(',');
+            if (parts.length >= 2) {
+              var dTotal = parseInt(parts[0], 10) || 0;
+              var dFree = parseInt(parts[1], 10) || 0;
+              if (dTotal > 0) {
+                diskInfo.total += dTotal;
+                diskInfo.free += dFree;
+              }
+            }
+          });
+          diskInfo.used = diskInfo.total - diskInfo.free;
+          diskInfo.percent = diskInfo.total ? Math.round((diskInfo.used / diskInfo.total) * 100) : 0;
+        } else {
+          var out = cp.execSync('df -k --total 2>/dev/null || df -k /', { encoding: 'utf8', timeout: 5000 });
+          var lines = out.trim().split('\n');
+          var lastLine = lines[lines.length - 1];
+          var parts = lastLine.split(/\s+/);
+          if (parts.length >= 4) {
+            diskInfo.total = parseInt(parts[1], 10) * 1024 || 0;
+            diskInfo.used = parseInt(parts[2], 10) * 1024 || 0;
+            diskInfo.free = parseInt(parts[3], 10) * 1024 || 0;
+            diskInfo.percent = diskInfo.total ? Math.round((diskInfo.used / diskInfo.total) * 100) : 0;
+          }
+        }
+      } catch(e2) {
+        diskInfo = { total: 0, used: 0, free: 0, percent: 0, note: 'Disk info unavailable' };
+      }
+    }
+
+    // GPU info (nvidia-smi on Windows)
+    var gpuInfo = [];
+    try {
+      if (process.platform === 'win32') {
+        var gpuOut = cp.execSync('nvidia-smi --query-gpu=name,utilization.gpu,memory.total,memory.used,temperature.gpu --format=csv,noheader,nounits 2>nul', { encoding: 'utf8', timeout: 5000 });
+        gpuOut.trim().split('\n').forEach(function(line) {
+          var parts = line.split(',').map(function(s) { return s.trim(); });
+          if (parts.length >= 5) {
+            gpuInfo.push({ name: parts[0], util: parseFloat(parts[1]) || 0, memTotal: parseFloat(parts[2]) || 0, memUsed: parseFloat(parts[3]) || 0, temp: parseFloat(parts[4]) || 0 });
+          }
+        });
+      } else {
+        try {
+          var gpuOut = cp.execSync('nvidia-smi --query-gpu=name,utilization.gpu,memory.total,memory.used,temperature.gpu --format=csv,noheader,nounits 2>/dev/null', { encoding: 'utf8', timeout: 5000 });
+          gpuOut.trim().split('\n').forEach(function(line) {
+            var parts = line.split(',').map(function(s) { return s.trim(); });
+            if (parts.length >= 5) {
+              gpuInfo.push({ name: parts[0], util: parseFloat(parts[1]) || 0, memTotal: parseFloat(parts[2]) || 0, memUsed: parseFloat(parts[3]) || 0, temp: parseFloat(parts[4]) || 0 });
+            }
+          });
+        } catch(e2) {}
+      }
+    } catch(e) {}
+
+    // Network: check if server can reach external hosts + traffic stats
+    var networkStatus = 'unknown';
+    var networkTraffic = { rxBytes: 0, txBytes: 0 };
+    try {
+      var ping = cp.execSync('ping -n 1 -w 2000 8.8.8.8', { encoding: 'utf8', timeout: 5000 });
+      networkStatus = ping.indexOf('TTL=') !== -1 || ping.indexOf('1 received') !== -1 || ping.indexOf('bytes from') !== -1 ? 'connected' : 'no-internet';
+    } catch(e) { networkStatus = 'no-internet'; }
+    // Network traffic stats via PowerShell (Windows) or /proc/net (Linux)
+    try {
+      if (process.platform === 'win32') {
+        var netOut = cp.execSync('powershell -NoProfile -Command "Get-NetAdapterStatistics | Select-Object Name,ReceivedBytes,SentBytes | ConvertTo-Csv"', { encoding: 'utf8', timeout: 8000 });
+        netOut.trim().split('\n').slice(1).forEach(function(line) {
+          line = line.replace(/"/g, '');
+          var parts = line.trim().split(',');
+          if (parts.length >= 3) {
+            networkTraffic.rxBytes += parseInt(parts[1], 10) || 0;
+            networkTraffic.txBytes += parseInt(parts[2], 10) || 0;
+          }
+        });
+      } else {
+        var netOut = cp.execSync('cat /proc/net/dev 2>/dev/null', { encoding: 'utf8', timeout: 3000 });
+        netOut.trim().split('\n').slice(2).forEach(function(line) {
+          var parts = line.trim().split(/\s+/);
+          if (parts.length >= 10) {
+            networkTraffic.rxBytes += parseInt(parts[1], 10) || 0;
+            networkTraffic.txBytes += parseInt(parts[9], 10) || 0;
+          }
+        });
+      }
+    } catch(e) {}
+    // Add active connections count
+    var activeConnections = 0;
+    try {
+      if (process.platform === 'win32') {
+        var connOut = cp.execSync('netstat -an | findstr /C:"ESTABLISHED" /C:"TIME_WAIT"', { encoding: 'utf8', timeout: 5000 });
+        activeConnections = connOut.trim().split('\n').filter(function(l) { return l.trim().length > 0; }).length;
+      } else {
+        var connOut = cp.execSync('netstat -an | grep -c "ESTABLISHED\\|TIME_WAIT"', { encoding: 'utf8', timeout: 5000 });
+        activeConnections = parseInt(connOut.trim(), 10) || 0;
+      }
+    } catch(e) {}
+
+    // Process health
+    var procMem = process.memoryUsage();
+    var nodeVersion = process.version;
+
+    // Recent errors from audit log (last 5 error-type entries)
+    var recentErrors = db.prepare("SELECT * FROM audit_log WHERE action LIKE '%error%' OR action LIKE '%fail%' OR details LIKE '%error%' OR details LIKE '%fail%' ORDER BY created_at DESC LIMIT 5").all();
+
+    // Running services check (Windows)
+    var runningServices = [];
+    try {
+      if (process.platform === 'win32') {
+        var svcOut = cp.execSync('sc query state= all 2>nul', { encoding: 'utf8', timeout: 5000 });
+        var svcLines = svcOut.split('\n');
+        var currentSvc = null;
+        svcLines.forEach(function(l) {
+          var m = l.match(/^SERVICE_NAME:\s+(.+)$/);
+          if (m) currentSvc = m[1].trim();
+          if (l.indexOf('STATE') !== -1 && currentSvc) {
+            var running = l.indexOf('RUNNING') !== -1;
+            if (currentSvc.indexOf('Royal') !== -1 || currentSvc.indexOf('mysql') !== -1 || currentSvc.indexOf('nginx') !== -1 || currentSvc.indexOf('apache') !== -1 || currentSvc.indexOf('node') !== -1 || currentSvc.indexOf('sql') !== -1) {
+              runningServices.push({ name: currentSvc, running: running });
+            }
+          }
+        });
+      }
+    } catch(e) {}
+
+    res.json({
+      success: true,
+      cpu: {
+        model: cpuModel,
+        cores: cpuCount,
+        usage: cpuUsagePercent,
+        loadAvg: os.loadavg ? os.loadavg() : [0,0,0]
+      },
+      memory: {
+        total: totalMem,
+        used: usedMem,
+        free: freeMem,
+        percent: memPercent
+      },
+      disk: diskInfo,
+      gpu: gpuInfo,
+      network: { status: networkStatus, rxBytes: networkTraffic.rxBytes, txBytes: networkTraffic.txBytes, activeConnections: activeConnections },
+      uptime: { seconds: uptimeSeconds, days: uptimeDays, hours: uptimeHours, minutes: uptimeMinutes },
+      process: {
+        version: nodeVersion,
+        memory: { rss: procMem.rss, heapUsed: procMem.heapUsed, heapTotal: procMem.heapTotal }
+      },
+      errors: recentErrors,
+      services: runningServices,
+      timestamp: new Date().toISOString()
+    });
+  } catch (err) { sendError(res, err); }
+});
+
+// ─── System Health Fix ───
+app.post('/api/admin/system-health/fix', function(req, res) {
+  try {
+    if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+    var admin = getUserFromRequest(req);
+    var action = req.body.action || '';
+    var result = { success: true, message: '', fixed: false };
+
+    if (action === 'clear-temp') {
+      var tempDir = os.tmpdir();
+      var freed = 0, count = 0;
+      try {
+        var files = fs.readdirSync(tempDir);
+        files.forEach(function(f) {
+          var fp = path.join(tempDir, f);
+          try {
+            var stat = fs.statSync(fp);
+            if (stat.isFile() && Date.now() - stat.mtimeMs > 86400000) {
+              freed += stat.size;
+              fs.unlinkSync(fp);
+              count++;
+            }
+          } catch(e) {}
+        });
+        result.message = 'Cleared ' + count + ' temp files, freed ' + (freed / 1024 / 1024).toFixed(2) + ' MB';
+        result.fixed = true;
+      } catch(e) {
+        result.message = 'Failed to clear temp files. Check server logs.';
+      }
+    } else if (action === 'checkpoint-db') {
+      try {
+        db.pragma('wal_checkpoint(TRUNCATE)');
+        result.message = 'Database WAL checkpoint completed successfully';
+        result.fixed = true;
+      } catch(e) {
+        result.message = 'Database checkpoint failed. Check server logs.';
+      }
+    } else if (action === 'restart-http') {
+      result.message = 'Suggest restarting the Node.js server process manually for a full refresh';
+      result.fixed = false;
+    } else if (action === 'clear-cache') {
+      // Clear any temporary data - restart effectively
+      result.message = 'Manual server restart recommended to clear all caches';
+      result.fixed = false;
+    } else if (action === 'check-disk') {
+      result.message = 'Run disk cleanup manually or use chkdsk /f for Windows, or df -h for Linux';
+      result.fixed = false;
+    } else {
+      result.message = 'Unknown action: ' + action;
+    }
+
+    logAudit(admin, 'system-health-fix', action + ': ' + result.message, req);
+    res.json(result);
+  } catch (err) { sendError(res, err); }
 });
 
 // ─── Quotation status update ───
@@ -681,7 +1056,7 @@ app.put('/api/admin/quotations/:doc/status', function(req, res) {
     db.prepare("UPDATE quotations SET status=? WHERE doc_number=?").run(req.body.status, req.params.doc);
     logAudit(admin, 'update-quotation-status', 'Updated quotation ' + req.params.doc + ' to ' + req.body.status, req);
     res.json({ success: true });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { sendError(res, err); }
 });
 
 // ─── Chat transcripts ───
@@ -690,7 +1065,7 @@ app.get('/api/admin/chat-transcripts', function(req, res) {
     if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
     var rows = db.prepare('SELECT * FROM chat_transcripts ORDER BY created_at DESC LIMIT 100').all();
     res.json({ success: true, transcripts: rows });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { sendError(res, err); }
 });
 app.put('/api/admin/chat-transcripts/:id', function(req, res) {
   try {
@@ -699,7 +1074,7 @@ app.put('/api/admin/chat-transcripts/:id', function(req, res) {
     db.prepare("UPDATE chat_transcripts SET status=?, assigned_to=? WHERE id=?").run(req.body.status||'closed', req.body.assigned_to||null, req.params.id);
     logAudit(admin, 'update-chat-transcript', 'Updated chat transcript ID ' + req.params.id, req);
     res.json({ success: true });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { sendError(res, err); }
 });
 
 // ─── Branch hours update ───
@@ -710,7 +1085,7 @@ app.put('/api/admin/branches/:id/hours', function(req, res) {
     db.prepare("UPDATE branches SET hours_json=?, hours=? WHERE id=?").run(JSON.stringify(req.body.hours||{}), req.body.display_hours||'', req.params.id);
     logAudit(admin, 'update-branch-hours', 'Updated hours for branch: ' + req.params.id, req);
     res.json({ success: true });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { sendError(res, err); }
 });
 
 // ─── Subscriber search/filter ───
@@ -720,7 +1095,7 @@ app.get('/api/admin/subscribers/search', function(req, res) {
     var q = req.query.q || '';
     var rows = q ? db.prepare("SELECT * FROM subscribers WHERE email LIKE ? ORDER BY created_at DESC").all('%' + q.replace(/[%_]/g,'\\$&') + '%') : db.prepare("SELECT * FROM subscribers ORDER BY created_at DESC").all();
     res.json({ success: true, subscribers: rows });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { sendError(res, err); }
 });
 
 // ─── Campaign save (draft / schedule) ───
@@ -734,7 +1109,7 @@ app.post('/api/admin/campaigns', function(req, res) {
     );
     logAudit(user, 'create-campaign', 'Created campaign: "' + (b.subject || 'untitled') + '"', req);
     res.json({ success: true, id: db.prepare('SELECT last_insert_rowid() as id').get().id });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { sendError(res, err); }
 });
 
 /* ─── Change own password ─── */
@@ -775,12 +1150,14 @@ app.post('/api/admin/change-password', function (req, res) {
     logAudit(user, 'change-password', 'Changed own password (user ID: ' + user.id + ')', req);
     res.json({ success: true, message: 'Password changed successfully.' });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
 app.post('/api/subscribe', function (req, res) {
   try {
+    if (!validateSameOrigin(req)) return res.status(403).json({ error: 'Cross-origin request denied' });
+
     var email = (req.body.email || '').trim().toLowerCase();
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return res.status(400).json({ error: 'Invalid email' });
@@ -794,12 +1171,14 @@ app.post('/api/subscribe', function (req, res) {
     db.prepare("INSERT INTO subscribers (email) VALUES (?)").run(email);
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
 app.post('/api/contact', function (req, res) {
   try {
+    if (!validateSameOrigin(req)) return res.status(403).json({ error: 'Cross-origin request denied' });
+
     var name = (req.body.name || '').trim();
     var phone = (req.body.phone || '').trim();
     var email = (req.body.email || '').trim();
@@ -820,7 +1199,7 @@ app.post('/api/contact', function (req, res) {
 
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
@@ -836,7 +1215,7 @@ app.post('/api/get-data', function (req, res) {
 
     res.json({ subscribers: subscribers, messages: messages, notified: notified });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
@@ -850,12 +1229,14 @@ app.post('/api/check-subscriber', function (req, res) {
     var existing = db.prepare("SELECT email FROM subscribers WHERE email = ?").get(email);
     res.json({ subscribed: !!existing });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
 app.post('/api/unsubscribe', function (req, res) {
   try {
+    if (!validateSameOrigin(req)) return res.status(403).json({ error: 'Cross-origin request denied' });
+
     var email = (req.body.email || '').trim().toLowerCase();
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return res.status(400).json({ error: 'Invalid email' });
@@ -868,7 +1249,7 @@ app.post('/api/unsubscribe', function (req, res) {
 
     res.json({ success: true, message: 'You have been unsubscribed successfully.' });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
@@ -890,7 +1271,7 @@ app.post('/api/delete-subscriber', function (req, res) {
 
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
@@ -909,7 +1290,7 @@ app.post('/api/notify-unsubscribe', function (req, res) {
 
     res.json({ success: true, message: email + ' has been notified of unsubscription.' });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
@@ -931,7 +1312,7 @@ app.post('/api/clear-data', function (req, res) {
     logAudit(user, 'clear-data', 'Cleared all ' + type, req);
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
@@ -943,6 +1324,11 @@ app.post('/api/upload', function (req, res) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+    // Validate file content via magic bytes
+    if (!validateMagicBytes(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+      return res.status(400).json({ error: 'Invalid image file content. Only valid image files are accepted.' });
+    }
     // Convert any non-WebP image to WebP using sharp
     var filePath = req.file.path;
     var originalExt = path.extname(req.file.originalname).toLowerCase();
@@ -1042,7 +1428,7 @@ app.post('/api/send-campaign', function (req, res) {
 
     t.sendMail(mailOptions, function (err) {
       if (err) {
-        res.status(500).json({ error: err.message || 'Failed to send' });
+        sendError(res, err);
       } else {
         var admin = getUserFromRequest(req);
         logAudit(admin, 'send-campaign', 'Sent campaign: "' + subject + '" to ' + subscribers.length + ' subscribers', req);
@@ -1050,7 +1436,7 @@ app.post('/api/send-campaign', function (req, res) {
       }
     });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
@@ -1061,7 +1447,7 @@ app.get('/api/sales', function (req, res) {
     var sales = db.prepare("SELECT * FROM sales WHERE active = 1 AND start_date <= ? AND end_date >= ? ORDER BY created_at DESC").all(now, now);
     res.json({ success: true, sales: sales });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
@@ -1071,7 +1457,7 @@ app.get('/api/sales/all', function (req, res) {
     var sales = db.prepare("SELECT * FROM sales ORDER BY created_at DESC").all();
     res.json({ success: true, sales: sales });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
@@ -1090,7 +1476,7 @@ app.post('/api/sales', function (req, res) {
     logAudit(admin, 'create-sale', 'Created sale for product: ' + b.product_id + ' (price: N$' + b.sale_price + ')', req);
     res.json({ success: true, id: result.lastInsertRowid });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
@@ -1107,7 +1493,7 @@ app.put('/api/sales/:id', function (req, res) {
     logAudit(admin, 'update-sale', 'Updated sale ID ' + req.params.id + ' for product: ' + (b.product_id || (oldSale ? oldSale.product_id : 'unknown')), req);
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
@@ -1121,7 +1507,7 @@ app.delete('/api/sales/:id', function (req, res) {
     logAudit(admin, 'delete-sale', 'Deleted sale ID ' + req.params.id + ' for product: ' + (oldSale ? oldSale.product_id : 'unknown'), req);
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
@@ -1131,7 +1517,7 @@ app.get('/api/product-overrides', function (req, res) {
     var overrides = db.prepare("SELECT * FROM product_overrides").all();
     res.json({ success: true, overrides: overrides });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
@@ -1146,7 +1532,7 @@ app.put('/api/product-overrides/:productId', function (req, res) {
     logAudit(admin, 'update-product-override', 'Updated product: ' + req.params.productId, req);
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
@@ -1158,7 +1544,7 @@ app.delete('/api/product-overrides/:productId', function (req, res) {
     logAudit(admin, 'delete-product-override', 'Removed override for product: ' + req.params.productId, req);
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
@@ -1168,7 +1554,7 @@ app.get('/api/custom-products', function (req, res) {
     var products = db.prepare("SELECT * FROM custom_products ORDER BY created_at DESC").all();
     res.json({ success: true, products: products });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
@@ -1187,7 +1573,7 @@ app.post('/api/custom-products', function (req, res) {
     logAudit(admin, 'create-custom-product', 'Created custom product: ' + b.id + ' - ' + b.name, req);
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
@@ -1207,7 +1593,7 @@ app.put('/api/custom-products/:id', function (req, res) {
     logAudit(admin, 'update-custom-product', 'Updated custom product: ' + req.params.id, req);
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
@@ -1219,7 +1605,7 @@ app.delete('/api/custom-products/:id', function (req, res) {
     logAudit(admin, 'delete-custom-product', 'Deleted custom product: ' + req.params.id, req);
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
@@ -1234,7 +1620,7 @@ app.get('/api/admin/branch-products/:branchId', function (req, res) {
     var productIds = rows.map(function(r) { return r.product_id; });
     res.json({ success: true, products: rows, productIds: productIds });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
@@ -1248,7 +1634,7 @@ app.post('/api/admin/branch-products/:branchId', function (req, res) {
     db.prepare("INSERT OR IGNORE INTO branch_products (branch_id, product_id) VALUES (?, ?)").run(req.params.branchId, b.product_id);
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
@@ -1260,7 +1646,7 @@ app.delete('/api/admin/branch-products/:branchId/:productId', function (req, res
     db.prepare("DELETE FROM branch_products WHERE branch_id = ? AND product_id = ?").run(req.params.branchId, req.params.productId);
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
@@ -1286,77 +1672,111 @@ app.get('/api/products', function (req, res) {
       branch: branchId || null
     });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
 /* ─── Quotations API ─── */
 app.get('/api/quotations', function (req, res) {
   try {
-    if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
-    var search = (req.query.search || '').replace(/[%_]/g, '\\$&');
-    var rows;
-    if (search) {
-      rows = db.prepare("SELECT * FROM quotations WHERE doc_number LIKE ? ESCAPE '\\' ORDER BY created_at DESC").all('%' + search + '%');
-    } else {
-      rows = db.prepare("SELECT * FROM quotations ORDER BY created_at DESC").all();
+    var user = getUserFromRequest(req);
+    if (!user) return res.status(401).json({ error: 'Unauthorized' });
+    var conditions = [];
+    var params = [];
+    if (user.branch_id) {
+      conditions.push('branch_id = ?');
+      params.push(user.branch_id);
     }
+    var search = (req.query.search || '').replace(/[%_]/g, '\\$&');
+    if (search) {
+      conditions.push("doc_number LIKE ? ESCAPE '\\'");
+      params.push('%' + search + '%');
+    }
+    var where = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';
+    var rows = params.length
+      ? db.prepare('SELECT * FROM quotations ' + where + ' ORDER BY created_at DESC').all.apply(null, params)
+      : db.prepare('SELECT * FROM quotations ORDER BY created_at DESC').all();
     res.json({ success: true, quotations: rows });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
 app.get('/api/quotations/:docNumber', function (req, res) {
   try {
-    if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+    var user = getUserFromRequest(req);
+    if (!user) return res.status(401).json({ error: 'Unauthorized' });
     var row = db.prepare("SELECT * FROM quotations WHERE doc_number = ?").get(req.params.docNumber);
     if (!row) return res.status(404).json({ error: 'Quotation not found' });
+    if (user.branch_id && row.branch_id !== user.branch_id) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
     res.json({ success: true, quotation: row });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
 app.post('/api/quotations', function (req, res) {
   try {
-    if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+    var admin = getUserFromRequest(req);
+    if (!admin) return res.status(401).json({ error: 'Unauthorized' });
     var b = req.body;
     if (!b.doc_number || !b.items) return res.status(400).json({ error: 'doc_number and items are required' });
+    // Force branch_id from user if they have one
+    var branchId = admin.branch_id || b.branch_id || null;
     db.prepare("INSERT INTO quotations (doc_number, customer_info, items, subtotal, tax, total, branch_id) VALUES (?, ?, ?, ?, ?, ?, ?)").run(
       b.doc_number, JSON.stringify(b.customer_info || {}), JSON.stringify(b.items),
-      b.subtotal || 0, b.tax || 0, b.total || 0, b.branch_id || null
+      b.subtotal || 0, b.tax || 0, b.total || 0, branchId
     );
+    logAudit(admin, 'create-quotation', 'Created quotation: ' + b.doc_number + (branchId ? ' (branch: ' + branchId + ')' : ''), req);
     res.json({ success: true });
   } catch (err) {
     if (err.message && err.message.includes('UNIQUE constraint failed')) {
       return res.status(409).json({ error: 'Quotation with this document number already exists' });
     }
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
 app.put('/api/quotations/:docNumber', function (req, res) {
   try {
-    if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+    var admin = getUserFromRequest(req);
+    if (!admin) return res.status(401).json({ error: 'Unauthorized' });
+    // Branch isolation
+    if (admin.branch_id) {
+      var existing = db.prepare("SELECT branch_id FROM quotations WHERE doc_number = ?").get(req.params.docNumber);
+      if (!existing) return res.status(404).json({ error: 'Quotation not found' });
+      if (existing.branch_id !== admin.branch_id) return res.status(403).json({ error: 'Access denied' });
+    }
     var b = req.body;
+    var branchId = admin.branch_id || b.branch_id || null;
     db.prepare("UPDATE quotations SET customer_info=?, items=?, subtotal=?, tax=?, total=?, branch_id=?, updated_at=datetime('now') WHERE doc_number=?").run(
       JSON.stringify(b.customer_info || {}), JSON.stringify(b.items || []),
-      b.subtotal || 0, b.tax || 0, b.total || 0, b.branch_id || null, req.params.docNumber
+      b.subtotal || 0, b.tax || 0, b.total || 0, branchId, req.params.docNumber
     );
+    logAudit(admin, 'update-quotation', 'Updated quotation: ' + req.params.docNumber, req);
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
 app.delete('/api/quotations/:docNumber', function (req, res) {
   try {
-    if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+    var admin = getUserFromRequest(req);
+    if (!admin) return res.status(401).json({ error: 'Unauthorized' });
+    // Branch isolation
+    if (admin.branch_id) {
+      var existing = db.prepare("SELECT branch_id FROM quotations WHERE doc_number = ?").get(req.params.docNumber);
+      if (!existing) return res.status(404).json({ error: 'Quotation not found' });
+      if (existing.branch_id !== admin.branch_id) return res.status(403).json({ error: 'Access denied' });
+    }
     db.prepare("DELETE FROM quotations WHERE doc_number = ?").run(req.params.docNumber);
+    logAudit(admin, 'delete-quotation', 'Deleted quotation: ' + req.params.docNumber, req);
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
@@ -1399,7 +1819,7 @@ app.get('/api/admin/branches', function (req, res) {
     var rows = db.prepare("SELECT * FROM branches ORDER BY name ASC").all();
     res.json({ success: true, branches: rows });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
@@ -1415,7 +1835,7 @@ app.post('/api/admin/branches', function (req, res) {
     logAudit(admin, 'create-branch', 'Created branch: ' + b.id + ' - ' + b.name, req);
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
@@ -1431,7 +1851,7 @@ app.put('/api/admin/branches/:id', function (req, res) {
     logAudit(admin, 'update-branch', 'Updated branch: ' + req.params.id, req);
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
@@ -1443,7 +1863,7 @@ app.delete('/api/admin/branches/:id', function (req, res) {
     logAudit(admin, 'delete-branch', 'Deleted branch: ' + req.params.id, req);
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
@@ -1502,6 +1922,7 @@ try { db.exec("ALTER TABLE job_cards ADD COLUMN service_type TEXT"); } catch(e) 
 try { db.exec("ALTER TABLE job_cards ADD COLUMN collection_code TEXT"); } catch(e) {}
 try { db.exec("ALTER TABLE job_cards ADD COLUMN collector_name TEXT"); } catch(e) {}
 try { db.exec("ALTER TABLE job_cards ADD COLUMN collection_proof_path TEXT"); } catch(e) {}
+try { db.exec("ALTER TABLE job_cards ADD COLUMN collection_signature_path TEXT"); } catch(e) {}
 
 // Service type definitions: value → { label, category }
 var SERVICE_TYPES = {
@@ -1598,7 +2019,7 @@ app.get('/api/admin/job-cards', function(req, res) {
 
     res.json({ success: true, jobCards: rows });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
@@ -1624,7 +2045,7 @@ app.get('/api/admin/job-cards/:id', function(req, res) {
 
     res.json({ success: true, jobCard: row });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
@@ -1677,9 +2098,16 @@ app.post('/api/admin/job-cards', function(req, res) {
       .run(id, status, 'Job card created', user.name || user.username || 'system');
 
     logAudit(user, 'create-job-card', 'Created job card: ' + id + ' for ' + b.client_name, req);
+
+    // Send tracking email to client
+    var newCard = db.prepare('SELECT * FROM job_cards WHERE id = ?').get(id);
+    if (newCard && newCard.client_email) {
+      sendTrackingEmail(newCard, 'Your job card has been created');
+    }
+
     res.json({ success: true, id: id, public_token: token });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
@@ -1753,9 +2181,16 @@ app.put('/api/admin/job-cards/:id', function(req, res) {
     }
 
     logAudit(user, 'update-job-card', 'Updated job card: ' + req.params.id + (statusChanged ? ' (status: ' + existing.status + ' → ' + b.status + ')' : ''), req);
+
+    // Send tracking email on status change
+    if (statusChanged && existing.client_email) {
+      var updatedCard = db.prepare('SELECT * FROM job_cards WHERE id = ?').get(req.params.id);
+      if (updatedCard) sendTrackingEmail(updatedCard, 'Status update: ' + statusLabel(updatedCard.status));
+    }
+
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
@@ -1873,9 +2308,14 @@ app.post('/api/admin/job-cards/:id/status', function(req, res) {
       }
     }
 
+    // Send tracking email for status updates (except 'ready' which has its own dedicated email)
+    if (newStatus !== 'ready' && existing.client_email) {
+      sendTrackingEmail(existing, 'Status update: ' + statusLabel(newStatus));
+    }
+
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
@@ -1897,7 +2337,7 @@ app.delete('/api/admin/job-cards/:id', function(req, res) {
     logAudit(user, 'delete-job-card', 'Deleted job card: ' + req.params.id + ' for ' + existing.client_name, req);
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
@@ -1948,7 +2388,7 @@ app.get('/api/public/track-job', function(req, res) {
 
     res.json({ success: true, jobCard: safeCard });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
@@ -1960,36 +2400,58 @@ app.get('/api/service-types', function(req, res) {
   res.json({ success: true, types: types });
 });
 
-// POST /api/admin/job-cards/:id/upload-proof — upload collection ID proof
-app.post('/api/admin/job-cards/:id/upload-proof', upload.single('proof'), function(req, res) {
+// POST /api/admin/job-cards/:id/upload-proof — upload collection ID proof + signature
+app.post('/api/admin/job-cards/:id/upload-proof', upload.fields([{ name: 'proof', maxCount: 1 }, { name: 'signature', maxCount: 1 }]), function(req, res) {
+  function cleanupFiles() {
+    if (req.files) {
+      Object.keys(req.files).forEach(function(k) {
+        (req.files[k] || []).forEach(function(f) { try { fs.unlinkSync(f.path); } catch(e) {} });
+      });
+    }
+  }
   try {
     var user = getUserFromRequest(req);
-    if (!user) return res.status(401).json({ error: 'Unauthorized' });
+    if (!user) { cleanupFiles(); return res.status(401).json({ error: 'Unauthorized' }); }
 
     var existing = db.prepare('SELECT * FROM job_cards WHERE id = ?').get(req.params.id);
-    if (!existing) return res.status(404).json({ error: 'Job card not found' });
+    if (!existing) { cleanupFiles(); return res.status(404).json({ error: 'Job card not found' }); }
 
-    if (user.branch_id && existing.branch_id !== user.branch_id) {
-      return res.status(403).json({ error: 'Access denied' });
-    }
+    if (user.branch_id && existing.branch_id !== user.branch_id) { cleanupFiles(); return res.status(403).json({ error: 'Access denied' }); }
 
-    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+    var proofFile = req.files && req.files['proof'] ? req.files['proof'][0] : null;
+    var sigFile = req.files && req.files['signature'] ? req.files['signature'][0] : null;
 
-    // Update the job card with proof path and collector name
     var collectorName = req.body.collector_name || '';
     if (!collectorName.trim()) {
-      // Clean up uploaded file if collector name missing
-      try { fs.unlinkSync(req.file.path); } catch(e) {}
+      if (proofFile) try { fs.unlinkSync(proofFile.path); } catch(e) {}
+      if (sigFile) try { fs.unlinkSync(sigFile.path); } catch(e) {}
       return res.status(400).json({ error: 'Collector name is required' });
     }
 
-    db.prepare("UPDATE job_cards SET collector_name=?, collection_proof_path=?, updated_at=datetime('now') WHERE id=?")
-      .run(collectorName.trim(), req.file.path, req.params.id);
+    var updateFields = ["collector_name=?", "updated_at=datetime('now')"];
+    var updateParams = [collectorName.trim()];
 
-    logAudit(user, 'upload-proof', 'Uploaded collection proof for job card ' + req.params.id + ' (collector: ' + collectorName.trim() + ')', req);
-    res.json({ success: true, path: req.file.path, collector_name: collectorName.trim() });
+    if (proofFile) {
+      updateFields.push("collection_proof_path=?");
+      updateParams.push(proofFile.path);
+    }
+    if (sigFile) {
+      updateFields.push("collection_signature_path=?");
+      updateParams.push(sigFile.path);
+    }
+
+    updateParams.push(req.params.id);
+    db.prepare("UPDATE job_cards SET " + updateFields.join(',') + " WHERE id=?").run.apply(null, updateParams);
+
+    logAudit(user, 'upload-proof', 'Uploaded collection proof' + (sigFile ? ' and signature' : '') + ' for job card ' + req.params.id + ' (collector: ' + collectorName.trim() + ')', req);
+    res.json({
+      success: true,
+      proof_path: proofFile ? proofFile.path : null,
+      signature_path: sigFile ? sigFile.path : null,
+      collector_name: collectorName.trim()
+    });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
@@ -2017,10 +2479,10 @@ app.get('/api/admin/job-cards/:id/pdf', function(req, res) {
       res.setHeader('Content-Disposition', 'attachment; filename="job-card-' + row.id.replace(/[^a-zA-Z0-9]/g, '-') + '.pdf"');
       res.send(buffer);
     }).catch(function(err) {
-      res.status(500).json({ error: 'PDF generation failed: ' + err.message });
+      sendError(res, err);
     });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
@@ -2038,15 +2500,15 @@ app.get('/api/public/job-card/:token/pdf', function(req, res) {
       res.setHeader('Content-Disposition', 'inline; filename="job-card-' + row.id.replace(/[^a-zA-Z0-9]/g, '-') + '.pdf"');
       res.send(buffer);
     }).catch(function(err) {
-      res.status(500).json({ error: 'PDF generation failed: ' + err.message });
+      sendError(res, err);
     });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Server error' });
+    sendError(res, err);
   }
 });
 
 /* ─── Content Management API ─── */
-require('./content-api')(app, db, getUserFromRequest, hashPassword);
+require('./content-api')(app, db, getUserFromRequest, hashPassword, logAudit, sendError, SEED_BRANCH_PASSWORD, SEED_ADMIN_PASSWORD, SEED_SUPER_ADMIN_PASSWORD);
 
 app.listen(PORT, function () {
   console.log('Royal Computers running on http://localhost:' + PORT);

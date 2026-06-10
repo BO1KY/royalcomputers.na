@@ -76,7 +76,7 @@
   <div class="newsletter-box" style="max-width:520px;text-align:center;">
     <button class="close-newsletter" onclick="closeSalePopup()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     <div style="font-size:48px;margin-bottom:8px;">🏷️</div>
-    <h3 style="color:var(--accent);margin:0 0 8px;">Special Offers!</h3>
+    <h3 style="color:var(--red);margin:0 0 8px;">Special Offers!</h3>
     <div id="salePopupBody" style="font-size:14px;line-height:1.6;margin-bottom:16px;"></div>
     <div id="salePopupMedia" style="margin-bottom:16px;"></div>
     <a href="deals.html" class="nl-subscribe">Shop Deals</a>
@@ -161,7 +161,7 @@
         </div>
         <div class="form-group">
           <label class="form-label" for="branchSelect">Collection Branch *</label>
-          <select id="branchSelect" class="form-input" required>
+          <select id="branchSelect" class="form-input branch-select" required>
             <option value="branch-001" selected>Gustav Voigts Centre, Windhoek</option>
             <option value="branch-002">Swakopmund</option>
             <option value="branch-003">Oshakati</option>
@@ -204,7 +204,7 @@
     <nav>
       <button class="nav-close" aria-label="Close menu">&times;</button>
       <ul>
-        <li><a href="index.html">Home</a></li>
+        <li><a href="index.html" class="active">Home</a></li>
         <li><a href="products.html">Products</a></li>
         <li><a href="deals.html">Deals</a></li>
         <li><a href="Contact-us.html">Contact</a></li>
@@ -216,6 +216,9 @@
       <span></span><span></span><span></span>
     </button>
     <div class="header-right">
+      <button class="cart-btn" onclick="window.location.href='tracking.html'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      </button>
       <button class="cart-btn" id="openCartBtn" onclick="openCart()">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
         <span class="cart-count" id="cartCount" style="display:none;">0</span>

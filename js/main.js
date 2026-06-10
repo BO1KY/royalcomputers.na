@@ -1,1 +1,43 @@
-document.documentElement.classList.add("dark-mode"),document.addEventListener("DOMContentLoaded",function(){document.querySelectorAll('a[href^="#"]').forEach(e=>{e.addEventListener("click",function(t){t.preventDefault();const r=document.querySelector(this.getAttribute("href"));r&&r.scrollIntoView({behavior:"smooth",block:"start"})})}),window.addEventListener("scroll",function(){const e=document.querySelector(".navbar");e&&(window.scrollY>100?e.style.background="rgba(10, 10, 10, 0.95)":e.style.background="rgba(10, 10, 10, 0.8)")});const n=document.getElementById("contactForm");n&&n.addEventListener("submit",function(e){e.preventDefault(),alert("Thank you for your message! We will get back to you soon."),this.reset()});const o=document.querySelector(".newsletter-form");o&&o.addEventListener("submit",function(e){e.preventDefault(),alert("Thank you for subscribing to our newsletter!"),this.querySelector("input").value=""});const s={threshold:.1,rootMargin:"0px 0px -50px 0px"},c=new IntersectionObserver(e=>{e.forEach(t=>{t.isIntersecting&&(t.target.style.opacity="1",t.target.style.transform="translateY(0)")})},s);document.querySelectorAll(".fade-in-up, .slide-in-left, .slide-in-right, .scale-in").forEach(e=>{c.observe(e)})});
+document.addEventListener('DOMContentLoaded', function () {
+  // Smooth scroll for anchor links
+  document.querySelectorAll('a[href^="#"]').forEach(function (anchor) {
+    anchor.addEventListener('click', function (e) {
+      e.preventDefault();
+      var target = document.querySelector(this.getAttribute('href'));
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+
+  // Navbar background on scroll
+  window.addEventListener('scroll', function () {
+    var navbar = document.querySelector('.navbar');
+    if (navbar) {
+      navbar.style.background =
+        window.scrollY > 100
+          ? 'rgba(10, 10, 10, 0.95)'
+          : 'rgba(10, 10, 10, 0.8)';
+    }
+  });
+
+  // Contact form fallback
+  var contactForm = document.getElementById('contactForm');
+  if (contactForm) {
+    contactForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      alert('Thank you for your message! We will get back to you soon.');
+      this.reset();
+    });
+  }
+
+  // Newsletter form fallback
+  var newsletterForm = document.querySelector('.newsletter-form');
+  if (newsletterForm) {
+    newsletterForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      alert('Thank you for subscribing to our newsletter!');
+      this.querySelector('input').value = '';
+    });
+  }
+});

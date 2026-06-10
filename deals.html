@@ -11,7 +11,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://embed.tawk.to">
   <link rel="dns-prefetch" href="https://embed.tawk.to">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap"></noscript>
   <link rel="stylesheet" href="css/design-tokens.css">
   <link rel="stylesheet" href="css/royal-theme.css" media="print" onload="this.media='all'">
   <link rel="stylesheet" href="css/search-dropdown.css" media="print" onload="this.media='all'">
@@ -27,9 +28,12 @@
   <link rel="stylesheet" href="css/pc-builder.css" media="print" onload="this.media='all'">
   <link rel="stylesheet" href="css/mobile.css" media="print" onload="this.media='all'">
     <style>
-.page-loader{position:fixed!important;inset:0!important;z-index:99999!important;background:#ffffff!important;display:flex!important;align-items:center!important;justify-content:center!important}
+.page-loader{position:fixed!important;inset:0!important;z-index:99999!important;background:var(--bg-backdrop)!important;display:flex!important;align-items:center!important;justify-content:center!important}
 .loader-spinner{width:48px;height:48px;border:4px solid #ddd;border-top-color:#e5383b;border-radius:50%;animation:loaderSpin .8s linear infinite}
 @keyframes loaderSpin{to{transform:rotate(360deg)}}
+.link-red{color:#e5383b}
+.terms-label{margin:0;font-size:13px}
+select.form-input{appearance:none;background:var(--dark-3);padding-right:36px}
 
 .deals-header{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:48px 28px 28px;max-width:1200px;margin:0 auto;flex-wrap:wrap}
 .deals-header h1{font-size:28px;font-weight:700;letter-spacing:-.4px;color:var(--text);margin-bottom:6px}
@@ -139,7 +143,7 @@
         <div class="checkout-step" data-step="2" style="display:none;">
           <div class="form-group">
             <label class="form-label" for="branchSelect">Collection Branch *</label>
-            <select id="branchSelect" class="form-input" style="appearance: none; background: var(--dark-3); padding-right: 36px;" required>
+            <select id="branchSelect" class="form-input branch-select" required>
               <option value="branch-001" selected>Gustav Voigts Centre, Windhoek</option>
               <option value="branch-002">Swakopmund</option>
               <option value="branch-003">Oshakati</option>
@@ -170,7 +174,7 @@
         </div>
         <div class="form-group form-checkbox" style="margin-top:12px;">
           <input type="checkbox" id="termsCheckbox">
-          <label for="termsCheckbox" style="margin:0;font-size:13px;">I agree to the terms and conditions</label>
+          <label for="termsCheckbox" class="terms-label">I agree to the terms and conditions</label>
         </div>
       </form>
     </div>
@@ -226,7 +230,7 @@
 <div id="main-content" class="deals-header">
   <div>
     <h1>Current Deals</h1>
-    <div class="breadcrumb"><a href="index.html">Home</a><span>/</span><span>Deals</span></div>
+    <div class="breadcrumb"><a href="index.html">Home</a><span>›</span><span>Deals</span></div>
   </div>
   <p class="deal-count" id="dealCount"></p>
 </div>
@@ -241,13 +245,13 @@
   <div class="footer-inner">
     <div class="footer-brand">
       <div class="footer-brand-body">
-        <div class="footer-brand-name">Royal Computers Namibia</div>
-        <p>Leading the way in digital lifestyle</p>
+        <div class="footer-brand-name" id="site-footer-company">Royal Computers Namibia</div>
+        <p id="site-footer-tagline">Leading the way in digital lifestyle</p>
         <div style="margin-top:12px;">
-          <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> GF Shop 12 Gustav Voigts Center, Independence Ave, Windhoek</div>
-          <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg> 061228179</div>
-          <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.832-1.438A9.956 9.956 0 0 0 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18c-1.889 0-3.633-.656-5.008-1.756l-.36-.268-3.008.894.894-3.008-.268-.36A7.94 7.94 0 0 1 4 12c0-4.411 3.589-8 8-8s8 3.589 8 8-3.589 8-8 8z"/></svg> +264813631483</div>
-          <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> windhoek@netmac.co.za</div>
+          <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> <span id="site-footer-address">GF Shop 12 Gustav Voigts Center, Independence Ave, Windhoek</span></div>
+          <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg> <span id="site-footer-phone">061228179</span></div>
+          <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.832-1.438A9.956 9.956 0 0 0 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18c-1.889 0-3.633-.656-5.008-1.756l-.36-.268-3.008.894.894-3.008-.268-.36A7.94 7.94 0 0 1 4 12c0-4.411 3.589-8 8-8s8 3.589 8 8-3.589 8-8 8z"/></svg> <span id="site-footer-whatsapp">+264813631483</span></div>
+          <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> <span id="site-footer-email">windhoek@netmac.co.za</span></div>
         </div>
       </div>
     </div>
@@ -258,6 +262,7 @@
         <li><a href="Contact-us.html">Contact Us</a></li>
         <li><a href="About-us.html">About Us</a></li>
         <li><a href="privacy-policy.html">Privacy Policy</a></li>
+        <li><a href="tracking.html">Track Repair</a></li>
         <li><a href="terms-conditions.html">Terms & Conditions</a></li>
       </ul>
     </div>
@@ -275,13 +280,13 @@
     <div class="footer-col">
       <h4>Social</h4>
       <ul>
-        <li><a href="https://www.facebook.com/RoyalComputersNamibia/" target="_blank"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle;margin-right:6px;"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>Facebook</a></li>
-        <li><a href="https://www.instagram.com/royalcomputernam/" target="_blank"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>Instagram</a></li>
+        <li><a href="https://www.facebook.com/RoyalComputersNamibia/" target="_blank" id="site-footer-facebook"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle;margin-right:6px;"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>Facebook</a></li>
+        <li><a href="https://www.instagram.com/royalcomputernam/" target="_blank" id="site-footer-instagram"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>Instagram</a></li>
       </ul>
     </div>
   </div>
   <div class="footer-bottom">
-    <span>Copyright © Royal Computers Namibia</span>
+    <span id="site-footer-copyright">Copyright © Royal Computers Namibia</span>
     <span><a href="terms-conditions.html">Terms and conditions</a> apply</span>
   </div>
 </footer>
@@ -325,7 +330,7 @@
     countEl.textContent = dealProducts.length + ' product' + (dealProducts.length !== 1 ? 's' : '') + ' on sale';
 
     if (!dealProducts.length) {
-      grid.innerHTML = '<div class="no-deals"><p>No deals available right now. Check back soon!</p><a href="products.html" style="color:var(--accent);font-weight:600;">Browse all products &rarr;</a></div>';
+      grid.innerHTML = '<div class="no-deals"><p>No deals available right now. Check back soon!</p><a href="products.html" style="color:var(--red);font-weight:600;">Browse all products &rarr;</a></div>';
       return;
     }
 
@@ -365,16 +370,6 @@
       renderDeals(db, data.sales || []);
     });
   });
-</script>
-
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function () {
-      navigator.serviceWorker.register('js/sw.js')
-        .then(reg  => console.log('[SW] Registered, scope:', reg.scope))
-        .catch(err => console.warn('[SW] Registration failed:', err));
-    });
-  }
 </script>
 
 <!-- Floating Chat Button -->
@@ -421,8 +416,13 @@ function openTawkChat() {
 }
 </script>
 
+<script defer src="js/search-dropdown.js"></script>
+<script defer src="js/branches.js"></script>
 <script defer src="js/api-config.js"></script>
 <script defer src="js/site-data.js"></script>
+<script defer src="js/newsletter.js"></script>
+<script defer src="js/offline.js"></script>
+<script defer src="js/chat.js"></script>
 <script defer src="js/whatsapp-widget.js"></script>
 </body>
 </html>
