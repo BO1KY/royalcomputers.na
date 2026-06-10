@@ -163,6 +163,12 @@ function showJobCardForm(id) {
     }
 
     if (jc) {
+      if (data.status === 'collected') {
+        apiFetch(API_BASE + '/api/admin/job-cards/' + encodeURIComponent(jc.id), addToken(data), 'PUT')
+          .then(function() { closeFormModal(); showCollectionForm(jc); })
+          .catch(function(err) { alert('Error saving: ' + err.message); });
+        return;
+      }
       apiFetch(API_BASE + '/api/admin/job-cards/' + encodeURIComponent(jc.id), addToken(data), 'PUT')
         .then(function() { closeFormModal(); loadAdminJobCards(); })
         .catch(function(err) { alert('Error saving: ' + err.message); });
@@ -177,8 +183,8 @@ function showJobCardForm(id) {
           if (resp && resp.id) {
             var token = resp.public_token || '';
             var trackUrl = token
-              ? window.location.origin + '/tracking?token=' + encodeURIComponent(token)
-              : window.location.origin + '/tracking?job=' + encodeURIComponent(resp.id) + '&branch=' + encodeURIComponent(data.branch_id);
+              ? window.location.origin + '/tracking.html?token=' + encodeURIComponent(token)
+              : window.location.origin + '/tracking.html?job=' + encodeURIComponent(resp.id) + '&branch=' + encodeURIComponent(data.branch_id);
             var pdfUrl = API_BASE + '/api/admin/job-cards/' + encodeURIComponent(resp.id) + '/pdf?token=' + encodeURIComponent(getSessionToken());
             var emailLink = data.client_email ? 'mailto:' + encodeURIComponent(data.client_email) + '?subject=Repair%20Status%20-%20' + encodeURIComponent(resp.id) + '&body=Your%20job%20card%20' + encodeURIComponent(resp.id) + '%20tracking%20link%3A%20' + encodeURIComponent(trackUrl) : '';
             var notify = document.getElementById('jobCardCreatedNotify');
@@ -269,7 +275,7 @@ function viewJobCard(id) {
     var sc = statusColor(j.status);
     var grandTotal = (j.diag_fee || 0) + (j.total_cost || 0);
     var balance = grandTotal - (j.amount_paid || 0);
-    var trackUrl = window.location.origin + '/tracking?token=' + (j.public_token || '');
+    var trackUrl = window.location.origin + '/tracking.html?token=' + (j.public_token || '');
 
     var stLabel = getServiceTypeLabel(j.service_type);
     var stInfo = SERVICE_TYPES.find(function(s) { return s.value === j.service_type; });

@@ -250,6 +250,10 @@ app.use(function (req, res, next) {
   next();
 });
 
+app.get('/tracking', function(req, res) {
+  res.sendFile('tracking.html', { root: path.join(__dirname, '..') });
+});
+
 app.use(express.static(path.join(__dirname, '..')));
 
 app.get('*', function (req, res, next) {
@@ -341,7 +345,7 @@ function sendTrackingEmail(jobCard, statusUpdateMsg) {
     var companyName = siteData ? siteData.value : 'Royal Computers Namibia';
     var branchName = branchInfo ? branchInfo.name : '';
     var baseUrl = 'https://netmac.co.za';
-    var trackUrl = baseUrl + '/tracking?token=' + (jobCard.public_token || '');
+    var trackUrl = baseUrl + '/tracking.html?token=' + (jobCard.public_token || '');
 
     var mailOpts = {
       from: process.env.SMTP_FROM || '"Royal Computers" <noreply@royalcomputers.na>',
@@ -1914,6 +1918,22 @@ db.exec(`CREATE TABLE IF NOT EXISTS job_card_history (
   created_at TEXT DEFAULT (datetime('now'))
 )`);
 
+db.exec(`CREATE TABLE IF NOT EXISTS job_card_sequences (
+  branch_id TEXT PRIMARY KEY,
+  prefix TEXT NOT NULL,
+  last_sequence INTEGER NOT NULL DEFAULT 0
+)`);
+
+// Seed sequences for branches that have existing job cards
+var seqCount = db.prepare("SELECT COUNT(*) as c FROM job_card_sequences").get().c;
+if (seqCount === 0) {
+  var branchesWithCards = db.prepare("SELECT branch_id, COUNT(*) as cnt FROM job_cards GROUP BY branch_id").all();
+  branchesWithCards.forEach(function(b) {
+    var prefix = BRANCH_ABBREVIATIONS[b.branch_id] || 'RC';
+    db.prepare("INSERT INTO job_card_sequences (branch_id, prefix, last_sequence) VALUES (?, ?, ?)").run(b.branch_id, prefix, b.cnt);
+  });
+}
+
 // Add columns for older DBs
 var jcCols = ['client_company','client_address','device_condition','accessories','work_done','parts_used','invoice_no','public_token','created_by'];
 jcCols.forEach(function(col) { try { db.exec('ALTER TABLE job_cards ADD COLUMN ' + col + ' TEXT'); } catch(e) {} });
@@ -1962,22 +1982,29 @@ function getValidStatuses(serviceType) {
   return STATUS_FLOW[cat] || STATUS_FLOW.hardware;
 }
 
+var BRANCH_ABBREVIATIONS = {
+  'branch-001': 'WDH',
+  'branch-002': 'SWK',
+  'branch-003': 'OSH',
+  'branch-004': 'WVB',
+  'branch-005': 'TSB',
+  'branch-006': 'GRV'
+};
+
 function generateJobId(branchId) {
-  var now = new Date();
-  var date = now.getFullYear().toString() +
-    String(now.getMonth()+1).padStart(2,'0') +
-    String(now.getDate()).padStart(2,'0');
-  // Look up branch city for a clean prefix
-  var branchInfo = branchId ? db.prepare("SELECT city FROM branches WHERE id = ?").get(branchId) : null;
-  var city = branchInfo ? branchInfo.city : '';
-  var prefix = city ? city.toUpperCase().replace(/[^A-Z]/g,'').slice(0,3) : 'RC';
-  if (!prefix || prefix.length < 2) prefix = (branchId || 'RC').toString().toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,3);
-  // Count today's job cards for sequential number
-  var todayStart = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
-  var count = db.prepare("SELECT COUNT(*) as cnt FROM job_cards WHERE date(created_at)=date(?)")
-    .get(todayStart);
-  var seq = String((count ? count.cnt : 0) + 1).padStart(3, '0');
-  return 'JC-' + date + '-' + prefix + '-' + seq;
+  var prefix = BRANCH_ABBREVIATIONS[branchId] || 'RC';
+  var year = String(new Date().getFullYear()).slice(2);
+  var seq = db.transaction(function() {
+    var row = db.prepare("SELECT last_sequence FROM job_card_sequences WHERE branch_id = ?").get(branchId);
+    var next = (row ? row.last_sequence : 0) + 1;
+    if (row) {
+      db.prepare("UPDATE job_card_sequences SET last_sequence = ? WHERE branch_id = ?").run(next, branchId);
+    } else {
+      db.prepare("INSERT INTO job_card_sequences (branch_id, prefix, last_sequence) VALUES (?, ?, ?)").run(branchId, prefix, next);
+    }
+    return next;
+  })();
+  return prefix + '-' + year + '-' + String(seq).padStart(5, '0');
 }
 
 function generatePublicToken() {
@@ -2273,7 +2300,7 @@ app.post('/api/admin/job-cards/:id/status', function(req, res) {
             'Collection Code: ' + collectionCode,
             '',
             'Please bring this code when collecting your device.',
-            'You can also view the status at: ' + (process.env.BASE_URL || '') + '/tracking?token=' + (existing.public_token || ''),
+            'You can also view the status at: ' + (process.env.BASE_URL || '') + '/tracking.html?token=' + (existing.public_token || ''),
             '',
             'Thank you for choosing ' + companyName + '.',
             'Regards,',
@@ -2290,7 +2317,7 @@ app.post('/api/admin/job-cards/:id/status', function(req, res) {
             '<tr><td style="padding:4px 12px 4px 0;font-weight:700;">Collection Code:</td><td style="font-size:24px;font-weight:900;letter-spacing:4px;color:#dc2626;">' + esc(collectionCode) + '</td></tr>',
             '</table>',
             '<p>Please present this code when collecting your device. You can also view the repair status online:</p>',
-            '<p><a href="' + (process.env.BASE_URL || '') + '/tracking?token=' + (existing.public_token || '') + '" style="display:inline-block;padding:12px 24px;background:#dc2626;color:#fff;text-decoration:none;border-radius:6px;font-weight:600;">Track Status</a></p>',
+            '<p><a href="' + (process.env.BASE_URL || '') + '/tracking.html?token=' + (existing.public_token || '') + '" style="display:inline-block;padding:12px 24px;background:#dc2626;color:#fff;text-decoration:none;border-radius:6px;font-weight:600;">Track Status</a></p>',
             '<hr style="border:none;border-top:1px solid #e5e7eb;margin:16px 0;">',
             '<p style="font-size:12px;color:#6b7280;">If you did not request this repair, please ignore this email.</p>',
             '</div>'
