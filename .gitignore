@@ -3,6 +3,10 @@ server/data/
 server/data.db
 server/data.db-shm
 server/data.db-wal
+server/test-data.db
+server/test-data.db-shm
+server/test-data.db-wal
+server/royal.db
 server/.env
 .env
 
