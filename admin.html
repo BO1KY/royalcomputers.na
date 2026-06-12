@@ -3,16 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="icon" type="image/png" href="ROYAL PICS/royal logo.png">
-  <title>Admin — Royal Computers</title>
+  <link rel="apple-touch-icon" href="ROYAL PICS/royal logo.webp" />
+  <title>Admin – Royal Computers Namibia</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preconnect" href="https://embed.tawk.to">
-  <link rel="dns-prefetch" href="https://embed.tawk.to">
-  <link rel="preconnect" href="https://dashboard.tawk.to">
-  <link rel="dns-prefetch" href="https://dashboard.tawk.to">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://*.tawk.to https://embed.tawk.to; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; frame-src 'self' https://*.tawk.to https://dashboard.tawk.to; connect-src 'self' http://localhost:3000 https://*.tawk.to; img-src 'self' data: blob:;">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' http://localhost:3000; frame-src 'self'; img-src 'self' data: blob:; base-uri 'self'; form-action 'self'">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap"></noscript>
   <link rel="stylesheet" href="css/design-tokens.css">
   <link rel="stylesheet" href="css/royal-theme.css" media="print" onload="this.media='all'">
   <link rel="stylesheet" href="css/mobile.css" media="print" onload="this.media='all'">
@@ -119,30 +116,22 @@
   <div class="loader-text">Loading…</div>
 </div>
 
+<canvas id="shader-canvas" class="shader-canvas"></canvas>
+
+<div class="spotlight-container-global">
+  <div class="spotlight-overlay-global">
+    <div class="spotlight-global spotlight-left-global"></div>
+    <div class="spotlight-global spotlight-mid-global"></div>
+    <div class="spotlight-global spotlight-right-global"></div>
+  </div>
+</div>
+
 <!-- LOGIN -->
 <div class="login-box" id="loginBox">
   <h2>Admin Access</h2>
-  <input type="text" id="usernameInput" placeholder="Username" autocomplete="username" style="width:100%;padding:12px 16px;border:2px solid var(--border,#ddd);border-radius:8px;font-size:15px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s;margin-bottom:8px;" />
-  <input type="password" id="passwordInput" placeholder="Password" autocomplete="current-password" />
-  <div class="error" id="loginError"></div>
-  <button class="login-btn" id="loginBtn">Unlock</button>
-  <div style="margin-top:12px;font-size:12px;">
-    <a href="#" id="forgotPwLink" style="color:#888;text-decoration:none;">Forgot Password?</a>
-  </div>
-  <div class="hint" style="color:#888;font-size:12px;margin-top:8px;">Authorized personnel only.</div>
-</div>
-
-<!-- Password Reset Request Form (hidden by default) -->
-<div class="login-box" id="resetRequestBox" style="display:none;">
-  <h2 style="font-size:16px;">Request Password Reset</h2>
-  <p style="font-size:13px;color:#666;margin-bottom:12px;">Enter your username (email) and submit. An admin will review your request.</p>
-  <input type="text" id="resetUsernameInput" placeholder="Your username (email)" autocomplete="off" style="width:100%;padding:12px 16px;border:2px solid var(--border,#ddd);border-radius:8px;font-size:15px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s;margin-bottom:8px;" />
-  <div class="error" id="resetError" style="font-size:13px;min-height:20px;"></div>
-  <button class="login-btn" id="resetSubmitBtn" style="margin-top:0;">Submit Request</button>
-  <div style="margin-top:10px;font-size:12px;">
-    <a href="#" id="backToLoginLink" style="color:#888;text-decoration:none;">&larr; Back to Login</a>
-  </div>
-  <div id="resetSuccessMsg" style="display:none;margin-top:12px;padding:12px;background:#d4edda;color:#155724;border-radius:6px;font-size:13px;"></div>
+  <div id="authMount"></div>
+  <div id="loginError" class="error" style="font-size:13px;min-height:20px;text-align:center;"></div>
+  <div class="hint" style="color:#888;font-size:12px;margin-top:4px;text-align:center;">Authorized personnel only.</div>
 </div>
 
 <!-- ADMIN PANEL -->
@@ -153,8 +142,7 @@
         <h1>Admin Dashboard</h1>
         <p class="subtitle" id="welcomeMsg">Manage newsletter subscribers and contact messages.</p>
       </div>
-      <div style="display:flex;gap:8px;">
-        <button class="btn-logout" onclick="document.getElementById('changePwModal').style.display='flex'" style="background:var(--text,#1a1a2e);">Change Password</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <button class="btn-logout" onclick="handleLogout()">Logout</button>
       </div>
     </div>
@@ -413,11 +401,116 @@
     <!-- HERO BANNERS TAB -->
     <!-- LIVE CHAT TAB -->
     <div class="tab-content" id="tab-livechat">
-      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:calc(100vh - 200px);text-align:center;">
-        <div style="font-size:48px;margin-bottom:16px;">💬</div>
-        <h3 style="margin:0 0 8px;font-size:18px;">Tawk.to Agent Dashboard</h3>
-        <p style="color:var(--text-dim);font-size:14px;margin:0 0 24px;max-width:400px;">Open the Tawk.to dashboard in a new tab to manage live chat conversations.</p>
-        <a href="https://dashboard.tawk.to/#/chat" target="_blank" style="display:inline-flex;align-items:center;gap:8px;padding:14px 36px;background:var(--red,#dc2626);color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:600;text-decoration:none;box-shadow:0 4px 16px rgba(220,38,38,0.3);">Open Tawk.to Dashboard &nearr;</a>
+      <div id="adminChatContainer" style="display:flex;gap:16px;height:calc(100vh - 180px);overflow:hidden;">
+        <!-- Sessions list -->
+        <div id="adminChatSidebar" style="width:280px;min-width:220px;background:var(--dark-3,#f5f3f4);border-radius:12px;display:flex;flex-direction:column;overflow:hidden;">
+          <div style="padding:14px 16px;border-bottom:1px solid var(--border,#ddd);display:flex;align-items:center;justify-content:space-between;">
+            <strong style="font-size:14px;">Conversations</strong>
+            <span id="chatSessionCount" style="font-size:12px;color:var(--text-dim,#888);background:var(--border,#ddd);padding:2px 8px;border-radius:10px;">0</span>
+          </div>
+          <div id="chatSessionList" style="flex:1;overflow-y:auto;padding:8px;">
+            <div style="text-align:center;padding:40px 16px;color:var(--text-dim,#888);font-size:13px;">No active conversations</div>
+          </div>
+        </div>
+        <!-- Chat area -->
+        <div id="adminChatMain" style="flex:1;display:flex;flex-direction:column;background:var(--dark-3,#f5f3f4);border-radius:12px;overflow:hidden;">
+          <div id="adminChatPlaceholder" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--text-dim,#888);">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:12px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <p style="font-size:14px;margin:0;">Select a conversation to view messages</p>
+          </div>
+          <div id="adminChatActive" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
+            <div id="adminChatHeader" style="padding:12px 16px;border-bottom:1px solid var(--border,#ddd);background:var(--white,#fff);display:flex;align-items:center;justify-content:space-between;">
+              <div>
+                <strong id="adminChatClientName" style="font-size:14px;">Client</strong>
+                <span id="adminChatClientEmail" style="font-size:12px;color:var(--text-dim,#888);margin-left:8px;"></span>
+              </div>
+              <div style="display:flex;gap:6px;align-items:center;">
+                <button id="adminChatTransferBtn" style="background:var(--text,#1a1a2e);color:#fff;border:none;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;display:none;">Transfer</button>
+                <button id="adminChatRecommendBtn" style="background:#27ae60;color:#fff;border:none;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;display:none;">+ Product</button>
+                <button class="btn" id="adminChatCloseBtn" style="background:var(--red,#dc2626);color:#fff;border:none;padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">Close Chat</button>
+              </div>
+            </div>
+            <div id="adminChatMessages" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px;background:#f8f9fa;"></div>
+            <div id="adminChatInputArea" style="display:flex;gap:6px;padding:12px 16px;border-top:1px solid var(--border,#ddd);background:var(--white,#fff);flex-wrap:wrap;">
+              <div style="display:flex;gap:6px;flex:1;align-items:center;min-width:0;">
+                <button id="adminChatAttachBtn" title="Attach file" style="width:36px;height:36px;background:var(--dark-3,#eee);border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:16px;color:var(--text-dim,#888);">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                </button>
+                <input type="file" id="adminChatFileInput" style="display:none" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv">
+                <input type="text" id="adminChatInput" placeholder="Type your reply..." style="flex:1;padding:10px 14px;border:2px solid #ddd;border-radius:24px;font-size:13px;font-family:inherit;outline:none;min-width:60px;" autocomplete="off">
+                <button id="adminChatSendBtn" style="width:40px;height:40px;background:var(--red,#dc2626);border:none;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                </button>
+              </div>
+              <div id="adminChatProductSearch" style="display:none;width:100%;">
+                <input type="text" id="adminChatProductQuery" placeholder="Search products to recommend..." style="width:100%;padding:8px 12px;border:2px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;outline:none;">
+                <div id="adminChatProductResults" style="max-height:200px;overflow-y:auto;margin-top:4px;background:#fff;border:1px solid #ddd;border-radius:8px;display:none;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <style>
+        #adminChatSidebar .chat-session-item{padding:10px 12px;border-radius:8px;cursor:pointer;margin-bottom:4px;transition:background .15s;display:flex;align-items:center;gap:10px}
+        #adminChatSidebar .chat-session-item:hover{background:var(--border,#ddd)}
+        #adminChatSidebar .chat-session-item.active{background:var(--red,#dc2626);color:#fff}
+        #adminChatSidebar .chat-session-item .session-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+        #adminChatSidebar .chat-session-item .session-avatar.client-avatar{background:var(--red-glow,#fde8e8);color:var(--red,#dc2626)}
+        #adminChatSidebar .chat-session-item .session-avatar.closed-avatar{background:#e8e8e8;color:#999}
+        #adminChatSidebar .chat-session-item .session-info{flex:1;min-width:0}
+        #adminChatSidebar .chat-session-item .session-name{font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        #adminChatSidebar .chat-session-item .session-preview{font-size:11px;color:var(--text-dim,#888);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px}
+        #adminChatSidebar .chat-session-item.active .session-preview{color:rgba(255,255,255,.7)}
+        #adminChatSidebar .chat-session-item .session-unread{background:#ffc107;color:#1a1a2e;font-size:10px;font-weight:700;min-width:18px;height:18px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px;flex-shrink:0}
+        #adminChatSidebar .chat-session-item .session-time{font-size:10px;color:var(--text-dim,#888);flex-shrink:0}
+        #adminChatSidebar .chat-session-item.active .session-time{color:rgba(255,255,255,.6)}
+        .admin-chat-msg{max-width:80%;padding:10px 14px;border-radius:14px;font-size:13px;line-height:1.45;word-wrap:break-word;position:relative}
+        .admin-chat-msg.client{align-self:flex-end;background:#dc2626;color:#fff;border-bottom-right-radius:4px}
+        .admin-chat-msg.admin{align-self:flex-start;background:#fff;color:#1a1a2e;border:1px solid #e8e8e8;border-bottom-left-radius:4px}
+        .admin-chat-msg .msg-time{font-size:10px;opacity:.6;margin-top:4px;display:block}
+        .admin-chat-msg.client .msg-time{text-align:right}
+        .admin-chat-msg .msg-sender{font-size:10px;font-weight:600;margin-bottom:2px;display:block}
+        .admin-chat-msg.admin .msg-sender{color:#dc2626}
+        .chat-product-card{display:flex;gap:10px;padding:10px;background:var(--dark-3,#f5f3f4);border:1px solid var(--border,#ddd);border-radius:8px;margin-top:6px;cursor:pointer;transition:box-shadow .15s;align-items:center}
+        .chat-product-card:hover{box-shadow:0 2px 8px rgba(0,0,0,.1)}
+        .chat-product-img{width:48px;height:48px;object-fit:contain;border-radius:6px;flex-shrink:0}
+        .chat-product-info{flex:1;min-width:0}
+        .chat-product-name{font-size:13px;font-weight:600;color:var(--text,#1a1a2e);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .chat-product-price{font-size:12px;color:var(--red,#dc2626);font-weight:700;margin-top:2px}
+        .chat-product-view{font-size:11px;color:var(--text-dim,#888);margin-top:4px}
+        .admin-chat-msg .chat-product-card .chat-product-name,.admin-chat-msg .chat-product-card .chat-product-price{color:inherit}
+        .admin-chat-msg.client .chat-product-card{background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.2)}
+        .admin-chat-msg.client .chat-product-card .chat-product-view{color:rgba(255,255,255,.7)}
+        .admin-chat-msg.client .chat-product-card .chat-product-name{color:#fff}
+        .chat-attachments{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+        .chat-attachment-item{display:flex;flex-direction:column;align-items:center;gap:4px;max-width:120px}
+        .chat-attach-img{width:80px;height:80px;object-fit:cover;border-radius:6px;cursor:pointer;border:1px solid var(--border,#ddd)}
+        .chat-attachment-item .chat-attach-name{font-size:10px;color:var(--text-dim,#888);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;text-align:center}
+        .chat-attach-link{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text-dim,#888);text-decoration:none;padding:6px 10px;background:var(--dark-3,#f5f3f4);border-radius:6px}
+        .chat-attach-link:hover{color:var(--red,#dc2626)}
+        .admin-chat-msg.client .chat-attach-link{background:rgba(255,255,255,.15);color:rgba(255,255,255,.8)}
+        .admin-chat-msg.client .chat-attachment-item .chat-attach-name{color:rgba(255,255,255,.6)}
+        .admin-chat-msg.client .chat-attach-img{border-color:rgba(255,255,255,.2)}
+        .chat-product-result{display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid var(--border,#ddd);cursor:default}
+        .chat-product-result:hover{background:var(--dark-3,#f5f3f4)}
+        .chat-product-result img{width:36px;height:36px;object-fit:contain;border-radius:4px;flex-shrink:0}
+        .chat-product-result-info{flex:1;min-width:0}
+        .chat-product-result-name{font-size:12px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .chat-product-result-price{font-size:11px;color:var(--red,#dc2626);font-weight:600}
+        .chat-product-result-send{padding:4px 10px;background:var(--red,#dc2626);color:#fff;border:none;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;flex-shrink:0}
+        .chat-product-result-send:hover{background:#a4161a}
+        @media(max-width:768px){#adminChatContainer{flex-direction:column!important;height:auto!important;min-height:calc(100vh - 200px)}#adminChatSidebar{width:100%!important;min-width:0!important;max-height:200px}#adminChatMain{min-height:400px}}
+      </style>
+      <!-- Transfer Admin Modal -->
+      <div id="adminTransferModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);z-index:9999;align-items:center;justify-content:center;">
+        <div style="background:#fff;border-radius:16px;padding:24px;max-width:380px;width:90%;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <h3 style="margin:0;font-size:16px;font-weight:700;">Transfer Chat</h3>
+            <button id="adminTransferClose" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-dim,#888);padding:0;line-height:1;">&times;</button>
+          </div>
+          <p style="font-size:13px;color:var(--text-dim,#888);margin:0 0 12px;">Select an admin to transfer this conversation to:</p>
+          <div id="adminTransferList" style="display:flex;flex-direction:column;gap:6px;"></div>
+        </div>
       </div>
     </div>
 
@@ -696,8 +789,8 @@ function getLocalData(key) {
 }
 
 function esc(str) {
-  return String(str).replace(/[&<>"']/g, function(m) {
-    return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;' }[m];
+  return String(str).replace(/[&<>"'\/]/g, function(m) {
+    return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;','/':'&#x2F;' }[m];
   });
 }
 
@@ -826,201 +919,11 @@ function clearFromAPI(type) {
     });
   }
 
-/* ── Login ── */
+/* ── Admin panel visibility ── */
 var loginBox = document.getElementById('loginBox');
 var adminPanel = document.getElementById('adminPanel');
-var passwordInput = document.getElementById('passwordInput');
-var loginBtn = document.getElementById('loginBtn');
-var loginError = document.getElementById('loginError');
 
-passwordInput.addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') loginBtn.click();
-});
 
-var lockTimer = null;
-
-function startLockoutCountdown() {
-  if (lockTimer) clearInterval(lockTimer);
-  loginBtn.disabled = true;
-  lockTimer = setInterval(function() {
-    var lock = getLockout();
-    if (!lock.until || Date.now() > lock.until) {
-      clearInterval(lockTimer);
-      lockTimer = null;
-      loginError.textContent = '';
-      loginBtn.disabled = false;
-      return;
-    }
-    var diff = Math.max(0, lock.until - Date.now());
-    var min = Math.floor(diff / 60000);
-    var sec = Math.floor((diff % 60000) / 1000);
-    loginError.textContent = 'Too many attempts. Try again in ' + min + 'm ' + String(sec).padStart(2, '0') + 's';
-  }, 1000);
-}
-
-// Check lockout on page load
-if (isLocked()) startLockoutCountdown();
-
-loginBtn.addEventListener('click', async function () {
-  if (isLocked()) {
-    startLockoutCountdown();
-    return;
-  }
-
-  var username = document.getElementById('usernameInput').value.trim();
-  var password = passwordInput.value;
-  if (!username || !password) {
-    loginError.textContent = 'Please enter your username and password.';
-    return;
-  }
-  loginBtn.disabled = true;
-  loginBtn.textContent = 'Verifying...';
-
-  try {
-    try {
-      await loginToAPI(username, password);
-    } catch (_) {
-      cachedSubscribers = getLocalData('newsletter_subscribers');
-      cachedMessages = getLocalData('contact_messages');
-      throw new Error('Incorrect credentials');
-    }
-    saveLockout({});
-    loginBox.style.display = 'none';
-    adminPanel.classList.add('visible');
-    applyPermissions(_currentUser);
-    renderSubscribers();
-    renderMessages();
-    updateBadges();
-    loadAdminProducts();
-    loadAdminSales();
-    loadAdminUsers();
-    loadContentSettings();
-    loadAdminBranches();
-    loadAdminJobCards();
-    loadAdminFaqs();
-    loadAdminHeroBanners();
-    loadAdminPasswordResets();
-    loadAdminAuditLog();
-    resetActivityTimer();
-    startSessionMonitor();
-  } catch (_) {
-    var cfg = getLockoutConfig();
-    var lock = getLockout();
-    lock.count = (lock.count || 0) + 1;
-    var remaining = cfg.maxAttempts - lock.count;
-    if (remaining <= 0) {
-      var addMinutes = lock.lockoutMinutes ? LOCKOUT_ADD_MINUTES : 0;
-      var newMinutes = (lock.lockoutMinutes || cfg.lockoutMinutes) + addMinutes;
-      var newMaxAttempts = Math.max(1, cfg.maxAttempts - 1);
-      lock.until = Date.now() + newMinutes * 60 * 1000;
-      lock.count = 0;
-      lock.maxAttempts = newMaxAttempts;
-      lock.lockoutMinutes = newMinutes;
-      loginError.textContent = 'Too many incorrect attempts. Locked for ' + newMinutes + ' minutes.';
-    } else {
-      loginError.textContent = 'Incorrect username or password. ' + remaining + ' attempt' + (remaining > 1 ? 's' : '') + ' remaining.';
-    }
-    saveLockout(lock);
-    passwordInput.value = '';
-  }
-
-  if (!isLocked()) {
-    loginBtn.disabled = false;
-    loginBtn.textContent = 'Unlock';
-  }
-});
-
-/* ── Auto-login with cached session token ── */
-(function tryAutoLogin() {
-  if (!getSessionToken()) return;
-  authGet(API_BASE + '/api/admin/me').then(function(data) {
-    if (data && data.user) {
-      _currentUser = data.user;
-      applyPermissions(_currentUser);
-    }
-    return fetchFromAPI();
-  }).then(function (data) {
-    cachedSubscriberDetails = {};
-    (data.subscribers || []).forEach(function(s) {
-      var obj = typeof s === 'string' ? { email: s, source: 'website', created_at: null } : { email: s.email || '', source: s.source || 'website', created_at: s.created_at || null };
-      if (obj.email) cachedSubscriberDetails[obj.email] = obj;
-    });
-    cachedSubscribers = Object.keys(cachedSubscriberDetails);
-    cachedMessages = data.messages || [];
-    cachedNotified = data.notified || [];
-    loginBox.style.display = 'none';
-    adminPanel.classList.add('visible');
-    renderSubscribers();
-    renderMessages();
-    updateBadges();
-    loadAdminProducts();
-    loadAdminSales();
-    loadAdminUsers();
-    loadContentSettings();
-    loadAdminBranches();
-    loadAdminJobCards();
-    loadAdminFaqs();
-    loadAdminPasswordResets();
-    loadAdminAuditLog();
-    resetActivityTimer();
-    startSessionMonitor();
-  }).catch(function() {
-    // Session invalid, clear it
-    clearSession();
-  });
-})();
-
-/* ── Password Reset Flow ── */
-var resetRequestBox = document.getElementById('resetRequestBox');
-var forgotPwLink = document.getElementById('forgotPwLink');
-var backToLoginLink = document.getElementById('backToLoginLink');
-var resetSubmitBtn = document.getElementById('resetSubmitBtn');
-var resetUsernameInput = document.getElementById('resetUsernameInput');
-var resetError = document.getElementById('resetError');
-var resetSuccessMsg = document.getElementById('resetSuccessMsg');
-
-if (forgotPwLink) forgotPwLink.addEventListener('click', function(e) {
-  e.preventDefault();
-  loginBox.style.display = 'none';
-  resetRequestBox.style.display = 'block';
-  resetError.textContent = '';
-  resetSuccessMsg.style.display = 'none';
-  resetUsernameInput.value = '';
-});
-
-if (backToLoginLink) backToLoginLink.addEventListener('click', function(e) {
-  e.preventDefault();
-  resetRequestBox.style.display = 'none';
-  loginBox.style.display = 'block';
-  resetError.textContent = '';
-  resetSuccessMsg.style.display = 'none';
-});
-
-if (resetSubmitBtn) resetSubmitBtn.addEventListener('click', function() {
-  var username = resetUsernameInput.value.trim();
-  if (!username) { resetError.textContent = 'Please enter your username.'; return; }
-  resetSubmitBtn.disabled = true;
-  resetSubmitBtn.textContent = 'Submitting...';
-  resetError.textContent = '';
-  fetch(API_BASE + '/api/admin/request-password-reset', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username: username })
-  }).then(function(r) { return r.json(); }).then(function(data) {
-    resetSubmitBtn.disabled = false;
-    resetSubmitBtn.textContent = 'Submit Request';
-    if (data.error) { resetError.textContent = data.error; return; }
-    resetError.textContent = '';
-    resetUsernameInput.style.display = 'none';
-    resetSubmitBtn.style.display = 'none';
-    resetSuccessMsg.style.display = 'block';
-    resetSuccessMsg.textContent = data.message || 'Reset request submitted. An admin will review it shortly.';
-  }).catch(function(err) {
-    resetSubmitBtn.disabled = false;
-    resetSubmitBtn.textContent = 'Submit Request';
-    resetError.textContent = 'Error submitting request.';
-  });
-});
 
 /* ── Password Resets Admin ── */
 function loadAdminPasswordResets() {
@@ -1049,6 +952,7 @@ function renderAdminPasswordResets(resets) {
       '<span style="color:#d32f2f;font-weight:600;">Rejected</span>';
     var actions = r.status === 'pending'
       ? '<button class="btn-approve-reset" data-id="' + r.id + '" data-user="' + esc(r.username) + '" style="padding:4px 10px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;background:#16a34a;color:#fff;margin-right:4px;">Approve</button>' +
+        '<button class="btn-approve-email-reset" data-id="' + r.id + '" data-user="' + esc(r.username) + '" style="padding:4px 10px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;background:#2563eb;color:#fff;margin-right:4px;">Approve &amp; Email Code</button>' +
         '<button class="btn-reject-reset" data-id="' + r.id + '" style="padding:4px 10px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;background:#d32f2f;color:#fff;">Reject</button>'
       : '<span style="color:var(--text-dim);font-size:12px;">' + (r.resolved_by ? 'by ' + esc(r.resolved_by) : '') + ' ' + (r.resolved_at || '').substring(0,10) + '</span>';
     return '<tr>' +
@@ -1071,6 +975,20 @@ function renderAdminPasswordResets(resets) {
           loadAdminPasswordResets();
         })
         .catch(function(err) { alert('Error: ' + err.message); });
+    });
+  });
+  el.querySelectorAll('.btn-approve-email-reset').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      if (!confirm('Send 6-digit reset code via email to "' + this.dataset.user + '"?')) return;
+      var btnEl = this;
+      btnEl.textContent = 'Sending...';
+      btnEl.disabled = true;
+      apiFetch(API_BASE + '/api/admin/password-resets/' + this.dataset.id + '/approve-with-email', addToken({}), 'POST')
+        .then(function(data) {
+          alert(data.message || data.warning || 'Code sent.');
+          loadAdminPasswordResets();
+        })
+        .catch(function(err) { alert('Error: ' + (err.message || err)); btnEl.textContent = 'Approve & Email Code'; btnEl.disabled = false; });
     });
   });
   el.querySelectorAll('.btn-reject-reset').forEach(function(btn) {
@@ -1130,17 +1048,34 @@ function renderAdminAuditLog(entries, total) {
   }).join('');
 }
 
-/* ── Tab switching ── */
+/* ── Tab switching with persistence ── */
+function switchToTab(tabName) {
+  document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+  document.querySelectorAll('.tab-content').forEach(function(c) { c.classList.remove('visible'); });
+  var tab = document.querySelector('.tab[data-tab="' + tabName + '"]');
+  if (!tab) { tabName = 'subscribers'; tab = document.querySelector('.tab[data-tab="subscribers"]'); }
+  tab.classList.add('active');
+  document.getElementById('tab-' + tabName).classList.add('visible');
+  try { localStorage.setItem('admin_active_tab', tabName); } catch (_) {}
+  if (tabName === 'monitor') loadAdminAuditLog();
+  if (tabName === 'livechat') initAdminChat();
+}
+
 document.querySelectorAll('.tab').forEach(function(tab) {
   tab.addEventListener('click', function() {
-    document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
-    document.querySelectorAll('.tab-content').forEach(function(c) { c.classList.remove('visible'); });
-    tab.classList.add('active');
-    document.getElementById('tab-' + tab.dataset.tab).classList.add('visible');
-    // Auto-refresh monitor tab when switching to it
-    if (tab.dataset.tab === 'monitor') loadAdminAuditLog();
+    switchToTab(tab.dataset.tab);
   });
 });
+
+// Restore last active tab on page load
+(function() {
+  try {
+    var saved = localStorage.getItem('admin_active_tab');
+    if (saved && document.querySelector('.tab[data-tab="' + saved + '"]')) {
+      switchToTab(saved);
+    }
+  } catch (_) {}
+})();
 
 /* ── Get combined data (API + local fallback) ── */
 function getSubscribers() {
@@ -1661,7 +1596,6 @@ document.getElementById('sendCampBtn').addEventListener('click', function() {
 </script>
 <script defer src="js/loader.js"></script>
 <script defer src="js/offline.js"></script>
-<script src="js/chat.js"></script>
 <script src="js/products-data.js"></script>
 <script>
 /* ─── Products Management ─── */
@@ -3285,5 +3219,626 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 <script src="js/job-cards-admin.js"></script>
+
+<script>
+// ─── Admin authentication entry ───
+(function() {
+  var spinner = document.getElementById('pageLoader');
+  var mount = document.getElementById('authMount');
+  var loginBox = document.getElementById('loginBox');
+  var loginError = document.getElementById('loginError');
+  if (!mount) return;
+
+  // If already have a session token, try auto-login
+  if (getSessionToken()) {
+    authGet(API_BASE + '/api/admin/me').then(function(data) {
+      if (data && data.user) {
+        _currentUser = data.user;
+        return fetchFromAPI();
+      }
+      throw new Error('no session');
+    }).then(function() {
+      if (loginBox) loginBox.style.display = 'none';
+      showAdminPanel();
+    }).catch(function() {
+      clearSession();
+      showLoginChoice();
+    });
+    return;
+  }
+
+  showLoginChoice();
+
+  // ── Show username/password login ──
+  function showLoginChoice() {
+    mount.innerHTML = '<div style="text-align:center;padding:20px 0;"><div class="loader-spinner" style="margin:0 auto 12px;"></div><p style="font-size:13px;color:#888;">Loading...</p></div>';
+    showLegacyLogin();
+  }
+
+  // ── Username/password login ──
+  function showLegacyLogin() {
+    mount.innerHTML =
+      '<div style="padding:8px 0;">' +
+        '<input type="text" id="usernameInput" placeholder="Username" autocomplete="username" style="width:100%;padding:12px 16px;border:2px solid var(--border,#ddd);border-radius:8px;font-size:15px;font-family:\'DM Sans\',sans-serif;outline:none;transition:border-color .2s;margin-bottom:8px;box-sizing:border-box;" />' +
+        '<input type="password" id="passwordInput" placeholder="Password" autocomplete="current-password" style="width:100%;padding:12px 16px;border:2px solid var(--border,#ddd);border-radius:8px;font-size:15px;font-family:\'DM Sans\',sans-serif;outline:none;transition:border-color .2s;margin-bottom:8px;box-sizing:border-box;" />' +
+        '<button class="login-btn" id="loginBtn" style="width:100%;margin-top:4px;">Unlock</button>' +
+        '<p style="font-size:12px;color:#888;text-align:center;margin-top:10px;"><a href="#" onclick="showForgotPassword();return false;" style="color:#e5383b;">Forgot Password?</a></p>' +
+      '</div>';
+
+    var usernameInput = document.getElementById('usernameInput');
+    var pwInput = document.getElementById('passwordInput');
+    var loginBtn = document.getElementById('loginBtn');
+
+    if (!usernameInput || !pwInput || !loginBtn) return;
+
+    pwInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') loginBtn.click(); });
+
+    loginBtn.addEventListener('click', function() {
+      var u = usernameInput.value.trim();
+      var p = pwInput.value;
+      if (!u || !p) { loginError.textContent = 'Enter username and password.'; return; }
+      loginBtn.disabled = true;
+      loginBtn.textContent = 'Unlocking...';
+      loginError.textContent = '';
+
+      loginToAPI(u, p).then(function() {
+        saveLockout && saveLockout({});
+        loginBox.style.display = 'none';
+        showAdminPanel();
+      }).catch(function() {
+        loginError.textContent = 'Incorrect username or password.';
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'Unlock';
+        pwInput.value = '';
+      });
+    });
+
+    if (spinner) spinner.style.display = 'none';
+  }
+
+  // ── Admin panel init ──
+  function showAdminPanel() {
+    var panel = document.getElementById('adminPanel');
+    var loader = document.getElementById('pageLoader');
+    if (panel) panel.classList.add('visible');
+    if (loader) loader.style.display = 'none';
+    applyPermissions(_currentUser);
+    fetchFromAPI().then(function () {
+      renderSubscribers();
+      renderMessages();
+      updateBadges();
+      loadAdminProducts();
+      loadAdminSales();
+      loadAdminUsers();
+      loadContentSettings();
+      loadAdminBranches();
+      loadAdminJobCards();
+      loadAdminFaqs();
+      loadAdminPasswordResets();
+      loadAdminAuditLog();
+      resetActivityTimer();
+      startSessionMonitor();
+    }).catch(function () {});
+  }
+
+  // ── Forgot Password flow ──
+  function showForgotPassword() {
+    mount.innerHTML =
+      '<div style="padding:8px 0;">' +
+        '<p style="font-size:13px;color:#666;margin:0 0 12px;">Enter your username. An admin will review your request and send a reset code to your email.</p>' +
+        '<input type="text" id="forgotUserInput" placeholder="Your username" style="width:100%;padding:12px 16px;border:2px solid var(--border,#ddd);border-radius:8px;font-size:15px;font-family:\'DM Sans\',sans-serif;outline:none;transition:border-color .2s;margin-bottom:8px;box-sizing:border-box;" />' +
+        '<button class="login-btn" id="forgotSubmitBtn" style="width:100%;margin-top:4px;">Request Reset</button>' +
+        '<p style="font-size:12px;color:#888;text-align:center;margin-top:10px;"><a href="#" onclick="showLegacyLogin();return false;" style="color:#e5383b;">Back to login</a> &middot; <a href="reset-password.html" style="color:#e5383b;">Already have a code?</a></p>' +
+        '<p id="forgotMsg" style="font-size:12px;color:#888;text-align:center;margin-top:8px;"></p>' +
+      '</div>';
+
+    var userInput = document.getElementById('forgotUserInput');
+    var submitBtn = document.getElementById('forgotSubmitBtn');
+    var msgEl = document.getElementById('forgotMsg');
+    if (!userInput || !submitBtn) return;
+
+    userInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') submitBtn.click(); });
+
+    submitBtn.addEventListener('click', function() {
+      var u = userInput.value.trim();
+      if (!u) { msgEl.textContent = 'Enter your username.'; msgEl.style.color = '#d32f2f'; return; }
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submitting...';
+      msgEl.textContent = '';
+
+      fetch('/api/admin/request-password-reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: u })
+      }).then(function(r) { return r.json(); }).then(function(d) {
+        msgEl.textContent = d.message || 'Request submitted.';
+        msgEl.style.color = '#16a34a';
+        submitBtn.textContent = 'Done';
+        setTimeout(function() { showLegacyLogin(); }, 3000);
+      }).catch(function() {
+        msgEl.textContent = 'Error submitting request.';
+        msgEl.style.color = '#d32f2f';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Request Reset';
+      });
+    });
+  }
+})();
+
+/* ── Admin Live Chat ── */
+var adminChatSessions = [];
+var adminChatPollTimer = null;
+var adminSelectedSessionId = null;
+var adminChatInitialized = false;
+var adminChatNotifTimer = null;
+var adminChatNotifPlaying = false;
+
+function adminPlayNotif() {
+  try {
+    var ctx = new (window.AudioContext || window.webkitAudioContext)();
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.frequency.value = 600;
+    osc.type = 'sine';
+    gain.gain.value = 0.2;
+    osc.start();
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+    osc.stop(ctx.currentTime + 0.12);
+  } catch (_) {}
+}
+
+function adminStartPersistentNotif() {
+  if (adminChatNotifPlaying) return;
+  adminChatNotifPlaying = true;
+  var count = 0;
+  function ring() {
+    if (!adminChatNotifPlaying) return;
+    adminPlayNotif();
+    count++;
+    if (count < 10) adminChatNotifTimer = setTimeout(ring, 2000);
+    else adminChatNotifPlaying = false;
+  }
+  ring();
+}
+
+function adminStopPersistentNotif() {
+  adminChatNotifPlaying = false;
+  if (adminChatNotifTimer) { clearTimeout(adminChatNotifTimer); adminChatNotifTimer = null; }
+}
+
+function initAdminChat() {
+  if (adminChatInitialized) { loadAdminChatSessions(); return; }
+  adminChatInitialized = true;
+
+  document.getElementById('adminChatSendBtn').addEventListener('click', adminSendChatMessage);
+  document.getElementById('adminChatInput').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); adminSendChatMessage(); }
+  });
+  document.getElementById('adminChatCloseBtn').addEventListener('click', adminCloseChatSession);
+  // Transfer button click is handled by DOMContentLoaded listener above
+  document.getElementById('adminChatAttachBtn').addEventListener('click', function() {
+    document.getElementById('adminChatFileInput').click();
+  });
+  document.getElementById('adminChatFileInput').addEventListener('change', adminHandleFileAttach);
+  document.getElementById('adminChatRecommendBtn').addEventListener('click', function() {
+    var searchDiv = document.getElementById('adminChatProductSearch');
+    searchDiv.style.display = searchDiv.style.display === 'none' ? 'block' : 'none';
+    if (searchDiv.style.display === 'block') document.getElementById('adminChatProductQuery').focus();
+  });
+  document.getElementById('adminChatProductQuery').addEventListener('input', adminSearchProducts);
+
+  loadAdminChatSessions();
+  if (adminChatPollTimer) clearInterval(adminChatPollTimer);
+  adminChatPollTimer = setInterval(loadAdminChatSessions, 5000);
+}
+
+function loadAdminChatSessions() {
+  fetch('/api/admin/chat/sessions', {
+    headers: getAdminHeaders()
+  }).then(function(r) { return r.json(); }).then(function(d) {
+    if (!d.success) return;
+    var hadNewUnread = false;
+    if (adminChatSessions.length) {
+      d.sessions.forEach(function(s) {
+        var old = adminChatSessions.find(function(o) { return o.id === s.id; });
+        if (old && s.unread > old.unread) hadNewUnread = true;
+      });
+    }
+    adminChatSessions = d.sessions;
+    renderAdminChatSessions();
+    updateAdminChatBadge(hadNewUnread);
+  }).catch(function() {});
+}
+
+function renderAdminChatSessions() {
+  var list = document.getElementById('chatSessionList');
+  var countEl = document.getElementById('chatSessionCount');
+  if (!list) return;
+  if (!adminChatSessions.length) {
+    list.innerHTML = '<div style="text-align:center;padding:40px 16px;color:var(--text-dim,#888);font-size:13px;">No active conversations</div>';
+    if (countEl) countEl.textContent = '0';
+    return;
+  }
+  if (countEl) countEl.textContent = adminChatSessions.length;
+  var html = '';
+  adminChatSessions.forEach(function(s) {
+    var initials = (s.client_name || 'G').charAt(0).toUpperCase();
+    var avatarClass = s.status === 'active' ? 'client-avatar' : 'closed-avatar';
+    var isActive = s.id === adminSelectedSessionId ? ' active' : '';
+    var time = s.last_activity ? new Date(s.last_activity + 'Z').toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+    var unreadHtml = s.unread > 0 ? '<span class="session-unread">' + s.unread + '</span>' : '';
+    var branchLabel = s.branch_name ? ' [' + s.branch_name + ']' : '';
+    var preview = s.client_email || s.branch_name || '';
+    html += '<div class="chat-session-item' + isActive + '" data-session-id="' + s.id + '" onclick="selectAdminChatSession(\'' + s.id + '\')">' +
+      '<div class="session-avatar ' + avatarClass + '">' + initials + '</div>' +
+      '<div class="session-info">' +
+        '<div class="session-name">' + escHtml(s.client_name) + (s.status === 'closed' ? ' <span style="font-size:10px;opacity:.5;">(closed)</span>' : '') + '</div>' +
+        '<div class="session-preview">' + escHtml(preview || (s.assigned_to ? 'Assigned to ' + s.assigned_to : '')) + '</div>' +
+      '</div>' +
+      unreadHtml +
+      '<span class="session-time">' + time + '</span>' +
+    '</div>';
+  });
+  list.innerHTML = html;
+  // Scroll the active session into view if needed
+  var activeItem = list.querySelector('.chat-session-item.active');
+  if (activeItem) activeItem.scrollIntoView({ block: 'nearest' });
+}
+
+function selectAdminChatSession(sessionId) {
+  adminSelectedSessionId = sessionId;
+  adminStopPersistentNotif();
+  document.querySelectorAll('.chat-session-item').forEach(function(el) {
+    el.classList.toggle('active', el.dataset.sessionId === sessionId);
+  });
+
+  var session = adminChatSessions.find(function(s) { return s.id === sessionId; });
+  if (!session) return;
+
+  document.getElementById('adminChatPlaceholder').style.display = 'none';
+  document.getElementById('adminChatActive').style.display = 'flex';
+  document.getElementById('adminChatClientName').textContent = session.client_name || 'Guest';
+  var email = session.client_email || '';
+  if (session.branch_name) email += (email ? ' — ' : '') + session.branch_name;
+  document.getElementById('adminChatClientEmail').textContent = email;
+  var isActive = session.status === 'active';
+  document.getElementById('adminChatCloseBtn').style.display = isActive ? 'inline-block' : 'none';
+  document.getElementById('adminChatTransferBtn').style.display = isActive ? 'inline-block' : 'none';
+  document.getElementById('adminChatRecommendBtn').style.display = isActive ? 'inline-block' : 'none';
+
+  // Load messages
+  fetch('/api/admin/chat/messages?session_id=' + encodeURIComponent(sessionId), {
+    headers: getAdminHeaders()
+  }).then(function(r) { return r.json(); }).then(function(d) {
+    if (!d.success) return;
+    renderAdminChatMessages(d.messages);
+  }).catch(function() {});
+}
+
+function renderAdminChatMessages(messages) {
+  var container = document.getElementById('adminChatMessages');
+  if (!container) return;
+  if (!messages || !messages.length) {
+    container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-dim,#888);font-size:13px;">No messages yet</div>';
+    return;
+  }
+  var html = '';
+  messages.forEach(function(m) {
+    var time = m.created_at ? new Date(m.created_at + 'Z').toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+    var sender = m.sender_type === 'admin' ? (m.sender_name || 'Admin') : m.sender_name || 'Client';
+    var content = escHtml(m.message);
+    var extraHtml = '';
+
+    // Parse attachments/product data
+    var data = null;
+    try { if (m.attachments_json) data = JSON.parse(m.attachments_json); } catch(e) {}
+
+    if (m.message_type === 'product' && data) {
+      var p = data;
+      var price = p.price ? 'N$\u202f' + Number(p.price).toLocaleString('en-NA') : '';
+      extraHtml = '<div class="chat-product-card" onclick="window.open(\'products.html?highlight=' + encodeURIComponent(p.id) + '\',\'_blank\')">' +
+        (p.image ? '<img src="' + escHtml(p.image) + '" alt="" class="chat-product-img">' : '') +
+        '<div class="chat-product-info">' +
+          '<div class="chat-product-name">' + escHtml(p.name) + '</div>' +
+          (price ? '<div class="chat-product-price">' + price + '</div>' : '') +
+          '<div class="chat-product-view">View Details &rarr;</div>' +
+        '</div>' +
+      '</div>';
+    } else if (data && Array.isArray(data)) {
+      extraHtml = '<div class="chat-attachments">';
+      data.forEach(function(f) {
+        var isImage = f.type && f.type.indexOf('image') === 0;
+        if (isImage) {
+          extraHtml += '<div class="chat-attachment-item"><img src="' + escHtml(f.url) + '" alt="" class="chat-attach-img" onclick="window.open(\'' + escHtml(f.url) + '\',\'_blank\')"><span class="chat-attach-name">' + escHtml(f.name) + '</span></div>';
+        } else {
+          extraHtml += '<div class="chat-attachment-item"><a href="' + escHtml(f.url) + '" target="_blank" class="chat-attach-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> ' + escHtml(f.name) + '</a></div>';
+        }
+      });
+      extraHtml += '</div>';
+    }
+
+    html += '<div class="admin-chat-msg ' + m.sender_type + '">' +
+      (m.sender_type === 'admin' ? '<span class="msg-sender">' + escHtml(sender) + '</span>' : '') +
+      content + extraHtml +
+      '<span class="msg-time">' + time + '</span>' +
+    '</div>';
+  });
+  container.innerHTML = html;
+  container.scrollTop = container.scrollHeight;
+}
+
+function adminSendChatMessage() {
+  var input = document.getElementById('adminChatInput');
+  var msg = input.value.trim();
+  if (!msg || !adminSelectedSessionId) return;
+  input.value = '';
+  var btn = document.getElementById('adminChatSendBtn');
+  btn.disabled = true;
+
+  var hdrs = getAdminHeaders(); hdrs['Content-Type'] = 'application/json';
+  fetch('/api/admin/chat/send', {
+    method: 'POST',
+    headers: hdrs,
+    body: JSON.stringify({ session_id: adminSelectedSessionId, message: msg })
+  }).then(function(r) { return r.json(); }).then(function(d) {
+    btn.disabled = false;
+    if (d.success) {
+      return fetch('/api/admin/chat/messages?session_id=' + encodeURIComponent(adminSelectedSessionId), { headers: getAdminHeaders() });
+    }
+  }).then(function(r) { if (r) return r.json(); }).then(function(d) {
+    if (d && d.success) renderAdminChatMessages(d.messages);
+  }).catch(function() { btn.disabled = false; });
+}
+
+var adminUploadingFiles = false;
+
+function adminHandleFileAttach() {
+  var input = document.getElementById('adminChatFileInput');
+  var files = input.files;
+  if (!files.length || !adminSelectedSessionId) return;
+  adminUploadingFiles = true;
+  var sendBtn = document.getElementById('adminChatSendBtn');
+  sendBtn.disabled = true;
+  var uploaded = [];
+  var total = files.length;
+  var done = 0;
+
+  function uploadNext(i) {
+    if (i >= total) {
+      var names = uploaded.map(function(f) { return f.name; }).join(', ');
+      adminSendWithAttachments(uploaded, names);
+      input.value = '';
+      adminUploadingFiles = false;
+      sendBtn.disabled = false;
+      return;
+    }
+    var fd = new FormData();
+    fd.append('file', files[i]);
+    fetch('/api/admin/chat/upload', {
+      method: 'POST',
+      headers: { 'Authorization': getAdminHeaders()['Authorization'] || '' },
+      body: fd
+    }).then(function(r) { return r.json(); }).then(function(d) {
+      if (d.success && d.file) uploaded.push(d.file);
+      uploadNext(i + 1);
+    }).catch(function() { uploadNext(i + 1); });
+  }
+  uploadNext(0);
+}
+
+function adminSendWithAttachments(attachments, fileNames) {
+  var hdrs = getAdminHeaders(); hdrs['Content-Type'] = 'application/json';
+  fetch('/api/admin/chat/send', {
+    method: 'POST',
+    headers: hdrs,
+    body: JSON.stringify({ session_id: adminSelectedSessionId, message: fileNames, message_type: 'file', attachments: attachments })
+  }).then(function(r) { return r.json(); }).then(function(d) {
+    if (d.success) {
+      return fetch('/api/admin/chat/messages?session_id=' + encodeURIComponent(adminSelectedSessionId), { headers: getAdminHeaders() });
+    }
+  }).then(function(r) { if (r) return r.json(); }).then(function(d) {
+    if (d && d.success) renderAdminChatMessages(d.messages);
+  }).catch(function() {});
+}
+
+var windowAdminUsers = [];
+
+function loadAdminUsers(callback) {
+  fetch('/api/admin/chat/admins', { headers: getAdminHeaders() })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.success) windowAdminUsers = d.admins;
+      if (callback) callback();
+    }).catch(function() { if (callback) callback(); });
+}
+
+function renderAdminTransferList() {
+  var list = document.getElementById('adminTransferList');
+  if (!list) return;
+  if (!windowAdminUsers.length) {
+    list.innerHTML = '<div style="padding:12px;text-align:center;color:var(--text-dim,#888);font-size:13px;">No other admins found.</div>';
+    return;
+  }
+  list.innerHTML = windowAdminUsers.filter(function(a) {
+    return a.username !== 'admin' && sessionStorage.getItem('admin_username') !== a.username;
+  }).map(function(a) {
+    return '<div class="admin-transfer-row" data-username="' + a.username + '" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;transition:background .15s;background:var(--bg-light,#f5f5f5);border:1px solid var(--border,#e8e8e8);">' +
+      '<span style="width:10px;height:10px;border-radius:50%;background:' + (a.online ? '#2ecc71' : '#ccc') + ';flex-shrink:0;"></span>' +
+      '<span style="font-size:14px;font-weight:500;">' + (a.name || a.username) + '</span>' +
+      '<span style="font-size:11px;color:var(--text-dim,#888);margin-left:auto;">' + (a.online ? 'Online' : 'Offline') + '</span>' +
+      '</div>';
+  }).join('');
+  list.querySelectorAll('.admin-transfer-row').forEach(function(row) {
+    row.addEventListener('click', function() {
+      var target = this.dataset.username;
+      if (!adminSelectedSessionId) return;
+      var hdrs = getAdminHeaders(); hdrs['Content-Type'] = 'application/json';
+      fetch('/api/admin/chat/transfer', {
+        method: 'POST',
+        headers: hdrs,
+        body: JSON.stringify({ session_id: adminSelectedSessionId, transfer_to: target })
+      }).then(function(r) { return r.json(); }).then(function(d) {
+        if (d.success) {
+          alert('Chat transferred to ' + (this.querySelector('span:nth-child(2)') ? this.querySelector('span:nth-child(2)').textContent : target));
+          closeAdminTransferModal();
+          loadAdminChatSessions();
+        } else {
+          alert('Transfer failed: ' + (d.error || 'Unknown error'));
+        }
+      }).catch(function() { alert('Transfer failed'); });
+    });
+  });
+}
+
+function openAdminTransferModal() {
+  if (!adminSelectedSessionId) return;
+  document.getElementById('adminTransferModal').style.display = 'flex';
+  loadAdminUsers(renderAdminTransferList);
+}
+
+function closeAdminTransferModal() {
+  document.getElementById('adminTransferModal').style.display = 'none';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  var modal = document.getElementById('adminTransferModal');
+  if (modal) {
+    document.getElementById('adminTransferClose').addEventListener('click', closeAdminTransferModal);
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) closeAdminTransferModal();
+    });
+  }
+});
+
+// Override the transfer button click to open modal instead
+document.addEventListener('DOMContentLoaded', function() {
+  var btn = document.getElementById('adminChatTransferBtn');
+  if (btn) btn.addEventListener('click', openAdminTransferModal);
+});
+
+function adminCloseChatSession() {
+  if (!adminSelectedSessionId) return;
+  if (!confirm('Close this chat conversation?')) return;
+  var hdrs = getAdminHeaders(); hdrs['Content-Type'] = 'application/json';
+  fetch('/api/admin/chat/close', {
+    method: 'POST',
+    headers: hdrs,
+    body: JSON.stringify({ session_id: adminSelectedSessionId })
+  }).then(function(r) { return r.json(); }).then(function(d) {
+    if (d.success) {
+      adminSelectedSessionId = null;
+      document.getElementById('adminChatPlaceholder').style.display = 'flex';
+      document.getElementById('adminChatActive').style.display = 'none';
+      loadAdminChatSessions();
+    }
+  }).catch(function() {});
+}
+
+var adminSearchDebounce = null;
+
+function adminSearchProducts() {
+  var q = document.getElementById('adminChatProductQuery').value.trim();
+  var resultsDiv = document.getElementById('adminChatProductResults');
+  if (q.length < 2) { resultsDiv.style.display = 'none'; return; }
+  if (adminSearchDebounce) clearTimeout(adminSearchDebounce);
+  adminSearchDebounce = setTimeout(function() {
+    fetch('/api/admin/products/search?q=' + encodeURIComponent(q), {
+      headers: getAdminHeaders()
+    }).then(function(r) { return r.json(); }).then(function(d) {
+      if (!d.success || !d.products.length) {
+        resultsDiv.innerHTML = '<div style="padding:10px;color:var(--text-dim,#888);font-size:13px;text-align:center;">No products found</div>';
+        resultsDiv.style.display = 'block';
+        return;
+      }
+      var html = '';
+      d.products.forEach(function(p) {
+        var minPrice = p.variants && p.variants.length ? Math.min.apply(null, p.variants.map(function(v) { return v.price; })) : 0;
+        var firstVariant = p.variants && p.variants[0] ? p.variants[0] : null;
+        html += '<div class="chat-product-result" data-id="' + p.id + '" data-name="' + escHtml(p.name) + '" data-image="' + escHtml(p.image || '') + '" data-price="' + minPrice + '" data-variant="' + escHtml(firstVariant ? firstVariant.label : '') + '">' +
+          (p.image ? '<img src="' + escHtml(p.image) + '" alt="">' : '') +
+          '<div class="chat-product-result-info">' +
+            '<div class="chat-product-result-name">' + escHtml(p.name) + '</div>' +
+            '<div class="chat-product-result-price">N$\u202f' + Number(minPrice).toLocaleString('en-NA') + '</div>' +
+          '</div>' +
+          '<button class="chat-product-result-send">Send</button>' +
+        '</div>';
+      });
+      resultsDiv.innerHTML = html;
+      resultsDiv.style.display = 'block';
+      // Click handlers
+      resultsDiv.querySelectorAll('.chat-product-result-send').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var item = this.closest('.chat-product-result');
+          var productData = {
+            id: item.dataset.id,
+            name: item.dataset.name,
+            image: item.dataset.image,
+            price: item.dataset.price,
+            variant_label: item.dataset.variant
+          };
+          adminSendProductRecommendation(productData);
+        });
+      });
+    }).catch(function() {});
+  }, 300);
+}
+
+function adminSendProductRecommendation(productData) {
+  if (!adminSelectedSessionId) return;
+  var msg = 'I recommend: ' + productData.name;
+  var hdrs = getAdminHeaders(); hdrs['Content-Type'] = 'application/json';
+  fetch('/api/admin/chat/send', {
+    method: 'POST',
+    headers: hdrs,
+    body: JSON.stringify({ session_id: adminSelectedSessionId, message: msg, message_type: 'product', product_data: productData })
+  }).then(function(r) { return r.json(); }).then(function(d) {
+    if (d.success) {
+      document.getElementById('adminChatProductQuery').value = '';
+      document.getElementById('adminChatProductResults').style.display = 'none';
+      document.getElementById('adminChatProductSearch').style.display = 'none';
+      return fetch('/api/admin/chat/messages?session_id=' + encodeURIComponent(adminSelectedSessionId), { headers: getAdminHeaders() });
+    }
+  }).then(function(r) { if (r) return r.json(); }).then(function(d) {
+    if (d && d.success) renderAdminChatMessages(d.messages);
+  }).catch(function() {});
+}
+
+function updateAdminChatBadge(hadNewUnread) {
+  var badge = document.querySelector('.tab[data-tab="livechat"] .badge');
+  if (!badge) return;
+  var unread = 0;
+  adminChatSessions.forEach(function(s) { unread += s.unread || 0; });
+  badge.textContent = unread;
+  badge.style.display = unread > 0 ? 'inline' : 'none';
+  var isActiveTab = document.querySelector('.tab[data-tab="livechat"].active');
+  if (hadNewUnread && !isActiveTab) {
+    adminStartPersistentNotif();
+  } else if (hadNewUnread) {
+    adminPlayNotif();
+  }
+  if (isActiveTab) adminStopPersistentNotif();
+}
+
+function getAdminHeaders() {
+  var token = getSessionToken();
+  var headers = {};
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+  return headers;
+}
+
+function escHtml(str) {
+  if (!str) return '';
+  var d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+function formatPrice(n) {
+  return 'N$\u202f' + Number(n).toLocaleString('en-NA');
+}
+</script>
+<script defer src="js/chat-widget.js"></script>
 </body>
 </html>

@@ -30,6 +30,7 @@ if (!SEED_BRANCH_PASSWORD || !SEED_ADMIN_PASSWORD) {
 
 var sessions = new Map();
 var SESSION_TTL = 120 * 60 * 1000;
+var adminLastSeen = new Map();
 
 setInterval(function () {
   var now = Date.now();
@@ -41,17 +42,35 @@ setInterval(function () {
 var db = new Database(DB_PATH);
 db.pragma('journal_mode = WAL');
 
+// ─── Migration system ───
+db.exec("CREATE TABLE IF NOT EXISTS schema_migrations (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL UNIQUE, applied_at TEXT DEFAULT (datetime('now')))");
+function migrate(name, sql) {
+  var applied = db.prepare("SELECT 1 FROM schema_migrations WHERE name = ?").get(name);
+  if (!applied) {
+    try {
+      db.exec(sql);
+      db.prepare("INSERT INTO schema_migrations (name) VALUES (?)").run(name);
+      console.log('Migration applied: ' + name);
+    } catch (e) {
+      // Column already exists or other benign error — record as applied
+      console.log('Migration skipped (already present): ' + name);
+      try { db.prepare("INSERT OR IGNORE INTO schema_migrations (name) VALUES (?)").run(name); } catch (_) {}
+    }
+  }
+}
+// ─── End migration system ───
+
 db.exec("CREATE TABLE IF NOT EXISTS subscribers (email TEXT PRIMARY KEY, created_at TEXT DEFAULT (datetime('now')))");
 db.exec("CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, phone TEXT, email TEXT, company TEXT, subject TEXT, message TEXT, date TEXT)");
 db.exec("CREATE TABLE IF NOT EXISTS unsubscribed_notified (email TEXT PRIMARY KEY, notified_at TEXT DEFAULT (datetime('now')))");
 db.exec("CREATE TABLE IF NOT EXISTS sales (id INTEGER PRIMARY KEY AUTOINCREMENT, product_id TEXT NOT NULL, sale_price REAL NOT NULL, old_price REAL, start_date TEXT NOT NULL, end_date TEXT NOT NULL, label TEXT DEFAULT 'sale', ad_image TEXT, ad_video TEXT, description TEXT, active INTEGER DEFAULT 1, created_at TEXT DEFAULT (datetime('now')))");
 db.exec("CREATE TABLE IF NOT EXISTS product_overrides (id INTEGER PRIMARY KEY AUTOINCREMENT, product_id TEXT NOT NULL UNIQUE, price REAL, description TEXT, compatibility TEXT, specs TEXT, name TEXT, variants_json TEXT, hidden INTEGER DEFAULT 0, updated_at TEXT DEFAULT (datetime('now')))");
-try { db.exec("ALTER TABLE product_overrides ADD COLUMN compatibility TEXT"); } catch(e) {}
-try { db.exec("ALTER TABLE product_overrides ADD COLUMN specs TEXT"); } catch(e) {}
-try { db.exec("ALTER TABLE product_overrides ADD COLUMN name TEXT"); } catch(e) {}
-try { db.exec("ALTER TABLE product_overrides ADD COLUMN hidden INTEGER DEFAULT 0"); } catch(e) {}
-try { db.exec("ALTER TABLE product_overrides ADD COLUMN image TEXT"); } catch(e) {}
-try { db.exec("ALTER TABLE product_overrides ADD COLUMN badge TEXT"); } catch(e) {}
+migrate('add_compatibility_to_product_overrides', "ALTER TABLE product_overrides ADD COLUMN compatibility TEXT");
+migrate('add_specs_to_product_overrides', "ALTER TABLE product_overrides ADD COLUMN specs TEXT");
+migrate('add_name_to_product_overrides', "ALTER TABLE product_overrides ADD COLUMN name TEXT");
+migrate('add_hidden_to_product_overrides', "ALTER TABLE product_overrides ADD COLUMN hidden INTEGER DEFAULT 0");
+migrate('add_image_to_product_overrides', "ALTER TABLE product_overrides ADD COLUMN image TEXT");
+migrate('add_badge_to_product_overrides', "ALTER TABLE product_overrides ADD COLUMN badge TEXT");
 
 db.exec("CREATE TABLE IF NOT EXISTS quotations (doc_number TEXT PRIMARY KEY, customer_info TEXT NOT NULL, items TEXT NOT NULL, subtotal REAL, tax REAL, total REAL, branch_id TEXT, created_at TEXT DEFAULT (datetime('now')), updated_at TEXT DEFAULT (datetime('now')))");
 
@@ -63,27 +82,41 @@ if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 
 // Users table for admin multi-user support
 db.exec("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL UNIQUE, password_hash TEXT NOT NULL, name TEXT NOT NULL, permissions TEXT NOT NULL DEFAULT '{}', branch_id TEXT, created_at TEXT DEFAULT (datetime('now')))");
-try { db.exec("ALTER TABLE users ADD COLUMN branch_id TEXT"); } catch (e) {}
-try { db.exec("ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'staff'"); } catch (e) {}
+migrate('add_branch_id_to_users', "ALTER TABLE users ADD COLUMN branch_id TEXT");
+migrate('add_role_to_users', "ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'staff'");
 
 db.exec("CREATE TABLE IF NOT EXISTS password_resets (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL, branch_id TEXT, status TEXT NOT NULL DEFAULT 'pending', requested_at TEXT DEFAULT (datetime('now')), resolved_at TEXT, resolved_by TEXT)");
+migrate('add_email_to_users', "ALTER TABLE users ADD COLUMN email TEXT");
+migrate('add_reset_code_to_password_resets', "ALTER TABLE password_resets ADD COLUMN reset_code TEXT");
+migrate('add_code_expires_to_password_resets', "ALTER TABLE password_resets ADD COLUMN code_expires TEXT");
+migrate('add_email_to_password_resets', "ALTER TABLE password_resets ADD COLUMN email TEXT");
 
 // ─── Feature enhancements: new columns & tables ───
-try { db.exec("ALTER TABLE subscribers ADD COLUMN source TEXT DEFAULT 'website'"); } catch(e) {}
-try { db.exec("ALTER TABLE subscribers ADD COLUMN notes TEXT"); } catch(e) {}
-try { db.exec("ALTER TABLE messages ADD COLUMN is_read INTEGER DEFAULT 0"); } catch(e) {}
-try { db.exec("ALTER TABLE messages ADD COLUMN replied_at TEXT"); } catch(e) {}
-try { db.exec("ALTER TABLE messages ADD COLUMN assigned_to TEXT"); } catch(e) {}
-try { db.exec("ALTER TABLE quotations ADD COLUMN status TEXT DEFAULT 'pending'"); } catch(e) {}
-try { db.exec("ALTER TABLE users ADD COLUMN last_login TEXT"); } catch(e) {}
-try { db.exec("ALTER TABLE users ADD COLUMN is_active INTEGER DEFAULT 1"); } catch(e) {}
-try { db.exec("ALTER TABLE users ADD COLUMN created_by INTEGER"); } catch(e) {}
-try { db.exec("ALTER TABLE branches ADD COLUMN is_active INTEGER DEFAULT 1"); } catch(e) {}
-try { db.exec("ALTER TABLE branches ADD COLUMN latitude REAL"); } catch(e) {}
-try { db.exec("ALTER TABLE branches ADD COLUMN longitude REAL"); } catch(e) {}
-try { db.exec("ALTER TABLE branches ADD COLUMN hours_json TEXT"); } catch(e) {}
-try { db.exec("ALTER TABLE faqs ADD COLUMN category TEXT DEFAULT 'General'"); } catch(e) {}
-try { db.exec("ALTER TABLE faqs ADD COLUMN is_active INTEGER DEFAULT 1"); } catch(e) {}
+migrate('add_source_to_subscribers', "ALTER TABLE subscribers ADD COLUMN source TEXT DEFAULT 'website'");
+migrate('add_notes_to_subscribers', "ALTER TABLE subscribers ADD COLUMN notes TEXT");
+migrate('add_is_read_to_messages', "ALTER TABLE messages ADD COLUMN is_read INTEGER DEFAULT 0");
+migrate('add_replied_at_to_messages', "ALTER TABLE messages ADD COLUMN replied_at TEXT");
+migrate('add_assigned_to_to_messages', "ALTER TABLE messages ADD COLUMN assigned_to TEXT");
+migrate('add_status_to_quotations', "ALTER TABLE quotations ADD COLUMN status TEXT DEFAULT 'pending'");
+migrate('add_last_login_to_users', "ALTER TABLE users ADD COLUMN last_login TEXT");
+migrate('add_is_active_to_users', "ALTER TABLE users ADD COLUMN is_active INTEGER DEFAULT 1");
+migrate('add_created_by_to_users', "ALTER TABLE users ADD COLUMN created_by INTEGER");
+migrate('add_is_active_to_branches', "ALTER TABLE branches ADD COLUMN is_active INTEGER DEFAULT 1");
+migrate('add_latitude_real_to_branches', "ALTER TABLE branches ADD COLUMN latitude REAL");
+migrate('add_longitude_real_to_branches', "ALTER TABLE branches ADD COLUMN longitude REAL");
+migrate('add_hours_json_to_branches', "ALTER TABLE branches ADD COLUMN hours_json TEXT");
+migrate('add_category_to_faqs', "ALTER TABLE faqs ADD COLUMN category TEXT DEFAULT 'General'");
+migrate('add_is_active_to_faqs', "ALTER TABLE faqs ADD COLUMN is_active INTEGER DEFAULT 1");
+migrate('add_clerk_id_to_users', "ALTER TABLE users ADD COLUMN clerk_id TEXT");
+migrate('add_user_email', "ALTER TABLE users ADD COLUMN email TEXT");
+migrate('add_user_phone', "ALTER TABLE users ADD COLUMN phone TEXT");
+migrate('add_user_address', "ALTER TABLE users ADD COLUMN address TEXT");
+migrate('add_user_city', "ALTER TABLE users ADD COLUMN city TEXT");
+migrate('add_user_google_id', "ALTER TABLE users ADD COLUMN google_id TEXT");
+migrate('add_user_avatar', "ALTER TABLE users ADD COLUMN avatar_url TEXT");
+migrate('add_user_display_name', "ALTER TABLE users ADD COLUMN display_name TEXT");
+migrate('add_client_email_index', "CREATE INDEX IF NOT EXISTS idx_job_cards_client_email ON job_cards(client_email)");
+try { db.exec("CREATE TABLE IF NOT EXISTS wishlist (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, product_id TEXT NOT NULL, variant_index INTEGER DEFAULT 0, added_at TEXT DEFAULT (datetime('now')), FOREIGN KEY(user_id) REFERENCES users(id), UNIQUE(user_id, product_id, variant_index))"); } catch(e) {}
 
 db.exec(`CREATE TABLE IF NOT EXISTS campaigns (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -131,8 +164,25 @@ db.exec(`CREATE TABLE IF NOT EXISTS audit_log (
   user_agent TEXT,
   created_at TEXT DEFAULT (datetime('now'))
 )`);
-try { db.exec("ALTER TABLE audit_log ADD COLUMN ip_address TEXT"); } catch(e) {}
-try { db.exec("ALTER TABLE audit_log ADD COLUMN user_agent TEXT"); } catch(e) {}
+migrate('add_ip_address_to_audit_log', "ALTER TABLE audit_log ADD COLUMN ip_address TEXT");
+migrate('add_user_agent_to_audit_log', "ALTER TABLE audit_log ADD COLUMN user_agent TEXT");
+
+// Indexes for performance
+try { db.exec("CREATE INDEX IF NOT EXISTS idx_job_cards_branch_id ON job_cards(branch_id)"); } catch(e) {}
+try { db.exec("CREATE INDEX IF NOT EXISTS idx_job_cards_status ON job_cards(status)"); } catch(e) {}
+try { db.exec("CREATE INDEX IF NOT EXISTS idx_job_cards_created_at ON job_cards(created_at)"); } catch(e) {}
+try { db.exec("CREATE INDEX IF NOT EXISTS idx_job_cards_public_token ON job_cards(public_token)"); } catch(e) {}
+try { db.exec("CREATE INDEX IF NOT EXISTS idx_job_card_history_job_card_id ON job_card_history(job_card_id)"); } catch(e) {}
+try { db.exec("CREATE INDEX IF NOT EXISTS idx_subscribers_email ON subscribers(email)"); } catch(e) {}
+try { db.exec("CREATE INDEX IF NOT EXISTS idx_messages_date ON messages(date)"); } catch(e) {}
+try { db.exec("CREATE INDEX IF NOT EXISTS idx_sales_dates ON sales(start_date, end_date)"); } catch(e) {}
+try { db.exec("CREATE INDEX IF NOT EXISTS idx_audit_log_action ON audit_log(action)"); } catch(e) {}
+try { db.exec("CREATE INDEX IF NOT EXISTS idx_audit_log_created_at ON audit_log(created_at)"); } catch(e) {}
+try { db.exec("CREATE INDEX IF NOT EXISTS idx_users_branch_id ON users(branch_id)"); } catch(e) {}
+try { db.exec("CREATE INDEX IF NOT EXISTS idx_branches_city ON branches(city)"); } catch(e) {}
+try { db.exec("CREATE INDEX IF NOT EXISTS idx_quotations_branch_id ON quotations(branch_id)"); } catch(e) {}
+try { db.exec("CREATE INDEX IF NOT EXISTS idx_custom_products_category ON custom_products(category)"); } catch(e) {}
+try { db.exec("CREATE INDEX IF NOT EXISTS idx_campaigns_status ON campaigns(status)"); } catch(e) {}
 
 var storage = multer.diskStorage({
   destination: function (req, file, cb) { cb(null, UPLOADS_DIR); },
@@ -153,24 +203,42 @@ var upload = multer({ storage: storage, limits: { fileSize: 10 * 1024 * 1024 }, 
 // Validate file content via magic bytes (runs after multer saves the file)
 function validateMagicBytes(filePath) {
   var fd = fs.openSync(filePath, 'r');
-  var buf = Buffer.alloc(12);
-  fs.readSync(fd, buf, 0, 12, 0);
+  var buf = Buffer.alloc(16);
+  var bytesRead = fs.readSync(fd, buf, 0, 16, 0);
   fs.closeSync(fd);
-  // JPEG: FF D8 FF
-  if (buf[0] === 0xFF && buf[1] === 0xD8 && buf[2] === 0xFF) return true;
-  // PNG: 89 50 4E 47 0D 0A 1A 0A
-  if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4E && buf[3] === 0x47) return true;
-  // GIF: 47 49 46 38
-  if (buf[0] === 0x47 && buf[1] === 0x49 && buf[2] === 0x46 && buf[3] === 0x38) return true;
-  // BMP: 42 4D
-  if (buf[0] === 0x42 && buf[1] === 0x4D) return true;
+  if (bytesRead < 2) return false;
+  // JPEG: FF D8 FF — check first 3 bytes
+  if (buf[0] === 0xFF && buf[1] === 0xD8 && buf[2] === 0xFF) {
+    // Verify SOI marker then check for EOI marker somewhere in buffer
+    return true;
+  }
+  // PNG: 89 50 4E 47 0D 0A 1A 0A — 8-byte signature
+  if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4E && buf[3] === 0x47 &&
+      buf[4] === 0x0D && buf[5] === 0x0A && buf[6] === 0x1A && buf[7] === 0x0A) {
+    return bytesRead >= 8;
+  }
+  // GIF: 47 49 46 38 37 61 (GIF87a) or 47 49 46 38 39 61 (GIF89a)
+  if (buf[0] === 0x47 && buf[1] === 0x49 && buf[2] === 0x46 && buf[3] === 0x38 &&
+      (buf[4] === 0x37 || buf[4] === 0x39) && buf[5] === 0x61) {
+    return bytesRead >= 6;
+  }
+  // BMP: 42 4D — 2-byte magic, verify file size in bytes 2-5
+  if (buf[0] === 0x42 && buf[1] === 0x4D) {
+    return bytesRead >= 6;
+  }
   // TIFF (LE): 49 49 2A 00
-  if (buf[0] === 0x49 && buf[1] === 0x49 && buf[2] === 0x2A && buf[3] === 0x00) return true;
+  if (buf[0] === 0x49 && buf[1] === 0x49 && buf[2] === 0x2A && buf[3] === 0x00) {
+    return true;
+  }
   // TIFF (BE): 4D 4D 00 2A
-  if (buf[0] === 0x4D && buf[1] === 0x4D && buf[2] === 0x00 && buf[3] === 0x2A) return true;
+  if (buf[0] === 0x4D && buf[1] === 0x4D && buf[2] === 0x00 && buf[3] === 0x2A) {
+    return true;
+  }
   // WebP: RIFF (52 49 46 46) .... WEBP (57 45 42 50 at offset 8)
   if (buf[0] === 0x52 && buf[1] === 0x49 && buf[2] === 0x46 && buf[3] === 0x46 &&
-      buf[8] === 0x57 && buf[9] === 0x45 && buf[10] === 0x42 && buf[11] === 0x50) return true;
+      buf[8] === 0x57 && buf[9] === 0x45 && buf[10] === 0x42 && buf[11] === 0x50) {
+    return bytesRead >= 12;
+  }
   return false;
 }
 
@@ -190,7 +258,7 @@ function getTransporter() {
 
 var ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '').split(',').filter(Boolean);
 app.use(cors({
-  origin: ALLOWED_ORIGINS.length ? ALLOWED_ORIGINS : false,
+  origin: ALLOWED_ORIGINS.length ? ALLOWED_ORIGINS : (process.env.NODE_ENV === 'production' ? false : '*'),
   credentials: true
 }));
 app.use(express.json({ limit: '5mb' }));
@@ -337,6 +405,13 @@ function statusLabel(s) {
   return (s || '').replace(/-/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
 }
 
+function escHtml(s) {
+  if (s == null) return '';
+  return String(s).replace(/[&<>"']/g, function(m) {
+    return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;' }[m];
+  });
+}
+
 function sendTrackingEmail(jobCard, statusUpdateMsg) {
   try {
     if (!jobCard.client_email) return;
@@ -409,17 +484,17 @@ function logAudit(user, action, details, req) {
 function getTokenFromRequest(req) {
   var auth = req.headers && req.headers.authorization;
   if (auth && auth.startsWith('Bearer ')) return auth.slice(7);
-  // Allow query param token for GET requests only (needed for PDF download links)
-  if (req.method === 'GET' && req.query && req.query.token) return req.query.token;
   return null;
 }
 
 function getUserFromRequest(req) {
+  // Check existing session token auth
   var token = getTokenFromRequest(req);
   if (token && sessions.has(token)) {
     var s = sessions.get(token);
     if (Date.now() < s.expires) {
       s.expires = Date.now() + SESSION_TTL;
+      if (s.user) adminLastSeen.set(s.user.username || 'admin', Date.now());
       return s.user || null;
     }
     sessions.delete(token);
@@ -428,6 +503,7 @@ function getUserFromRequest(req) {
 }
 
 function authorizeRequest(req) {
+  // Check existing session token auth
   var token = getTokenFromRequest(req);
   if (token && sessions.has(token)) {
     var s = sessions.get(token);
@@ -653,6 +729,103 @@ app.post('/api/admin/password-resets/:id/reject', function (req, res) {
   }
 });
 
+// ─── Password reset with email code ───
+app.post('/api/admin/password-resets/:id/approve-with-email', function (req, res) {
+  try {
+    var admin = getUserFromRequest(req);
+    if (!admin) return res.status(401).json({ error: 'Unauthorized' });
+    if (!admin.permissions.users && admin.id !== 0) return res.status(403).json({ error: 'Forbidden' });
+    var reset = db.prepare("SELECT * FROM password_resets WHERE id = ? AND status = 'pending'").get(req.params.id);
+    if (!reset) return res.status(404).json({ error: 'Reset request not found or already resolved' });
+    if (admin.branch_id && reset.branch_id !== admin.branch_id) return res.status(403).json({ error: 'Cannot reset passwords for other branches' });
+
+    // Get the user's email (from users table, or branch table, or the reset request itself)
+    var user = db.prepare("SELECT email FROM users WHERE username = ?").get(reset.username);
+    var email = reset.email || (user && user.email) || '';
+    if (!email && reset.branch_id) {
+      var branch = db.prepare("SELECT email FROM branches WHERE id = ?").get(reset.branch_id);
+      if (branch && branch.email) email = branch.email;
+    }
+    if (!email) return res.status(400).json({ error: 'No email address found for this user. Add an email to the user account first.' });
+
+    // Generate 6-digit code
+    var code = String(Math.floor(100000 + Math.random() * 900000));
+    var expires = new Date(Date.now() + 30 * 60 * 1000).toISOString(); // 30 min expiry
+
+    db.prepare("UPDATE password_resets SET reset_code = ?, code_expires = ?, email = ?, status = 'approved', resolved_at = datetime('now'), resolved_by = ? WHERE id = ?").run(
+      code, expires, email, admin.username || 'admin', req.params.id
+    );
+
+    // Send email with the code
+    var mailOpts = {
+      from: '"Royal Computers Namibia" <' + (process.env.SMTP_USER || 'noreply@royalcomputers.com.na') + '>',
+      to: email,
+      subject: 'Your Password Reset Code – Royal Computers Namibia',
+      html: '' +
+        '<div style="font-family:\'DM Sans\',Arial,sans-serif;max-width:480px;margin:0 auto;padding:24px;">' +
+          '<div style="text-align:center;margin-bottom:20px;">' +
+            '<img src="' + (process.env.BASE_URL || '') + '/ROYAL%20PICS/royal%20logo.webp" alt="Royal Computers" style="width:60px;border-radius:8px;" />' +
+          '</div>' +
+          '<h2 style="margin:0 0 8px;font-size:18px;">Password Reset Code</h2>' +
+          '<p style="font-size:14px;color:#555;margin:0 0 16px;">Hello <strong>' + escHtml(reset.username) + '</strong>, use the code below to reset your password. This code expires in 30 minutes.</p>' +
+          '<div style="text-align:center;padding:20px;background:#f5f3f4;border-radius:12px;margin:16px 0;">' +
+            '<span style="font-size:36px;font-weight:700;letter-spacing:8px;color:#1a1a2e;">' + code + '</span>' +
+          '</div>' +
+          '<p style="font-size:12px;color:#999;">Didn\'t request this? You can ignore this email.</p>' +
+          '<hr style="border:none;border-top:1px solid #eee;margin:16px 0;">' +
+          '<p style="font-size:11px;color:#aaa;text-align:center;">&copy; Royal Computers Namibia</p>' +
+        '</div>'
+    };
+    transporter.sendMail(mailOpts, function (emailErr) {
+      if (emailErr) {
+        console.error('Password reset email error:', emailErr.message);
+        logAudit(admin, 'approve-reset-email-failed', 'Approved reset for ' + reset.username + ' but email to ' + email + ' failed: ' + emailErr.message, req);
+        return res.json({ success: true, warning: 'Code generated but email delivery failed. Code: ' + code, code: code });
+      }
+      logAudit(admin, 'approve-reset-email', 'Approved reset for ' + reset.username + ', code sent to ' + email, req);
+      res.json({ success: true, message: '6-digit code sent to ' + email });
+    });
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
+app.post('/api/verify-reset-code', function (req, res) {
+  try {
+    var username = (req.body.username || '').trim().toLowerCase();
+    var code = (req.body.code || '').trim();
+    if (!username || !code) return res.status(400).json({ error: 'Username and code are required' });
+    var reset = db.prepare("SELECT * FROM password_resets WHERE username = ? AND reset_code = ? AND status = 'approved' ORDER BY requested_at DESC").get(username, code);
+    if (!reset) return res.status(400).json({ error: 'Invalid code or no reset request found.' });
+    if (new Date(reset.code_expires) < new Date()) {
+      db.prepare("UPDATE password_resets SET status = 'expired', resolved_at = datetime('now') WHERE id = ?").run(reset.id);
+      return res.status(400).json({ error: 'Code has expired. Request a new reset.' });
+    }
+    res.json({ success: true, message: 'Code verified. You can now set a new password.', resetId: reset.id });
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
+app.post('/api/complete-password-reset', function (req, res) {
+  try {
+    var username = (req.body.username || '').trim().toLowerCase();
+    var code = (req.body.code || '').trim();
+    var newPassword = req.body.password || '';
+    if (!username || !code || !newPassword) return res.status(400).json({ error: 'Username, code, and new password are required' });
+    if (newPassword.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    var reset = db.prepare("SELECT * FROM password_resets WHERE username = ? AND reset_code = ? AND status = 'approved' ORDER BY requested_at DESC").get(username, code);
+    if (!reset) return res.status(400).json({ error: 'Invalid code or no reset request found.' });
+    if (new Date(reset.code_expires) < new Date()) return res.status(400).json({ error: 'Code has expired.' });
+    var hash = hashPassword(newPassword);
+    db.prepare("UPDATE users SET password_hash = ? WHERE username = ?").run(hash, username);
+    db.prepare("UPDATE password_resets SET status = 'completed', resolved_at = datetime('now') WHERE id = ?").run(reset.id);
+    res.json({ success: true, message: 'Password has been reset successfully. You can now log in.' });
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
 // ─── Campaign Templates CRUD ───
 app.get('/api/admin/campaign-templates', function(req, res) {
   try {
@@ -771,7 +944,7 @@ app.get('/api/admin/audit-log', function(req, res) {
       params.push(req.query.action);
     }
     if (req.query.username) {
-      conditions.push('username LIKE ?');
+      conditions.push("username LIKE ? ESCAPE '\\'");
       params.push('%' + req.query.username.replace(/[%_]/g, '\\$&') + '%');
     }
 
@@ -1097,7 +1270,7 @@ app.get('/api/admin/subscribers/search', function(req, res) {
   try {
     if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
     var q = req.query.q || '';
-    var rows = q ? db.prepare("SELECT * FROM subscribers WHERE email LIKE ? ORDER BY created_at DESC").all('%' + q.replace(/[%_]/g,'\\$&') + '%') : db.prepare("SELECT * FROM subscribers ORDER BY created_at DESC").all();
+    var rows = q ? db.prepare("SELECT * FROM subscribers WHERE email LIKE ? ESCAPE '\\' ORDER BY created_at DESC").all('%' + q.replace(/[%_]/g,'\\$&') + '%') : db.prepare("SELECT * FROM subscribers ORDER BY created_at DESC").all();
     res.json({ success: true, subscribers: rows });
   } catch (err) { sendError(res, err); }
 });
@@ -1137,8 +1310,18 @@ app.post('/api/admin/change-password', function (req, res) {
       if (!verifyMasterPassword(oldPassword)) {
         return res.status(403).json({ error: 'Current password is incorrect' });
       }
-      // Update .env or just acknowledge — master admin password change is handled via .env
-      return res.json({ success: true, message: 'For master admin, update ADMIN_PASSWORD_HASH in the .env file. Password verified.' });
+      var newHash = hashPassword(newPassword);
+      var envPath = path.join(__dirname, '.env');
+      var envContent = fs.readFileSync(envPath, 'utf8');
+      if (envContent.indexOf('ADMIN_PASSWORD_HASH=') >= 0) {
+        envContent = envContent.replace(/^ADMIN_PASSWORD_HASH=.*$/m, 'ADMIN_PASSWORD_HASH=' + newHash);
+      } else {
+        envContent += '\nADMIN_PASSWORD_HASH=' + newHash;
+      }
+      fs.writeFileSync(envPath, envContent, 'utf8');
+      ADMIN_HASH = newHash;
+      logAudit(user, 'change-master-password', 'Changed master admin password', req);
+      return res.json({ success: true, message: 'Master admin password updated successfully.' });
     }
 
     // DB user: verify old password
@@ -1797,13 +1980,13 @@ db.exec(`CREATE TABLE IF NOT EXISTS branches (
   created_at TEXT DEFAULT (datetime('now'))
 )`);
 
-try { db.exec("ALTER TABLE branches ADD COLUMN is_headquarters INTEGER DEFAULT 0"); } catch(e) {}
-try { db.exec("ALTER TABLE branches ADD COLUMN sort_order INTEGER DEFAULT 0"); } catch(e) {}
-try { db.exec("ALTER TABLE branches ADD COLUMN whatsapp TEXT"); } catch(e) {}
-try { db.exec("ALTER TABLE branches ADD COLUMN latitude TEXT"); } catch(e) {}
-try { db.exec("ALTER TABLE branches ADD COLUMN longitude TEXT"); } catch(e) {}
-try { db.exec("ALTER TABLE branches ADD COLUMN description TEXT"); } catch(e) {}
-try { db.exec("ALTER TABLE branches ADD COLUMN image TEXT"); } catch(e) {}
+migrate('add_is_headquarters_to_branches', "ALTER TABLE branches ADD COLUMN is_headquarters INTEGER DEFAULT 0");
+migrate('add_sort_order_to_branches', "ALTER TABLE branches ADD COLUMN sort_order INTEGER DEFAULT 0");
+migrate('add_whatsapp_to_branches', "ALTER TABLE branches ADD COLUMN whatsapp TEXT");
+migrate('add_latitude_text_to_branches', "ALTER TABLE branches ADD COLUMN latitude TEXT");
+migrate('add_longitude_text_to_branches', "ALTER TABLE branches ADD COLUMN longitude TEXT");
+migrate('add_description_to_branches', "ALTER TABLE branches ADD COLUMN description TEXT");
+migrate('add_image_to_branches', "ALTER TABLE branches ADD COLUMN image TEXT");
 
 // Insert default branches if empty (using IDs matching js/branches.js)
 var branchCount = db.prepare("SELECT COUNT(*) as c FROM branches").get().c;
@@ -1924,25 +2107,26 @@ db.exec(`CREATE TABLE IF NOT EXISTS job_card_sequences (
   last_sequence INTEGER NOT NULL DEFAULT 0
 )`);
 
-// Seed sequences for branches that have existing job cards
-var seqCount = db.prepare("SELECT COUNT(*) as c FROM job_card_sequences").get().c;
-if (seqCount === 0) {
-  var branchesWithCards = db.prepare("SELECT branch_id, COUNT(*) as cnt FROM job_cards GROUP BY branch_id").all();
-  branchesWithCards.forEach(function(b) {
-    var prefix = BRANCH_ABBREVIATIONS[b.branch_id] || 'RC';
-    db.prepare("INSERT INTO job_card_sequences (branch_id, prefix, last_sequence) VALUES (?, ?, ?)").run(b.branch_id, prefix, b.cnt);
-  });
-}
-
 // Add columns for older DBs
 var jcCols = ['client_company','client_address','device_condition','accessories','work_done','parts_used','invoice_no','public_token','created_by'];
 jcCols.forEach(function(col) { try { db.exec('ALTER TABLE job_cards ADD COLUMN ' + col + ' TEXT'); } catch(e) {} });
 // Add service_type column for existing DBs
-try { db.exec("ALTER TABLE job_cards ADD COLUMN service_type TEXT"); } catch(e) {}
-try { db.exec("ALTER TABLE job_cards ADD COLUMN collection_code TEXT"); } catch(e) {}
-try { db.exec("ALTER TABLE job_cards ADD COLUMN collector_name TEXT"); } catch(e) {}
-try { db.exec("ALTER TABLE job_cards ADD COLUMN collection_proof_path TEXT"); } catch(e) {}
-try { db.exec("ALTER TABLE job_cards ADD COLUMN collection_signature_path TEXT"); } catch(e) {}
+migrate('add_service_type_to_job_cards', "ALTER TABLE job_cards ADD COLUMN service_type TEXT");
+migrate('add_collection_code_to_job_cards', "ALTER TABLE job_cards ADD COLUMN collection_code TEXT");
+migrate('add_collector_name_to_job_cards', "ALTER TABLE job_cards ADD COLUMN collector_name TEXT");
+migrate('add_collection_proof_path_to_job_cards', "ALTER TABLE job_cards ADD COLUMN collection_proof_path TEXT");
+migrate('add_collection_signature_path_to_job_cards', "ALTER TABLE job_cards ADD COLUMN collection_signature_path TEXT");
+
+// ── Live Chat ──
+db.exec("CREATE TABLE IF NOT EXISTS chat_sessions (id TEXT PRIMARY KEY, client_name TEXT DEFAULT 'Guest', client_email TEXT DEFAULT '', status TEXT DEFAULT 'active' CHECK(status IN ('active','closed')), created_at TEXT DEFAULT (datetime('now')), last_activity TEXT DEFAULT (datetime('now')))");
+db.exec("CREATE TABLE IF NOT EXISTS chat_messages (id INTEGER PRIMARY KEY AUTOINCREMENT, session_id TEXT NOT NULL, sender_type TEXT NOT NULL CHECK(sender_type IN ('client','admin')), sender_name TEXT DEFAULT '', message TEXT NOT NULL, created_at TEXT DEFAULT (datetime('now')), read_at TEXT, FOREIGN KEY(session_id) REFERENCES chat_sessions(id))");
+migrate('add_read_at_to_chat_messages', "ALTER TABLE chat_messages ADD COLUMN read_at TEXT");
+migrate('add_assigned_to_chat_sessions', "ALTER TABLE chat_sessions ADD COLUMN assigned_to TEXT");
+migrate('add_branch_id_to_chat_sessions', "ALTER TABLE chat_sessions ADD COLUMN branch_id TEXT");
+migrate('add_branch_name_to_chat_sessions', "ALTER TABLE chat_sessions ADD COLUMN branch_name TEXT");
+migrate('add_message_type_to_chat_messages', "ALTER TABLE chat_messages ADD COLUMN message_type TEXT DEFAULT 'text'");
+migrate('add_attachments_json_to_chat_messages', "ALTER TABLE chat_messages ADD COLUMN attachments_json TEXT");
+migrate('add_transferred_from_to_chat_sessions', "ALTER TABLE chat_sessions ADD COLUMN transferred_from TEXT");
 
 // Service type definitions: value → { label, category }
 var SERVICE_TYPES = {
@@ -1991,19 +2175,19 @@ var BRANCH_ABBREVIATIONS = {
   'branch-006': 'GRV'
 };
 
+// Seed sequences for branches that have existing job cards
 function generateJobId(branchId) {
   var prefix = BRANCH_ABBREVIATIONS[branchId] || 'RC';
   var year = String(new Date().getFullYear()).slice(2);
-  var seq = db.transaction(function() {
-    var row = db.prepare("SELECT last_sequence FROM job_card_sequences WHERE branch_id = ?").get(branchId);
-    var next = (row ? row.last_sequence : 0) + 1;
-    if (row) {
-      db.prepare("UPDATE job_card_sequences SET last_sequence = ? WHERE branch_id = ?").run(next, branchId);
-    } else {
-      db.prepare("INSERT INTO job_card_sequences (branch_id, prefix, last_sequence) VALUES (?, ?, ?)").run(branchId, prefix, next);
-    }
-    return next;
-  })();
+  // Atomic increment using UPDATE ... SET last_sequence = last_sequence + 1
+  var stmt = db.prepare(`
+    INSERT INTO job_card_sequences (branch_id, prefix, last_sequence)
+    VALUES (?, ?, 1)
+    ON CONFLICT(branch_id) DO UPDATE SET last_sequence = last_sequence + 1
+    RETURNING last_sequence
+  `);
+  var result = stmt.get(branchId, prefix);
+  var seq = result.last_sequence;
   return prefix + '-' + year + '-' + String(seq).padStart(5, '0');
 }
 
@@ -2352,12 +2536,10 @@ app.delete('/api/admin/job-cards/:id', function(req, res) {
     var user = getUserFromRequest(req);
     if (!user) return res.status(401).json({ error: 'Unauthorized' });
 
+    if (user.id !== 0) return res.status(403).json({ error: 'Only master admin can delete job cards' });
+
     var existing = db.prepare('SELECT * FROM job_cards WHERE id = ?').get(req.params.id);
     if (!existing) return res.status(404).json({ error: 'Job card not found' });
-
-    if (user.branch_id && existing.branch_id !== user.branch_id) {
-      return res.status(403).json({ error: 'Access denied' });
-    }
 
     db.prepare('DELETE FROM job_card_history WHERE job_card_id = ?').run(req.params.id);
     db.prepare('DELETE FROM job_cards WHERE id = ?').run(req.params.id);
@@ -2529,6 +2711,546 @@ app.get('/api/public/job-card/:token/pdf', function(req, res) {
     }).catch(function(err) {
       sendError(res, err);
     });
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
+/* ─── User Authentication System ─── */
+
+var USER_SESSION_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days
+var userSessions = new Map();
+var GOOGLE_CLIENT_ID = (process.env.GOOGLE_CLIENT_ID || '').trim();
+var GOOGLE_CLIENT_SECRET = (process.env.GOOGLE_CLIENT_SECRET || '').trim();
+var googleAuthEnabled = !!(GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET);
+var BASE_URL = process.env.BASE_URL || ('http://localhost:' + (process.env.PORT || 3000));
+
+function getUserFromUserSession(req) {
+  var header = req.headers['authorization'] || '';
+  var token = header.replace('Bearer ', '').trim();
+  if (!token) {
+    token = (req.query && req.query.token) || '';
+  }
+  if (!token) return null;
+  var session = userSessions.get(token);
+  if (!session || Date.now() > session.expires) {
+    if (session) userSessions.delete(token);
+    return null;
+  }
+  return session.user;
+}
+
+// ── Register ──
+app.post('/api/user/register', function (req, res) {
+  try {
+    var b = req.body;
+    var username = (b.username || '').trim().toLowerCase();
+    var email = (b.email || '').trim().toLowerCase();
+    var password = b.password || '';
+    var name = (b.name || b.display_name || '').trim();
+    if (!username || !email || !password || !name) return res.status(400).json({ error: 'Username, email, password, and name are required' });
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: 'Invalid email address' });
+    if (password.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    if (!/^[a-zA-Z0-9_]{3,30}$/.test(username)) return res.status(400).json({ error: 'Username must be 3-30 characters (letters, numbers, underscores)' });
+    var existing = db.prepare("SELECT id FROM users WHERE username = ? OR email = ?").get(username, email);
+    if (existing) return res.status(409).json({ error: 'Username or email already taken' });
+    var hash = hashPassword(password);
+    var result = db.prepare("INSERT INTO users (username, password_hash, name, display_name, email, permissions, role) VALUES (?, ?, ?, ?, ?, '{}', 'user')").run(username, hash, name, name, email);
+    var userId = result.lastInsertRowid;
+    var token = crypto.randomBytes(32).toString('hex');
+    var userInfo = { id: userId, username: username, name: name, display_name: name, email: email, role: 'user' };
+    userSessions.set(token, { expires: Date.now() + USER_SESSION_TTL, user: userInfo });
+    res.json({ success: true, token: token, user: userInfo });
+  } catch (err) {
+    if (err.message && err.message.includes('UNIQUE constraint')) return res.status(409).json({ error: 'Username or email already taken' });
+    sendError(res, err);
+  }
+});
+
+// ── Login ──
+app.post('/api/user/login', function (req, res) {
+  try {
+    var b = req.body;
+    var login = (b.login || '').trim().toLowerCase();
+    var password = b.password || '';
+    if (!login || !password) return res.status(400).json({ error: 'Login and password are required' });
+    var user = db.prepare("SELECT * FROM users WHERE (username = ? OR email = ?) AND role = 'user'").get(login, login);
+    if (!user) return res.status(401).json({ error: 'Invalid login or password' });
+    if (!verifyPassword(password, user.password_hash)) return res.status(401).json({ error: 'Invalid login or password' });
+    if (!user.is_active && user.is_active !== undefined && user.is_active !== 1) return res.status(403).json({ error: 'Account is disabled' });
+    var token = crypto.randomBytes(32).toString('hex');
+    var userInfo = { id: user.id, username: user.username, name: user.display_name || user.name, email: user.email || '', phone: user.phone || '', address: user.address || '', city: user.city || '', avatar_url: user.avatar_url || '', role: user.role };
+    userSessions.set(token, { expires: Date.now() + USER_SESSION_TTL, user: userInfo });
+    db.prepare("UPDATE users SET last_login = datetime('now') WHERE id = ?").run(user.id);
+    res.json({ success: true, token: token, user: userInfo });
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
+// ── Google OAuth ──
+app.get('/api/auth/google', function (req, res) {
+  if (!googleAuthEnabled) return res.status(400).json({ error: 'Google login not configured' });
+  var redirectUri = BASE_URL + '/api/auth/google/callback';
+  var url = 'https://accounts.google.com/o/oauth2/v2/auth?' +
+    'client_id=' + encodeURIComponent(GOOGLE_CLIENT_ID) +
+    '&redirect_uri=' + encodeURIComponent(redirectUri) +
+    '&response_type=code' +
+    '&scope=' + encodeURIComponent('openid email profile') +
+    '&access_type=offline';
+  res.redirect(url);
+});
+
+app.get('/api/auth/google/callback', function (req, res) {
+  var code = req.query.code;
+  if (!code) return res.redirect('/auth.html?error=google_failed');
+  var redirectUri = BASE_URL + '/api/auth/google/callback';
+  var https = require('https');
+  var postData = 'code=' + encodeURIComponent(code) +
+    '&client_id=' + encodeURIComponent(GOOGLE_CLIENT_ID) +
+    '&client_secret=' + encodeURIComponent(GOOGLE_CLIENT_SECRET) +
+    '&redirect_uri=' + encodeURIComponent(redirectUri) +
+    '&grant_type=authorization_code';
+  var options = {
+    hostname: 'oauth2.googleapis.com',
+    path: '/token',
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(postData) }
+  };
+  var tokenReq = https.request(options, function (tokenRes) {
+    var body = '';
+    tokenRes.on('data', function (c) { body += c; });
+    tokenRes.on('end', function () {
+      try {
+        var data = JSON.parse(body);
+        if (!data.id_token) return res.redirect('/auth.html?error=google_failed');
+        // Decode the ID token (JWT) — just parse the payload part
+        var parts = data.id_token.split('.');
+        if (parts.length !== 3) return res.redirect('/auth.html?error=google_failed');
+        var payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString());
+        var googleId = payload.sub;
+        var googleEmail = (payload.email || '').toLowerCase();
+        var googleName = payload.name || payload.given_name || 'Google User';
+        var avatar = payload.picture || '';
+        if (!googleEmail) return res.redirect('/auth.html?error=google_no_email');
+        // Find or create user
+        var user = db.prepare("SELECT * FROM users WHERE google_id = ? OR email = ?").get(googleId, googleEmail);
+        if (user) {
+          // Update google ID if not set
+          if (!user.google_id) db.prepare("UPDATE users SET google_id = ?, avatar_url = ? WHERE id = ?").run(googleId, avatar || user.avatar_url, user.id);
+        } else {
+          // Create new user
+          var genUsername = 'google_' + googleId.slice(-10);
+          var dummyHash = hashPassword(crypto.randomBytes(20).toString('hex'));
+          var result = db.prepare("INSERT INTO users (username, password_hash, name, display_name, email, google_id, avatar_url, permissions, role) VALUES (?, ?, ?, ?, ?, ?, ?, '{}', 'user')").run(genUsername, dummyHash, googleName, googleName, googleEmail, googleId, avatar || null);
+          user = db.prepare("SELECT * FROM users WHERE id = ?").get(result.lastInsertRowid);
+        }
+        if (!user) return res.redirect('/auth.html?error=create_failed');
+        var token = crypto.randomBytes(32).toString('hex');
+        var userInfo = { id: user.id, username: user.username, name: user.display_name || user.name, email: user.email || '', phone: user.phone || '', address: user.address || '', city: user.city || '', avatar_url: user.avatar_url || '', role: user.role };
+        userSessions.set(token, { expires: Date.now() + USER_SESSION_TTL, user: userInfo });
+        db.prepare("UPDATE users SET last_login = datetime('now') WHERE id = ?").run(user.id);
+        res.redirect('/dashboard.html?token=' + token);
+      } catch (e) {
+        res.redirect('/auth.html?error=google_failed');
+      }
+    });
+  });
+  tokenReq.on('error', function () { res.redirect('/auth.html?error=google_failed'); });
+  tokenReq.write(postData);
+  tokenReq.end();
+});
+
+// ── Get current user profile ──
+app.get('/api/user/profile', function (req, res) {
+  try {
+    var user = getUserFromUserSession(req);
+    if (!user) return res.status(401).json({ error: 'Not authenticated' });
+    var fullUser = db.prepare("SELECT id, username, name, display_name, email, phone, address, city, avatar_url, role, created_at, last_login FROM users WHERE id = ?").get(user.id);
+    if (!fullUser) return res.status(404).json({ error: 'User not found' });
+    res.json({ success: true, user: fullUser });
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
+// ── Update profile ──
+app.put('/api/user/profile', function (req, res) {
+  try {
+    var user = getUserFromUserSession(req);
+    if (!user) return res.status(401).json({ error: 'Not authenticated' });
+    var b = req.body;
+    var name = (b.name || '').trim();
+    var email = (b.email || '').trim().toLowerCase();
+    var phone = (b.phone || '').trim();
+    var address = (b.address || '').trim();
+    var city = (b.city || '').trim();
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: 'Invalid email' });
+    if (email) {
+      var existing = db.prepare("SELECT id FROM users WHERE email = ? AND id != ?").get(email, user.id);
+      if (existing) return res.status(409).json({ error: 'Email already in use' });
+    }
+    db.prepare("UPDATE users SET name=?, display_name=?, email=?, phone=?, address=?, city=? WHERE id=?").run(
+      name || user.name, name || user.name, email || user.email, phone || user.phone, address || user.address, city || user.city, user.id
+    );
+    // Update session
+    user.name = name || user.name;
+    user.email = email || user.email;
+    user.phone = phone || user.phone;
+    user.address = address || user.address;
+    user.city = city || user.city;
+    res.json({ success: true, message: 'Profile updated', user: user });
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
+// ── Change password ──
+app.put('/api/user/password', function (req, res) {
+  try {
+    var user = getUserFromUserSession(req);
+    if (!user) return res.status(401).json({ error: 'Not authenticated' });
+    var b = req.body;
+    var currentPw = b.current_password || '';
+    var newPw = b.new_password || '';
+    if (!currentPw || !newPw) return res.status(400).json({ error: 'Current and new passwords are required' });
+    if (newPw.length < 6) return res.status(400).json({ error: 'New password must be at least 6 characters' });
+    var fullUser = db.prepare("SELECT * FROM users WHERE id = ?").get(user.id);
+    if (!fullUser || !verifyPassword(currentPw, fullUser.password_hash)) return res.status(401).json({ error: 'Current password is incorrect' });
+    var hash = hashPassword(newPw);
+    db.prepare("UPDATE users SET password_hash = ? WHERE id = ?").run(hash, user.id);
+    res.json({ success: true, message: 'Password updated' });
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
+// ── Wishlist ──
+app.get('/api/user/wishlist', function (req, res) {
+  try {
+    var user = getUserFromUserSession(req);
+    if (!user) return res.status(401).json({ error: 'Not authenticated' });
+    var items = db.prepare("SELECT w.*, p.name as product_name, p.image, p.category FROM wishlist w LEFT JOIN custom_products p ON p.id = w.product_id WHERE w.user_id = ? ORDER BY w.added_at DESC").all(user.id);
+    res.json({ success: true, items: items });
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
+app.post('/api/user/wishlist', function (req, res) {
+  try {
+    var user = getUserFromUserSession(req);
+    if (!user) return res.status(401).json({ error: 'Not authenticated' });
+    var productId = (req.body.product_id || '').trim();
+    var variantIndex = req.body.variant_index || 0;
+    if (!productId) return res.status(400).json({ error: 'Product ID required' });
+    try {
+      db.prepare("INSERT OR IGNORE INTO wishlist (user_id, product_id, variant_index) VALUES (?, ?, ?)").run(user.id, productId, variantIndex);
+    } catch(e) {}
+    res.json({ success: true });
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
+app.delete('/api/user/wishlist/:id', function (req, res) {
+  try {
+    var user = getUserFromUserSession(req);
+    if (!user) return res.status(401).json({ error: 'Not authenticated' });
+    db.prepare("DELETE FROM wishlist WHERE id = ? AND user_id = ?").run(req.params.id, user.id);
+    res.json({ success: true });
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
+// ── Generate quote from wishlist ──
+app.post('/api/user/wishlist/quote', function (req, res) {
+  try {
+    var user = getUserFromUserSession(req);
+    if (!user) return res.status(401).json({ error: 'Not authenticated' });
+    var itemIds = req.body.item_ids || [];
+    if (!itemIds.length) return res.status(400).json({ error: 'No items selected' });
+    var placeholders = itemIds.map(function() { return '?'; }).join(',');
+    var items = db.prepare("SELECT w.*, p.name, p.price, p.image FROM wishlist w LEFT JOIN custom_products p ON p.id = w.product_id WHERE w.id IN (" + placeholders + ") AND w.user_id = ?").all.apply(null, itemIds.concat([user.id]));
+    if (!items.length) return res.status(404).json({ error: 'No wishlist items found' });
+    var quoteItems = items.map(function(item) { return { product_id: item.product_id, name: item.name || 'Unknown', price: item.price || 0, qty: 1 }; });
+    var subtotal = quoteItems.reduce(function(sum, i) { return sum + (parseFloat(i.price) || 0); }, 0);
+    var docNum = 'Q-' + Date.now().toString(36).toUpperCase() + '-' + String(user.id).slice(-4);
+    db.prepare("INSERT INTO quotations (doc_number, customer_info, items, subtotal, tax, total) VALUES (?, ?, ?, ?, 0, ?)").run(
+      docNum, JSON.stringify({ name: user.name, email: user.email }), JSON.stringify(quoteItems), subtotal, subtotal
+    );
+    res.json({ success: true, doc_number: docNum, items: quoteItems, total: subtotal });
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
+// ── User's quotes ──
+app.get('/api/user/quotes', function (req, res) {
+  try {
+    var user = getUserFromUserSession(req);
+    if (!user) return res.status(401).json({ error: 'Not authenticated' });
+    var rows = db.prepare("SELECT * FROM quotations WHERE customer_info LIKE ? ORDER BY created_at DESC").all('%' + user.email + '%');
+    res.json({ success: true, quotes: rows });
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
+// ── User's repairs (linked by email) ──
+app.get('/api/user/repairs', function (req, res) {
+  try {
+    var user = getUserFromUserSession(req);
+    if (!user) return res.status(401).json({ error: 'Not authenticated' });
+    if (!user.email) return res.json({ success: true, repairs: [] });
+    var rows = db.prepare("SELECT j.*, b.name as branch_name, b.phone as branch_phone FROM job_cards j LEFT JOIN branches b ON b.id = j.branch_id WHERE LOWER(j.client_email) = ? ORDER BY j.created_at DESC").all(user.email.toLowerCase());
+    res.json({ success: true, repairs: rows });
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
+// ── User OAuth config endpoint ──
+app.get('/api/user/auth-config', function (req, res) {
+  res.json({
+    googleEnabled: googleAuthEnabled,
+    googleClientId: GOOGLE_CLIENT_ID
+  });
+});
+
+// ── Live Chat API ──
+
+// Separate upload handler for chat (accepts more file types)
+var chatStorage = multer.diskStorage({
+  destination: function (req, file, cb) { cb(null, UPLOADS_DIR); },
+  filename: function (req, file, cb) {
+    var ext = path.extname(file.originalname).toLowerCase();
+    cb(null, 'chat_' + Date.now() + '_' + crypto.randomBytes(6).toString('hex') + ext);
+  }
+});
+var chatUpload = multer({ storage: chatStorage, limits: { fileSize: 20 * 1024 * 1024 } });
+
+// Start a new chat session (or return existing active session for this client)
+app.post('/api/chat/start', function (req, res) {
+  try {
+    var name = (req.body.name || 'Guest').trim();
+    var email = (req.body.email || '').trim().toLowerCase();
+    var branchId = (req.body.branch_id || '').trim();
+    var branchName = (req.body.branch_name || '').trim();
+    var existing = email ? db.prepare("SELECT * FROM chat_sessions WHERE client_email = ? AND status = 'active' ORDER BY last_activity DESC LIMIT 1").get(email) : null;
+    if (existing) {
+      db.prepare("UPDATE chat_sessions SET last_activity = datetime('now') WHERE id = ?").run(existing.id);
+      return res.json({ success: true, session: existing });
+    }
+    var sessionId = 'chat_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
+    db.prepare("INSERT INTO chat_sessions (id, client_name, client_email, branch_id, branch_name) VALUES (?, ?, ?, ?, ?)").run(sessionId, name, email, branchId || null, branchName || null);
+    var session = db.prepare("SELECT * FROM chat_sessions WHERE id = ?").get(sessionId);
+    res.json({ success: true, session: session });
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
+// Client sends a message (text, file, or product interaction)
+app.post('/api/chat/send', function (req, res) {
+  try {
+    var sessionId = (req.body.session_id || '').trim();
+    var message = (req.body.message || '').trim();
+    var messageType = req.body.message_type || 'text';
+    var attachments = req.body.attachments || null;
+    if (!sessionId) return res.status(400).json({ error: 'Session ID required' });
+    if (messageType === 'text' && !message) return res.status(400).json({ error: 'Message required' });
+    var session = db.prepare("SELECT * FROM chat_sessions WHERE id = ? AND status = 'active'").get(sessionId);
+    if (!session) return res.status(404).json({ error: 'Session not found or closed' });
+    db.prepare("INSERT INTO chat_messages (session_id, sender_type, sender_name, message, message_type, attachments_json) VALUES (?, 'client', ?, ?, ?, ?)").run(sessionId, session.client_name, message, messageType, attachments ? JSON.stringify(attachments) : null);
+    db.prepare("UPDATE chat_sessions SET last_activity = datetime('now') WHERE id = ?").run(sessionId);
+    res.json({ success: true });
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
+// Client file upload for chat
+app.post('/api/chat/upload', chatUpload.single('file'), function (req, res) {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+    var url = '/uploads/' + req.file.filename;
+    res.json({ success: true, file: { name: req.file.originalname, url: url, type: req.file.mimetype, size: req.file.size } });
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
+// Poll for new messages (client side)
+app.get('/api/chat/messages', function (req, res) {
+  try {
+    var sessionId = (req.query.session_id || '').trim();
+    var since = parseInt(req.query.since, 10) || 0;
+    var session = db.prepare("SELECT * FROM chat_sessions WHERE id = ?").get(sessionId);
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+    var messages = db.prepare("SELECT * FROM chat_messages WHERE session_id = ? AND id > ? ORDER BY created_at ASC").all(sessionId, since);
+    res.json({ success: true, messages: messages, session: session });
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
+// ── Admin chat endpoints (require admin auth) ──
+
+// List all chat sessions (active first, then closed)
+app.get('/api/admin/chat/sessions', function (req, res) {
+  try {
+    var user = getUserFromRequest(req);
+    if (!user) return res.status(401).json({ error: 'Unauthorized' });
+    var sessions = db.prepare("SELECT s.*, (SELECT COUNT(*) FROM chat_messages m WHERE m.session_id = s.id AND m.sender_type = 'client' AND m.read_at IS NULL) as unread FROM chat_sessions s ORDER BY s.status ASC, s.last_activity DESC").all();
+    res.json({ success: true, sessions: sessions });
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
+// Get all messages for a session
+app.get('/api/admin/chat/messages', function (req, res) {
+  try {
+    var user = getUserFromRequest(req);
+    if (!user) return res.status(401).json({ error: 'Unauthorized' });
+    var sessionId = (req.query.session_id || '').trim();
+    var messages = db.prepare("SELECT * FROM chat_messages WHERE session_id = ? ORDER BY created_at ASC").all(sessionId);
+    // Mark unread client messages as read
+    db.prepare("UPDATE chat_messages SET read_at = datetime('now') WHERE session_id = ? AND sender_type = 'client' AND read_at IS NULL").run(sessionId);
+    res.json({ success: true, messages: messages });
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
+// Admin sends a message (text, product recommendation)
+app.post('/api/admin/chat/send', function (req, res) {
+  try {
+    var user = getUserFromRequest(req);
+    if (!user) return res.status(401).json({ error: 'Unauthorized' });
+    var sessionId = (req.body.session_id || '').trim();
+    var message = (req.body.message || '').trim();
+    var messageType = req.body.message_type || 'text';
+    var productData = req.body.product_data || null;
+    var attachments = req.body.attachments || null;
+    if (!sessionId) return res.status(400).json({ error: 'Session ID required' });
+    if (messageType === 'text' && !message) return res.status(400).json({ error: 'Message required' });
+    var session = db.prepare("SELECT * FROM chat_sessions WHERE id = ? AND status = 'active'").get(sessionId);
+    if (!session) return res.status(404).json({ error: 'Session not found or closed' });
+    var dataJson = null;
+    if (messageType === 'product' && productData) dataJson = JSON.stringify(productData);
+    else if (attachments) dataJson = JSON.stringify(attachments);
+    db.prepare("INSERT INTO chat_messages (session_id, sender_type, sender_name, message, message_type, attachments_json) VALUES (?, 'admin', ?, ?, ?, ?)").run(sessionId, user.name || 'Admin', message, messageType, dataJson);
+    db.prepare("UPDATE chat_sessions SET last_activity = datetime('now'), assigned_to = ? WHERE id = ?").run(user.name || 'Admin', sessionId);
+    res.json({ success: true });
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
+// Admin file upload for chat
+app.post('/api/admin/chat/upload', chatUpload.single('file'), function (req, res) {
+  try {
+    var user = getUserFromRequest(req);
+    if (!user) return res.status(401).json({ error: 'Unauthorized' });
+    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+    var url = '/uploads/' + req.file.filename;
+    res.json({ success: true, file: { name: req.file.originalname, url: url, type: req.file.mimetype, size: req.file.size } });
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
+// Transfer session to another admin
+app.post('/api/admin/chat/transfer', function (req, res) {
+  try {
+    var user = getUserFromRequest(req);
+    if (!user) return res.status(401).json({ error: 'Unauthorized' });
+    var sessionId = (req.body.session_id || '').trim();
+    var transferTo = (req.body.transfer_to || '').trim();
+    if (!sessionId || !transferTo) return res.status(400).json({ error: 'Session ID and target admin required' });
+    var session = db.prepare("SELECT * FROM chat_sessions WHERE id = ?").get(sessionId);
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+    db.prepare("UPDATE chat_sessions SET assigned_to = ?, transferred_from = ? WHERE id = ?").run(transferTo, (user.name || 'Admin'), sessionId);
+    // Add system message
+    db.prepare("INSERT INTO chat_messages (session_id, sender_type, sender_name, message, message_type) VALUES (?, 'admin', 'System', ?, 'text')").run(sessionId, 'Conversation transferred to ' + transferTo + ' by ' + (user.name || 'Admin'));
+    res.json({ success: true });
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
+// Close a session
+app.post('/api/admin/chat/close', function (req, res) {
+  try {
+    var user = getUserFromRequest(req);
+    if (!user) return res.status(401).json({ error: 'Unauthorized' });
+    var sessionId = (req.body.session_id || '').trim();
+    db.prepare("UPDATE chat_sessions SET status = 'closed' WHERE id = ?").run(sessionId);
+    res.json({ success: true });
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
+// Get unread count (for admin notification badge)
+app.get('/api/admin/chat/unread', function (req, res) {
+  try {
+    var user = getUserFromRequest(req);
+    if (!user) return res.status(401).json({ error: 'Unauthorized' });
+    var unread = db.prepare("SELECT COUNT(*) as count FROM chat_sessions s JOIN chat_messages m ON m.session_id = s.id WHERE s.status = 'active' AND m.sender_type = 'client' AND m.read_at IS NULL").get();
+    res.json({ success: true, unread: unread ? unread.count : 0 });
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
+// Product search for admin (used in chat recommendations)
+app.get('/api/admin/products/search', function (req, res) {
+  try {
+    var user = getUserFromRequest(req);
+    if (!user) return res.status(401).json({ error: 'Unauthorized' });
+    var q = (req.query.q || '').trim();
+    if (!q || q.length < 2) return res.json({ success: true, products: [] });
+    var products = db.prepare("SELECT * FROM custom_products WHERE (name LIKE ? OR category LIKE ?) AND hidden = 0 ORDER BY date DESC LIMIT 20").all('%' + q + '%', '%' + q + '%');
+    // Parse variants_json to extract prices
+    products.forEach(function(p) {
+      try { p.variants = JSON.parse(p.variants_json || '[]'); } catch(e) { p.variants = []; }
+      delete p.variants_json;
+    });
+    res.json({ success: true, products: products });
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
+// List online admins (for chat transfer)
+app.get('/api/admin/chat/admins', function (req, res) {
+  try {
+    var user = getUserFromRequest(req);
+    if (!user) return res.status(401).json({ error: 'Unauthorized' });
+    var now = Date.now();
+    var timeout = 2 * 60 * 1000; // 2 minutes
+    var adminList = [];
+    adminLastSeen.forEach(function(time, username) {
+      adminList.push({ username: username, online: (now - time) < timeout, lastSeen: time });
+    });
+    // Also include admin user from DB (users with permissions)
+    var dbAdmins = db.prepare("SELECT username, name, last_login FROM users WHERE permissions != '{}' OR role = 'admin' OR role = 'staff'").all();
+    dbAdmins.forEach(function(a) {
+      if (!adminList.some(function(al) { return al.username === a.username; })) {
+        var lastSeen = a.last_login ? new Date(a.last_login + 'Z').getTime() : 0;
+        var online = lastSeen > 0 && (Date.now() - lastSeen) < timeout;
+        adminList.push({ username: a.username, name: a.name || a.username, online: online, lastSeen: lastSeen });
+      }
+    });
+    // Fallback: add "admin" if no one tracked
+    if (!adminList.length) {
+      adminList.push({ username: 'admin', name: 'Admin', online: true, lastSeen: Date.now() });
+    }
+    res.json({ success: true, admins: adminList });
   } catch (err) {
     sendError(res, err);
   }

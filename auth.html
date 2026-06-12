@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sign In – Royal Computers Namibia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap"></noscript>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:#f5f3f4;color:#1a1a2e;min-height:100vh;display:flex;align-items:center;justify-content:center}
+.card{background:#fff;border-radius:16px;box-shadow:0 2px 24px rgba(0,0,0,.08);padding:40px;max-width:480px;width:100%;margin:24px;text-align:center}
+.form-wrap{min-height:280px}
+.card .logo{width:64px;height:64px;object-fit:contain;margin-bottom:12px;border-radius:12px}
+.card h1{font-size:22px;font-weight:700;margin-bottom:2px}
+.card .subtitle{font-size:14px;color:#666;margin-bottom:24px}
+.card input{width:100%;padding:12px 16px;border:2px solid #ddd;border-radius:10px;font-size:14px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s;margin-bottom:10px}
+.card input:focus{border-color:#e5383b}
+.card .btn-primary{width:100%;padding:13px;background:#e5383b;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .2s}
+.card .btn-primary:hover{background:#a4161a}
+.card .btn-primary:disabled{opacity:.6;cursor:default}
+.card .btn-google{width:100%;padding:12px;background:#fff;color:#333;border:2px solid #ddd;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:border-color .2s;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px}
+.card .btn-google:hover{border-color:#333}
+.card .divider{display:flex;align-items:center;gap:12px;margin:16px 0;font-size:12px;color:#999}
+.card .divider hr{flex:1;border:none;border-top:1px solid #eee}
+.card .msg{font-size:13px;min-height:20px;margin-bottom:8px}
+.card .tabs{display:flex;margin-bottom:20px;border-bottom:2px solid #eee}
+.card .tab{flex:1;padding:10px;font-size:14px;font-weight:600;cursor:pointer;color:#999;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s}
+.card .tab.active{color:#e5383b;border-bottom-color:#e5383b}
+.card .back-link{display:inline-block;margin-top:16px;font-size:13px;color:#e5383b;text-decoration:none}
+.card .back-link:hover{text-decoration:underline}
+.card .forgot-link{display:block;font-size:12px;color:#888;text-align:right;margin-top:-4px;margin-bottom:12px}
+.card .forgot-link a{color:#e5383b;text-decoration:none}
+.card .forgot-link a:hover{text-decoration:underline}
+.form-error{color:#d32f2f;font-size:12px;margin-bottom:6px;display:none}
+.spotlight-container-global{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
+.spotlight-overlay-global{position:absolute;inset:0;display:flex;justify-content:space-around;align-items:center;opacity:.6}
+.spotlight-global{width:300px;height:300px;border-radius:50%;filter:blur(120px)}
+.spotlight-left-global{background:rgba(229,56,59,.08)}
+.spotlight-mid-global{background:rgba(229,56,59,.05)}
+.spotlight-right-global{background:rgba(229,56,59,.03)}
+</style>
+</head>
+<body>
+<canvas id="shader-canvas" class="shader-canvas"></canvas>
+
+<div class="spotlight-container-global">
+  <div class="spotlight-overlay-global">
+    <div class="spotlight-global spotlight-left-global"></div>
+    <div class="spotlight-global spotlight-mid-global"></div>
+    <div class="spotlight-global spotlight-right-global"></div>
+  </div>
+</div>
+
+<div class="card">
+  <img src="ROYAL PICS/royal logo.webp" alt="Royal Computers Namibia" class="logo" />
+  <h1 id="authTitle">Welcome</h1>
+  <p class="subtitle" id="authSubtitle">Sign in to your account</p>
+
+  <div class="tabs">
+    <div class="tab active" id="tabSignin" onclick="switchTab('signin')">Sign In</div>
+    <div class="tab" id="tabSignup" onclick="switchTab('signup')">Create Account</div>
+  </div>
+
+  <div class="msg" id="authMsg"></div>
+
+  <div class="form-wrap">
+  <!-- Sign In Form -->
+  <div id="signinForm">
+    <input type="text" id="loginInput" placeholder="Username or email" autocomplete="username" />
+    <input type="password" id="passwordInput" placeholder="Password" autocomplete="current-password" />
+    <div class="forgot-link"><a href="reset-password.html">Forgot password?</a></div>
+    <button class="btn-primary" id="signinBtn" onclick="handleSignIn()">Sign In</button>
+  </div>
+
+  <!-- Sign Up Form -->
+  <div id="signupForm" style="display:none;">
+    <input type="text" id="regName" placeholder="Full name" autocomplete="name" />
+    <input type="email" id="regEmail" placeholder="Email address" autocomplete="email" />
+    <input type="text" id="regUsername" placeholder="Username" autocomplete="username" />
+    <input type="password" id="regPassword" placeholder="Password (min 6 chars)" autocomplete="new-password" />
+    <input type="password" id="regConfirm" placeholder="Confirm password" autocomplete="new-password" />
+    <button class="btn-primary" id="signupBtn" onclick="handleSignUp()">Create Account</button>
+  </div>
+  </div>
+
+  <div class="divider"><hr /><span>OR</span><hr /></div>
+
+  <button class="btn-google" id="googleBtn" onclick="handleGoogleLogin()">
+    <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.54 28.59A14.5 14.5 0 0 1 9.5 24c0-1.59.28-3.14.76-4.59l-7.98-6.19A23.99 23.99 0 0 0 0 24c0 3.77.88 7.35 2.56 10.56l7.98-5.97z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 5.97C6.51 42.62 14.62 48 24 48z"/></svg>
+    Sign in with Google
+  </button>
+
+  <a href="/" class="back-link">&larr; Back to home</a>
+</div>
+
+<script>
+var currentTab = 'signin';
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.getElementById('tabSignin').className = 'tab' + (tab === 'signin' ? ' active' : '');
+  document.getElementById('tabSignup').className = 'tab' + (tab === 'signup' ? ' active' : '');
+  document.getElementById('signinForm').style.display = tab === 'signin' ? '' : 'none';
+  document.getElementById('signupForm').style.display = tab === 'signup' ? '' : 'none';
+  document.getElementById('authTitle').textContent = tab === 'signin' ? 'Welcome' : 'Join Us';
+  document.getElementById('authSubtitle').textContent = tab === 'signin' ? 'Sign in to your account' : 'Create your account';
+  document.getElementById('authMsg').textContent = '';
+}
+
+function setMsg(msg, isError) {
+  var el = document.getElementById('authMsg');
+  el.textContent = msg;
+  el.style.color = isError ? '#d32f2f' : '#16a34a';
+}
+
+function handleSignIn() {
+  var login = document.getElementById('loginInput').value.trim();
+  var password = document.getElementById('passwordInput').value;
+  if (!login || !password) { setMsg('Enter username/email and password.', true); return; }
+  var btn = document.getElementById('signinBtn');
+  btn.disabled = true; btn.textContent = 'Signing in...'; setMsg('', false);
+  fetch('/api/user/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ login: login, password: password })
+  }).then(function(r) {
+    if (!r.ok) return r.json().then(function(d) { throw new Error(d.error || 'Login failed'); });
+    return r.json();
+  }).then(function(d) {
+    if (d.success && d.token) {
+      localStorage.setItem('user_token', d.token);
+      localStorage.setItem('user_info', JSON.stringify(d.user));
+      window.location.href = '/dashboard.html';
+    } else {
+      throw new Error(d.error || 'Login failed');
+    }
+  }).catch(function(err) {
+    setMsg(err.message, true);
+    btn.disabled = false; btn.textContent = 'Sign In';
+  });
+}
+
+function handleSignUp() {
+  var name = document.getElementById('regName').value.trim();
+  var email = document.getElementById('regEmail').value.trim();
+  var username = document.getElementById('regUsername').value.trim();
+  var password = document.getElementById('regPassword').value;
+  var confirm = document.getElementById('regConfirm').value;
+  if (!name || !email || !username || !password) { setMsg('All fields are required.', true); return; }
+  if (password !== confirm) { setMsg('Passwords do not match.', true); return; }
+  if (password.length < 6) { setMsg('Password must be at least 6 characters.', true); return; }
+  var btn = document.getElementById('signupBtn');
+  btn.disabled = true; btn.textContent = 'Creating account...'; setMsg('', false);
+  fetch('/api/user/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: name, email: email, username: username, password: password })
+  }).then(function(r) {
+    if (!r.ok) return r.json().then(function(d) { throw new Error(d.error || 'Registration failed'); });
+    return r.json();
+  }).then(function(d) {
+    if (d.success && d.token) {
+      localStorage.setItem('user_token', d.token);
+      localStorage.setItem('user_info', JSON.stringify(d.user));
+      window.location.href = '/dashboard.html';
+    } else {
+      throw new Error(d.error || 'Registration failed');
+    }
+  }).catch(function(err) {
+    setMsg(err.message, true);
+    btn.disabled = false; btn.textContent = 'Create Account';
+  });
+}
+
+function handleGoogleLogin() {
+  setMsg('', false);
+  fetch('/api/user/auth-config').then(function(r) { return r.json(); }).then(function(cfg) {
+    if (cfg.googleEnabled) {
+      window.location.href = '/api/auth/google';
+    } else {
+      setMsg('Google login is not configured.', true);
+    }
+  }).catch(function() {
+    setMsg('Cannot contact server.', true);
+  });
+}
+
+// Enter key handlers
+document.getElementById('passwordInput').addEventListener('keydown', function(e) { if (e.key === 'Enter') handleSignIn(); });
+document.getElementById('regConfirm').addEventListener('keydown', function(e) { if (e.key === 'Enter') handleSignUp(); });
+
+// Check if already logged in (for token from Google OAuth redirect)
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  var token = params.get('token');
+  if (token) {
+    localStorage.setItem('user_token', token);
+    // Fetch user info
+    fetch('/api/user/profile', { headers: { 'Authorization': 'Bearer ' + token } })
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        if (d.success && d.user) {
+          localStorage.setItem('user_info', JSON.stringify(d.user));
+          window.location.href = '/dashboard.html';
+        }
+      });
+  } else {
+    var existingToken = localStorage.getItem('user_token');
+    if (existingToken) {
+      fetch('/api/user/profile', { headers: { 'Authorization': 'Bearer ' + existingToken } })
+        .then(function(r) {
+          if (r.ok) window.location.href = '/dashboard.html';
+          else localStorage.removeItem('user_token');
+        });
+    }
+  }
+})();
+</script>
+<script defer src="js/chat-widget.js"></script>
+</body>
+</html>

@@ -180,7 +180,7 @@
 
     var whoEl = document.getElementById('site-who-we-are');
     if (whoEl && window.SITE_DATA.settings && window.SITE_DATA.settings.about_who_we_are) {
-      whoEl.innerHTML = window.SITE_DATA.settings.about_who_we_are;
+      whoEl.textContent = window.SITE_DATA.settings.about_who_we_are;
     }
 
     var statsEl = document.getElementById('site-about-stats');

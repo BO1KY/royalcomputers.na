@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; frame-src 'self'; base-uri 'self'; form-action 'self'" />
+  <title>My Dashboard – Royal Computers Namibia</title>
+  <meta name="description" content="Your Royal Computers Namibia dashboard — manage your profile, wishlist, quotes, and track repairs.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap"></noscript>
+  <link rel="stylesheet" href="css/design-tokens.css">
+  <link rel="stylesheet" href="css/royal-theme.css" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="css/animations.css" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="css/mobile.css" media="print" onload="this.media='all'">
+  <link rel="manifest" href="js/manifest.json" />
+  <link rel="apple-touch-icon" href="ROYAL PICS/royal logo.webp" />
+  <style>
+.page-loader{position:fixed!important;inset:0!important;z-index:99999!important;background:var(--bg-backdrop)!important;display:flex!important;align-items:center!important;justify-content:center!important}
+.loader-spinner{width:48px;height:48px;border:4px solid #ddd;border-top-color:#e5383b;border-radius:50%;animation:loaderSpin .8s linear infinite}
+@keyframes loaderSpin{to{transform:rotate(360deg)}}
+:root{--card-bg:#fff;--card-radius:12px;--card-border:1px solid #eee}
+.dash-layout{max-width:1000px;margin:0 auto;padding:0 20px 60px}
+.dash-header{display:flex;align-items:center;gap:16px;margin-bottom:24px;flex-wrap:wrap}
+.dash-avatar{width:56px;height:56px;border-radius:50%;background:#e5383b;color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;flex-shrink:0}
+.dash-user-info h2{margin:0;font-size:18px}
+.dash-user-info p{margin:2px 0 0;font-size:13px;color:var(--text-muted,#888)}
+.dash-tabs{display:flex;gap:4px;margin-bottom:20px;border-bottom:2px solid #eee;flex-wrap:wrap}
+.dash-tab{padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;color:#888;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s;white-space:nowrap;background:none;border-top:none;border-left:none;border-right:none;font-family:'DM Sans',sans-serif}
+.dash-tab.active{color:#e5383b;border-bottom-color:#e5383b}
+.dash-tab:hover{color:#333}
+.tab-content{display:none}
+.tab-content.active{display:block}
+.section-card{background:var(--card-bg);border-radius:var(--card-radius);border:var(--card-border);padding:24px;margin-bottom:16px}
+.section-card h3{margin:0 0 4px;font-size:16px}
+.section-card .desc{margin:0 0 16px;font-size:13px;color:var(--text-muted,#888)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:600px){.form-row{grid-template-columns:1fr}}
+.form-row .full{grid-column:1/-1}
+.form-group{margin-bottom:10px}
+.form-group label{display:block;font-size:12px;font-weight:600;margin-bottom:4px;color:#555}
+.form-group input,.form-group textarea{width:100%;padding:10px 14px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s;box-sizing:border-box}
+.form-group input:focus,.form-group textarea:focus{border-color:#e5383b}
+.form-group textarea{resize:vertical;min-height:60px}
+.btn-save{padding:10px 24px;background:#e5383b;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .2s}
+.btn-save:hover{background:#a4161a}
+.btn-save:disabled{opacity:.6;cursor:default}
+.btn-outline{padding:8px 18px;background:transparent;color:#e5383b;border:2px solid #e5383b;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.btn-outline:hover{background:#e5383b;color:#fff}
+.btn-sm{padding:6px 14px;font-size:11px}
+.msg{font-size:12px;min-height:20px;margin-top:6px}
+.wishlist-item,.quote-item,.repair-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #f0f0f0}
+.wishlist-item:last-child,.quote-item:last-child,.repair-item:last-child{border-bottom:none}
+.wishlist-img{width:48px;height:48px;border-radius:8px;object-fit:cover;background:#f5f3f4}
+.wishlist-info{flex:1}
+.wishlist-info h4{margin:0;font-size:13px}
+.wishlist-info p{margin:2px 0 0;font-size:12px;color:#888}
+.wishlist-actions{display:flex;gap:6px;flex-wrap:wrap}
+.empty-state{text-align:center;padding:40px 20px;color:#999;font-size:14px}
+.repair-status{padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;white-space:nowrap}
+.status-received{background:#dbeafe;color:#1e40af}
+.status-in-progress{background:#fef3c7;color:#92400e}
+.status-ready{background:#dcfce7;color:#166534}
+.status-completed{background:#dcfce7;color:#166534}
+.status-delivered{background:#e0e7ff;color:#3730a3}
+.repair-chat{font-size:11px;color:#e5383b;text-decoration:none;font-weight:600}
+.repair-chat:hover{text-decoration:underline}
+.quote-select{width:16px;height:16px;cursor:pointer}
+.quote-actions{margin:12px 0;display:flex;gap:8px;flex-wrap:wrap}
+.modal-overlay{position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal-box{background:#fff;border-radius:16px;padding:28px;max-width:460px;width:100%;max-height:80vh;overflow-y:auto}
+.modal-box h3{margin:0 0 8px;font-size:17px}
+.modal-box p{font-size:13px;color:#666;margin:0 0 16px}
+</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link" style="position:absolute;top:-99999px">Skip to main content</a>
+
+<div class="page-loader" id="pageLoader"><div class="loader-spinner"></div></div>
+
+<canvas id="shader-canvas" class="shader-canvas"></canvas>
+
+<div class="spotlight-container-global">
+  <div class="spotlight-overlay-global">
+    <div class="spotlight-global spotlight-left-global"></div>
+    <div class="spotlight-global spotlight-mid-global"></div>
+    <div class="spotlight-global spotlight-right-global"></div>
+  </div>
+</div>
+
+<header>
+  <div class="header-inner">
+    <a href="index.html" class="logo"><img src="ROYAL PICS/royal logo.webp" alt="Royal Computers Namibia" /></a>
+    <nav>
+      <button class="nav-close" aria-label="Close menu">&times;</button>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="deals.html">Deals</a></li>
+        <li><a href="About-us.html">About Us</a></li>
+      </ul>
+    </nav>
+    <button class="mobile-toggle" id="mobileToggle" aria-label="Menu"><span></span><span></span><span></span></button>
+    <div class="header-right">
+      <button class="cart-btn" onclick="window.location.href='dashboard.html'" title="Account">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </button>
+      <button class="cart-btn" onclick="window.location.href='tracking.html'" title="Track Repair">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4m10-10h-4M6 12H2"/></svg>
+      </button>
+      <button class="cart-btn" id="openCartBtn" onclick="openCart()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <span class="cart-count" id="cartCount" style="display:none;">0</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="breadcrumb"><a href="index.html">Home</a> &rsaquo; <span>My Dashboard</span></div>
+
+<div class="page-header"><h1>My Dashboard</h1><p id="dashGreeting">Welcome back</p></div>
+
+<div id="main-content" class="dash-layout">
+
+  <div class="dash-header" id="dashProfileHeader">
+    <div class="dash-avatar" id="avatarInitial">G</div>
+    <div class="dash-user-info">
+      <h2 id="profileName">Guest</h2>
+      <p id="profileEmail">Sign in to manage your account</p>
+    </div>
+    <button class="btn-outline btn-sm" onclick="logout()" style="margin-left:auto;" id="logoutBtn">Sign Out</button>
+  </div>
+
+  <div class="dash-tabs" id="tabBar">
+    <button class="dash-tab active" data-tab="profile">Profile</button>
+    <button class="dash-tab" data-tab="wishlist">Wishlist</button>
+    <button class="dash-tab" data-tab="quotes">My Quotes</button>
+    <button class="dash-tab" data-tab="repairs">My Repairs</button>
+  </div>
+
+  <!-- ─── PROFILE ─── -->
+  <div class="tab-content active" id="tab-profile">
+    <div class="section-card">
+      <h3>Personal Information</h3>
+      <p class="desc">Update your name, email, phone, and address.</p>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="editName" />
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="editEmail" />
+        </div>
+        <div class="form-group">
+          <label>Phone</label>
+          <input type="tel" id="editPhone" />
+        </div>
+        <div class="form-group">
+          <label>City</label>
+          <input type="text" id="editCity" />
+        </div>
+        <div class="form-group full">
+          <label>Address</label>
+          <textarea id="editAddress"></textarea>
+        </div>
+      </div>
+      <div class="msg" id="profileMsg"></div>
+      <button class="btn-save" onclick="saveProfile()">Save Changes</button>
+    </div>
+
+    <div class="section-card">
+      <h3>Change Password</h3>
+      <p class="desc">Enter your current password and a new password.</p>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Current Password</label>
+          <input type="password" id="currentPw" autocomplete="current-password" />
+        </div>
+        <div class="form-group">
+          <label>New Password</label>
+          <input type="password" id="newPw" autocomplete="new-password" />
+        </div>
+      </div>
+      <div class="msg" id="pwMsg"></div>
+      <button class="btn-save" onclick="changePassword()">Update Password</button>
+    </div>
+  </div>
+
+  <!-- ─── WISHLIST ─── -->
+  <div class="tab-content" id="tab-wishlist">
+    <div class="section-card">
+      <h3>My Wishlist</h3>
+      <p class="desc">Products you've saved for later. Select items to generate a quote.</p>
+      <div id="wishlistContainer"><div class="empty-state">Loading...</div></div>
+      <div class="quote-actions" id="wishlistActions" style="display:none;">
+        <button class="btn-save" onclick="quoteFromWishlist()">Generate Quote from Selected</button>
+        <button class="btn-outline btn-sm" onclick="window.location.href='products.html'">Browse Products</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── QUOTES ─── -->
+  <div class="tab-content" id="tab-quotes">
+    <div class="section-card">
+      <h3>My Quotes</h3>
+      <p class="desc">View your previously generated quotes.</p>
+      <div id="quotesContainer"><div class="empty-state">Loading...</div></div>
+      <button class="btn-save" onclick="window.location.href='products.html'" style="margin-top:12px;">Get a New Quote</button>
+    </div>
+  </div>
+
+  <!-- ─── REPAIRS ─── -->
+  <div class="tab-content" id="tab-repairs">
+    <div class="section-card">
+      <h3>My Repairs</h3>
+      <p class="desc">Track your devices currently in for service.</p>
+      <div id="repairsContainer"><div class="empty-state">Loading...</div></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Quote Result Modal -->
+<div class="modal-overlay" id="quoteResultModal">
+  <div class="modal-box">
+    <h3>Quote Generated</h3>
+    <p>Your quote has been created successfully.</p>
+    <div id="quoteResultContent"></div>
+    <button class="btn-save" onclick="closeQuoteResult()" style="margin-top:12px;">Done</button>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="footer-brand-body">
+        <div class="footer-brand-name">Royal Computers Namibia</div>
+        <p>Leading the way in digital lifestyle</p>
+        <div style="margin-top:12px;">
+          <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> GF Shop 12 Gustav Voigts Center, Independence Ave, Windhoek</div>
+          <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg> 061228179</div>
+          <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg> +264813631483</div>
+          <div class="footer-contact-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> windhoek@netmac.co.za</div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Pages</h4>
+      <ul>
+        <li><a href="products.html">Products</a></li>
+        <li><a href="Contact-us.html">Contact Us</a></li>
+        <li><a href="About-us.html">About Us</a></li>
+        <li><a href="privacy-policy.html">Privacy Policy</a></li>
+        <li><a href="tracking.html">Track Repair</a></li>
+        <li><a href="terms-conditions.html">Terms & Conditions</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Branches</h4>
+      <ul>
+        <li><a href="Contact-us.html">Windhoek</a></li>
+        <li><a href="Contact-us.html">Swakopmund</a></li>
+        <li><a href="Contact-us.html">Oshakati</a></li>
+        <li><a href="Contact-us.html">Walvis Bay</a></li>
+        <li><a href="Contact-us.html">Tsumeb</a></li>
+        <li><a href="Contact-us.html">Grove Mall, Windhoek</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Social</h4>
+      <ul>
+        <li><a href="https://www.facebook.com/RoyalComputersNamibia/" target="_blank"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle;margin-right:6px;"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>Facebook</a></li>
+        <li><a href="https://www.instagram.com/royalcomputernam/" target="_blank"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>Instagram</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>Copyright &copy; Royal Computers Namibia</span>
+    <span><a href="terms-conditions.html">Terms and conditions</a> apply</span>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+<script>
+var API = window.location.origin;
+var userToken = localStorage.getItem('user_token');
+
+function getHeaders() {
+  return { 'Authorization': 'Bearer ' + userToken, 'Content-Type': 'application/json' };
+}
+
+function authFetch(url, opts) {
+  opts = opts || {};
+  opts.headers = opts.headers || {};
+  opts.headers['Authorization'] = 'Bearer ' + userToken;
+  if (typeof opts.body === 'object' && !(opts.body instanceof FormData)) {
+    opts.headers['Content-Type'] = 'application/json';
+    opts.body = JSON.stringify(opts.body);
+  }
+  return fetch(url, opts).then(function(r) {
+    if (r.status === 401) { logout(); throw new Error('Session expired'); }
+    if (!r.ok) return r.json().then(function(d) { throw new Error(d.error || 'Request failed'); });
+    return r.json();
+  });
+}
+
+function setMsg(el, msg, isError) {
+  el.textContent = msg;
+  el.style.color = isError ? '#d32f2f' : '#16a34a';
+}
+
+// ─── Auth check ───
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  var qToken = params.get('token');
+  if (qToken) {
+    userToken = qToken;
+    localStorage.setItem('user_token', qToken);
+    history.replaceState(null, '', '/dashboard.html');
+  }
+  if (!userToken) {
+    window.location.href = '/auth.html';
+    return;
+  }
+  authFetch('/api/user/profile').then(function(d) {
+    if (d.success && d.user) {
+      var u = d.user;
+      localStorage.setItem('user_info', JSON.stringify(u));
+      document.getElementById('profileName').textContent = u.display_name || u.name || u.username;
+      document.getElementById('profileEmail').textContent = u.email || '';
+      document.getElementById('dashGreeting').textContent = 'Welcome back, ' + (u.display_name || u.name || u.username);
+      document.getElementById('avatarInitial').textContent = (u.display_name || u.name || u.username || 'G').charAt(0).toUpperCase();
+      document.getElementById('editName').value = u.name || '';
+      document.getElementById('editEmail').value = u.email || '';
+      document.getElementById('editPhone').value = u.phone || '';
+      document.getElementById('editCity').value = u.city || '';
+      document.getElementById('editAddress').value = u.address || '';
+    }
+    document.getElementById('pageLoader').style.display = 'none';
+    loadWishlist();
+    loadQuotes();
+    loadRepairs();
+  }).catch(function(err) {
+    document.getElementById('pageLoader').style.display = 'none';
+    if (err.message === 'Session expired') return;
+    document.getElementById('dashProfileHeader').innerHTML = '<p style="color:#d32f2f;font-size:14px;">Failed to load profile. <a href="auth.html" style="color:#e5383b;">Sign in again</a></p>';
+  });
+})();
+
+// ─── Tab switching ───
+document.querySelectorAll('.dash-tab').forEach(function(tab) {
+  tab.addEventListener('click', function() {
+    document.querySelectorAll('.dash-tab').forEach(function(t) { t.classList.remove('active'); });
+    document.querySelectorAll('.tab-content').forEach(function(tc) { tc.classList.remove('active'); });
+    this.classList.add('active');
+    document.getElementById('tab-' + this.dataset.tab).classList.add('active');
+    if (this.dataset.tab === 'wishlist') loadWishlist();
+    if (this.dataset.tab === 'quotes') loadQuotes();
+    if (this.dataset.tab === 'repairs') loadRepairs();
+  });
+});
+
+// ─── Profile ───
+function saveProfile() {
+  var data = {
+    name: document.getElementById('editName').value.trim(),
+    email: document.getElementById('editEmail').value.trim(),
+    phone: document.getElementById('editPhone').value.trim(),
+    city: document.getElementById('editCity').value.trim(),
+    address: document.getElementById('editAddress').value.trim()
+  };
+  var btn = event.target;
+  btn.disabled = true; btn.textContent = 'Saving...';
+  authFetch('/api/user/profile', { method: 'PUT', body: data }).then(function(d) {
+    if (d.success) {
+      setMsg(document.getElementById('profileMsg'), 'Profile updated!');
+      localStorage.setItem('user_info', JSON.stringify(d.user));
+      document.getElementById('profileName').textContent = d.user.name || d.user.username;
+      document.getElementById('profileEmail').textContent = d.user.email || '';
+    }
+  }).catch(function(err) {
+    setMsg(document.getElementById('profileMsg'), err.message, true);
+  }).then(function() { btn.disabled = false; btn.textContent = 'Save Changes'; });
+}
+
+function changePassword() {
+  var currentPw = document.getElementById('currentPw').value;
+  var newPw = document.getElementById('newPw').value;
+  if (!currentPw || !newPw) { setMsg(document.getElementById('pwMsg'), 'Fill in both fields.', true); return; }
+  if (newPw.length < 6) { setMsg(document.getElementById('pwMsg'), 'New password must be at least 6 characters.', true); return; }
+  var btn = event.target;
+  btn.disabled = true; btn.textContent = 'Updating...';
+  authFetch('/api/user/password', { method: 'PUT', body: { current_password: currentPw, new_password: newPw } }).then(function(d) {
+    if (d.success) {
+      setMsg(document.getElementById('pwMsg'), 'Password updated!');
+      document.getElementById('currentPw').value = '';
+      document.getElementById('newPw').value = '';
+    }
+  }).catch(function(err) {
+    setMsg(document.getElementById('pwMsg'), err.message, true);
+  }).then(function() { btn.disabled = false; btn.textContent = 'Update Password'; });
+}
+
+// ─── Wishlist ───
+var wishlistData = [];
+
+function loadWishlist() {
+  var container = document.getElementById('wishlistContainer');
+  var actions = document.getElementById('wishlistActions');
+  authFetch('/api/user/wishlist').then(function(d) {
+    wishlistData = d.items || [];
+    if (!wishlistData.length) {
+      container.innerHTML = '<div class="empty-state">Your wishlist is empty. <a href="products.html" style="color:#e5383b;">Browse products</a></div>';
+      actions.style.display = 'none';
+      return;
+    }
+    var html = wishlistData.map(function(item, idx) {
+      var name = item.product_name || item.product_id || 'Product';
+      var price = item.price ? 'N$' + parseFloat(item.price).toFixed(2) : '';
+      var img = item.image ? '<img src="' + item.image + '" alt="' + esc(name) + '" class="wishlist-img" />' : '<div class="wishlist-img" style="background:#eee;display:flex;align-items:center;justify-content:center;font-size:18px;">&#128722;</div>';
+      return '<div class="wishlist-item">' +
+        '<input type="checkbox" class="quote-select" data-index="' + idx + '" />' +
+        img +
+        '<div class="wishlist-info"><h4>' + esc(name) + '</h4><p>' + price + '</p></div>' +
+        '<div class="wishlist-actions">' +
+          '<button class="btn-outline btn-sm" onclick="removeFromWishlist(' + item.id + ')">Remove</button>' +
+        '</div></div>';
+    }).join('');
+    container.innerHTML = html;
+    actions.style.display = '';
+    // Select all checkbox
+    container.querySelectorAll('.quote-select').forEach(function(cb) { cb.checked = true; });
+  }).catch(function(err) {
+    container.innerHTML = '<div class="empty-state">Failed to load wishlist.</div>';
+  });
+}
+
+function removeFromWishlist(id) {
+  authFetch('/api/user/wishlist/' + id, { method: 'DELETE' }).then(function() {
+    loadWishlist();
+  });
+}
+
+function quoteFromWishlist() {
+  var selected = [];
+  document.querySelectorAll('.quote-select:checked').forEach(function(cb) {
+    var idx = parseInt(cb.dataset.index);
+    if (wishlistData[idx]) selected.push(wishlistData[idx].id);
+  });
+  if (!selected.length) { alert('Select at least one item from your wishlist.'); return; }
+  var btn = event.target;
+  btn.disabled = true; btn.textContent = 'Generating...';
+  authFetch('/api/user/wishlist/quote', { method: 'POST', body: { item_ids: selected } }).then(function(d) {
+    if (d.success) {
+      var content = document.getElementById('quoteResultContent');
+      var itemsHtml = (d.items || []).map(function(i) {
+        return '<div style="display:flex;justify-content:space-between;padding:6px 0;font-size:13px;border-bottom:1px solid #f0f0f0;"><span>' + esc(i.name) + ' x' + i.qty + '</span><span>N$' + (parseFloat(i.price) || 0).toFixed(2) + '</span></div>';
+      }).join('');
+      content.innerHTML = '<p style="font-size:14px;font-weight:600;">Reference: ' + esc(d.doc_number) + '</p>' + itemsHtml + '<div style="display:flex;justify-content:space-between;padding:8px 0;font-size:14px;font-weight:700;"><span>Total</span><span>N$' + (parseFloat(d.total) || 0).toFixed(2) + '</span></div>';
+      document.getElementById('quoteResultModal').classList.add('open');
+      loadQuotes();
+    }
+  }).catch(function(err) {
+    alert(err.message || 'Failed to generate quote.');
+  }).then(function() { btn.disabled = false; btn.textContent = 'Generate Quote from Selected'; });
+}
+
+function closeQuoteResult() {
+  document.getElementById('quoteResultModal').classList.remove('open');
+}
+
+// ─── Quotes ───
+function loadQuotes() {
+  var container = document.getElementById('quotesContainer');
+  authFetch('/api/user/quotes').then(function(d) {
+    var quotes = d.quotes || [];
+    if (!quotes.length) {
+      container.innerHTML = '<div class="empty-state">No quotes yet. <a href="products.html" style="color:#e5383b;">Get a quote now</a></div>';
+      return;
+    }
+    container.innerHTML = quotes.map(function(q) {
+      var items = [];
+      try { items = JSON.parse(q.items || '[]'); } catch(e) {}
+      var itemSummary = items.slice(0, 3).map(function(i) { return i.name || i.product_id; }).join(', ');
+      if (items.length > 3) itemSummary += '...';
+      var total = parseFloat(q.total || q.subtotal || 0).toFixed(2);
+      return '<div class="quote-item">' +
+        '<div class="wishlist-info"><h4>' + esc(q.doc_number) + '</h4><p>' + esc(itemSummary) + ' &middot; N$' + total + '</p></div>' +
+        '<div style="font-size:11px;color:#888;white-space:nowrap;">' + (q.created_at || '').substring(0, 10) + '</div>' +
+      '</div>';
+    }).join('');
+  }).catch(function() {
+    container.innerHTML = '<div class="empty-state">Failed to load quotes.</div>';
+  });
+}
+
+// ─── Repairs ───
+function loadRepairs() {
+  var container = document.getElementById('repairsContainer');
+  authFetch('/api/user/repairs').then(function(d) {
+    var repairs = d.repairs || [];
+    if (!repairs.length) {
+      container.innerHTML = '<div class="empty-state">No repairs linked to your account. If you have a device with us, make sure your email matches the one on the job card.</div>';
+      return;
+    }
+    container.innerHTML = repairs.map(function(r) {
+      var status = (r.status || 'received').toLowerCase().replace(/\s+/g, '-');
+      var statusLabel = (r.status || 'Received').replace(/-/g, ' ');
+      var branchName = r.branch_name || '';
+      var deviceInfo = r.device_type || r.device_model || r.description || 'Device';
+      var chatHref = r.id ? 'https://wa.me/264813631483?text=' + encodeURIComponent('Hi, I have a question about my repair (Job #' + r.job_card_number + '):') : '#';
+      return '<div class="repair-item">' +
+        '<div class="wishlist-info"><h4>' + esc(r.job_card_number || 'Repair #' + r.id) + '</h4>' +
+        '<p>' + esc(deviceInfo.substring(0, 60)) + (branchName ? ' &middot; ' + esc(branchName) : '') + '</p></div>' +
+        '<span class="repair-status status-' + status + '">' + esc(statusLabel) + '</span>' +
+        '<a href="' + chatHref + '" target="_blank" class="repair-chat">Chat</a>' +
+      '</div>';
+    }).join('');
+  }).catch(function() {
+    container.innerHTML = '<div class="empty-state">Failed to load repairs.</div>';
+  });
+}
+
+// ─── Logout ───
+function logout() {
+  localStorage.removeItem('user_token');
+  localStorage.removeItem('user_info');
+  window.location.href = '/auth.html';
+}
+
+// ─── Helpers ───
+function esc(s) {
+  if (s == null) return '';
+  return String(s).replace(/[&<>"']/g, function(m) {
+    return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;' }[m];
+  });
+}
+
+function openCart() {
+  if (window.CART && window.CART.openCart) window.CART.openCart();
+}
+</script>
+<script defer src="js/site-data.js"></script>
+<script defer src="js/api-config.js"></script>
+<script defer src="js/newsletter.js"></script>
+<script defer src="js/offline.js"></script>
+<script defer src="js/whatsapp-widget.js"></script>
+<script defer src="js/cart.js"></script>
+<script defer src="js/cart-ui.js"></script>
+<script defer src="js/cart-badge-sync.js"></script>
+<script defer src="js/animations.js"></script>
+<script defer src="js/loader.js"></script>
+<script defer src="js/mobile-nav.js"></script>
+<script defer src="js/chat-widget.js"></script>
+</body>
+</html>

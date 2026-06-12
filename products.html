@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://embed.tawk.to; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://embed.tawk.to; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.tawk.to wss://*.tawk.to https://va.tawk.to https://tawk.to; frame-src 'self' https://*.tawk.to https://tawk.to; base-uri 'self'; form-action 'self'" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; frame-src 'self'; base-uri 'self'; form-action 'self'" />
   <title>Products – Royal Computers Namibia</title>
   <meta name="description" content="Shop laptop batteries, chargers, charging ports, LCD screens, networking gear, POS systems, and IT accessories at Royal Computers Namibia. Nationwide delivery.">
   <link rel="canonical" href="https://netmac.co.za/products.html">
@@ -50,6 +50,10 @@ select.form-input{appearance:none;background:var(--dark-3);padding-right:36px}
 .product-item-scroll{cursor:pointer}.product-item-scroll .product-image-scroll{margin-bottom:12px}
 .product-item-scroll .product-image-scroll{overflow:hidden;background:transparent}
 .product-item-scroll .product-image-scroll img{transition:transform .18s ease-in-out,opacity .18s ease-in-out;will-change:transform,opacity;mix-blend-mode:multiply}.product-category-scroll{margin-bottom:2px}.product-name-scroll{margin:4px 0}.product-price-scroll{margin:10px 0 8px}
+.wishlist-heart{position:absolute;top:8px;right:8px;width:32px;height:32px;background:#fff;border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.12);z-index:3;transition:transform .2s,box-shadow .2s;padding:0}
+.wishlist-heart:hover{transform:scale(1.1);box-shadow:0 4px 14px rgba(0,0,0,.18)}
+.wishlist-heart svg{width:16px;height:16px;transition:fill .2s,stroke .2s}
+.wishlist-heart.active svg{fill:#e5383b;stroke:#e5383b}
 .product-item-scroll:hover .product-image-scroll img{transform:scale(1.05)}
 .product-item-scroll:hover .product-name-scroll{color:var(--red,#e5383b)}
 .product-badge{position:absolute;top:3px;left:3px;background:var(--red,#e5383b);color:#fff;font-size:7px;font-weight:700;text-transform:uppercase;letter-spacing:.2px;padding:1px 5px;z-index:2;border-radius:3px;line-height:1.4}
@@ -399,9 +403,7 @@ select.form-input{appearance:none;background:var(--dark-3);padding-right:36px}
       <button class="nav-close" aria-label="Close menu">&times;</button>
       <ul>
         <li><a href="index.html">Home</a></li>
-        <li><a href="products.html" class="active">Products</a></li>
         <li><a href="deals.html">Deals</a></li>
-        <li><a href="Contact-us.html">Contact</a></li>
         <li><a href="About-us.html">About Us</a></li>
       </ul>
     </nav>
@@ -409,6 +411,9 @@ select.form-input{appearance:none;background:var(--dark-3);padding-right:36px}
       <span></span><span></span><span></span>
     </button>
     <div class="header-right">
+      <button class="cart-btn" onclick="window.location.href='dashboard.html'" title="Account">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </button>
       <button class="cart-btn" onclick="window.location.href='tracking.html'" title="Track Repair">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4m10-10h-4M6 12H2"/></svg>
       </button>
@@ -901,6 +906,7 @@ select.form-input{appearance:none;background:var(--dark-3);padding-right:36px}
           '<div class="product-image-scroll" style="position:relative;">' +
             '<img src="' + defaultVariant.image + '" alt="' + escapeHtml(defaultVariant.alt) + '" data-base-image="' + group.image + '" data-current-src="' + defaultVariant.image + '" loading="lazy">' +
             (badge ? '<span class="product-badge ' + badge + '">' + badge + '</span>' : '') +
+            '<button class="wishlist-heart" data-group="' + groupId + '" data-variant="0" onclick="handleWishlistClick(this)" title="Add to wishlist"><svg viewBox="0 0 24 24" fill="none" stroke="#e5383b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></button>' +
           '</div>' +
           '<div class="product-info-scroll">' +
             '<p class="product-category-scroll">' + group.category + '</p>' +
@@ -921,6 +927,8 @@ select.form-input{appearance:none;background:var(--dark-3);padding-right:36px}
           const group = productGroups.find(item => item.id === groupId);
           if (!card || !group) return;
           updateCardVariantState(card, group, this.selectedIndex, { animateImage: true });
+          const heart = card.querySelector('.wishlist-heart');
+          if (heart) heart.dataset.variant = this.selectedIndex;
         });
       });
       document.querySelectorAll('.product-item-scroll').forEach(card => {
@@ -1021,6 +1029,36 @@ select.form-input{appearance:none;background:var(--dark-3);padding-right:36px}
     window.__rerenderProducts = applyFiltersAndSort;
     window.__getProductGroups = function() { return productGroups; };
   })();
+
+  function getAuthToken() {
+    return localStorage.getItem('user_token') || '';
+  }
+
+  function handleWishlistClick(btn) {
+    var token = getAuthToken();
+    if (!token) {
+      window.location.href = 'auth.html';
+      return;
+    }
+    var groupId = btn.dataset.group;
+    var variantIndex = parseInt(btn.dataset.variant, 10) || 0;
+    btn.disabled = true;
+    fetch('/api/user/wishlist', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ product_id: groupId, variant_index: variantIndex })
+    }).then(function(r) { return r.json(); }).then(function(d) {
+      btn.disabled = false;
+      if (d.success) {
+        btn.classList.add('active');
+        btn.title = 'Added to wishlist';
+      } else if (d.error === 'Not authenticated') {
+        window.location.href = 'auth.html';
+      }
+    }).catch(function() {
+      btn.disabled = false;
+    });
+  }
 </script>
 
 <script defer src="js/sales.js"></script>
@@ -1563,10 +1601,41 @@ select.form-input{appearance:none;background:var(--dark-3);padding-right:36px}
     if (!items.length) { alert('Please add at least one product to generate a quote.'); return; }
     const branch = document.getElementById('quoteInfoBranch').value;
     if (!branch) { alert('Please select a branch.'); return; }
+    const guestEmail = document.getElementById('quoteInfoEmail').value.trim();
+    if (!guestEmail) { alert('Please enter your email address.'); return; }
+    // Check if subscribed before generating quote
+    var btn = document.getElementById('quoteInfoForm').querySelector('.btn-generate');
+    btn.disabled = true; btn.textContent = 'Checking…';
+    fetch('/api/check-subscriber', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: guestEmail })
+    }).then(function(r) { return r.json(); }).then(function(d) {
+      btn.disabled = false; btn.textContent = 'Generate Quote Preview';
+      if (!d.subscribed) {
+        if (confirm('You must subscribe to our newsletter to generate a quote. Open the newsletter sign-up?')) {
+          var nl = document.getElementById('newsletterOverlay');
+          if (nl) {
+            var emailInput = document.getElementById('nlEmail');
+            if (emailInput) emailInput.value = guestEmail;
+            nl.classList.add('open');
+          }
+        }
+        return;
+      }
+      proceedWithQuote(guestEmail, branch);
+    }).catch(function() {
+      btn.disabled = false; btn.textContent = 'Generate Quote Preview';
+      alert('Could not verify subscription. Please try again.');
+    });
+  }
+
+  function proceedWithQuote(guestEmail, branch) {
+    const items = window.CART.getItems();
+    const guestName = document.getElementById('quoteInfoName').value || 'Customer';
     const quoteData = {
       date: new Date().toISOString(), branch: branch,
-      guestEmail: document.getElementById('quoteInfoEmail').value || '',
-      guestName: document.getElementById('quoteInfoName').value || 'Customer',
+      guestEmail: guestEmail,
+      guestName: guestName,
       company: document.getElementById('quoteInfoCompany').value || '',
       customerRef: document.getElementById('quoteInfoReference').value || '',
       products: items, accountType: 'quote', billingAddress: '', billingCity: '', billingPostal: ''
@@ -1705,8 +1774,8 @@ select.form-input{appearance:none;background:var(--dark-3);padding-right:36px}
 <script defer src="js/api-config.js"></script>
 <script defer src="js/newsletter.js"></script>
 <script defer src="js/offline.js"></script>
-<script defer src="js/chat.js"></script>
 <script defer src="js/whatsapp-widget.js"></script>
+<script defer src="js/chat-widget.js"></script>
 </body>
 </html>
 

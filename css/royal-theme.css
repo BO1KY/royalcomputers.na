@@ -1,12 +1,3 @@
-::-webkit-scrollbar {
-    display: none
-}
-
-html {
-    scrollbar-width: none;
-    -ms-overflow-style: none
-}
-
 .skip-link {
     position: absolute;
     top: -999px;

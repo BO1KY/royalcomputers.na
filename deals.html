@@ -2,15 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://embed.tawk.to; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://embed.tawk.to; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.tawk.to wss://*.tawk.to https://va.tawk.to https://tawk.to; frame-src 'self' https://*.tawk.to https://tawk.to; base-uri 'self'; form-action 'self'" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; frame-src 'self'; base-uri 'self'; form-action 'self'" />
   <title>Deals – Royal Computers Namibia</title>
   <meta name="description" content="Shop our latest deals on laptop batteries, chargers, screens, and more at Royal Computers Namibia.">
   <link rel="canonical" href="https://netmac.co.za/deals.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preconnect" href="https://embed.tawk.to">
-  <link rel="dns-prefetch" href="https://embed.tawk.to">
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap"></noscript>
   <link rel="stylesheet" href="css/design-tokens.css">
@@ -206,9 +204,7 @@ select.form-input{appearance:none;background:var(--dark-3);padding-right:36px}
       <button class="nav-close" aria-label="Close menu">&times;</button>
       <ul>
         <li><a href="index.html">Home</a></li>
-        <li><a href="products.html">Products</a></li>
         <li><a href="deals.html" class="active">Deals</a></li>
-        <li><a href="Contact-us.html">Contact</a></li>
         <li><a href="About-us.html">About Us</a></li>
       </ul>
     </nav>
@@ -216,6 +212,9 @@ select.form-input{appearance:none;background:var(--dark-3);padding-right:36px}
       <span></span><span></span><span></span>
     </button>
     <div class="header-right">
+      <button class="cart-btn" onclick="window.location.href='dashboard.html'" title="Account">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </button>
       <button class="cart-btn" onclick="window.location.href='tracking.html'" title="Track Repair">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4m10-10h-4M6 12H2"/></svg>
       </button>
@@ -372,49 +371,6 @@ select.form-input{appearance:none;background:var(--dark-3);padding-right:36px}
   });
 </script>
 
-<!-- Floating Chat Button -->
-<div id="chatButton" onclick="openTawkChat()" style="position:fixed;bottom:24px;right:24px;width:56px;height:56px;background:#e5383b;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:99999;box-shadow:0 4px 20px rgba(229,56,59,0.4);transition:transform .2s ease,box-shadow .2s ease;border:none;" onmouseover="this.style.transform='scale(1.1)';this.style.boxShadow='0 6px 28px rgba(229,56,59,0.6)'" onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 4px 20px rgba(229,56,59,0.4)'" aria-label="Chat with us">
-  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-    <line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="12" y2="14"/>
-  </svg>
-</div>
-<style>.tawk-min-container{display:none!important}</style>
-<!--Start of Tawk.to Script-->
-<script type="text/javascript">
-  var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
-  (function() {
-    var s1 = document.createElement('script'), s0 = document.getElementsByTagName('script')[0];
-    s1.async = true;
-    s1.src = 'https://embed.tawk.to/67b9bbae798cea190ff5230e/1il9r4rf0';
-    s1.charset = 'UTF-8';
-    s1.setAttribute('crossorigin', 'anonymous');
-    s0.parentNode.insertBefore(s1, s0);
-  })();
-</script>
-<!--End of Tawk.to Script-->
-<script>
-function openTawkChat() {
-  var ta = typeof Tawk_API !== 'undefined' ? Tawk_API : null;
-  if (ta) {
-    if (typeof ta.maximize === 'function') { ta.maximize(); return; }
-    if (typeof ta.toggle === 'function') { ta.toggle(); return; }
-    if (typeof ta.showWidget === 'function') { ta.showWidget(); return; }
-  }
-  var checkReady = setInterval(function() {
-    if (typeof Tawk_API !== 'undefined') {
-      var api = Tawk_API;
-      if (typeof api.maximize === 'function') { api.maximize(); clearInterval(checkReady); return; }
-      if (typeof api.toggle === 'function') { api.toggle(); clearInterval(checkReady); return; }
-      if (typeof api.showWidget === 'function') { api.showWidget(); clearInterval(checkReady); return; }
-    }
-  }, 200);
-  setTimeout(function() {
-    clearInterval(checkReady);
-    window.open('https://tawk.to/chat/67b9bbae798cea190ff5230e/1il9r4rf0', '_blank', 'noopener,noreferrer');
-  }, 5000);
-}
-</script>
 
 <script defer src="js/search-dropdown.js"></script>
 <script defer src="js/branches.js"></script>
@@ -422,7 +378,7 @@ function openTawkChat() {
 <script defer src="js/site-data.js"></script>
 <script defer src="js/newsletter.js"></script>
 <script defer src="js/offline.js"></script>
-<script defer src="js/chat.js"></script>
 <script defer src="js/whatsapp-widget.js"></script>
+<script defer src="js/chat-widget.js"></script>
 </body>
 </html>
