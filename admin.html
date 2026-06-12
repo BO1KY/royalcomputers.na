@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Admin dashboard for Royal Computers Namibia - manage subscribers, messages, products, sales, live chat, and more." />
   <link rel="apple-touch-icon" href="ROYAL PICS/royal logo.webp" />
   <title>Admin – Royal Computers Namibia</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -423,6 +424,7 @@
               <div>
                 <strong id="adminChatClientName" style="font-size:14px;">Client</strong>
                 <span id="adminChatClientEmail" style="font-size:12px;color:var(--text-dim,#888);margin-left:8px;"></span>
+                <span id="adminChatTypingIndicator" style="display:none;font-size:11px;color:#e5383b;font-style:italic;margin-left:8px;">typing...</span>
               </div>
               <div style="display:flex;gap:6px;align-items:center;">
                 <button id="adminChatTransferBtn" style="background:var(--text,#1a1a2e);color:#fff;border:none;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;display:none;">Transfer</button>
@@ -3408,6 +3410,9 @@ function adminStopPersistentNotif() {
   if (adminChatNotifTimer) { clearTimeout(adminChatNotifTimer); adminChatNotifTimer = null; }
 }
 
+var adminTypingTimer = null;
+var adminTypingPollTimer = null;
+
 function initAdminChat() {
   if (adminChatInitialized) { loadAdminChatSessions(); return; }
   adminChatInitialized = true;
@@ -3415,6 +3420,18 @@ function initAdminChat() {
   document.getElementById('adminChatSendBtn').addEventListener('click', adminSendChatMessage);
   document.getElementById('adminChatInput').addEventListener('keydown', function(e) {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); adminSendChatMessage(); }
+  });
+  document.getElementById('adminChatInput').addEventListener('input', function() {
+    if (!adminSelectedSessionId) return;
+    if (adminTypingTimer) clearTimeout(adminTypingTimer);
+    adminTypingTimer = setTimeout(function() {
+      var hdrs = getAdminHeaders(); hdrs['Content-Type'] = 'application/json';
+      fetch('/api/admin/chat/typing', {
+        method: 'POST',
+        headers: hdrs,
+        body: JSON.stringify({ session_id: adminSelectedSessionId })
+      }).catch(function() {});
+    }, 500);
   });
   document.getElementById('adminChatCloseBtn').addEventListener('click', adminCloseChatSession);
   // Transfer button click is handled by DOMContentLoaded listener above
@@ -3473,10 +3490,11 @@ function renderAdminChatSessions() {
     var preview = s.client_email || s.branch_name || '';
     html += '<div class="chat-session-item' + isActive + '" data-session-id="' + s.id + '" onclick="selectAdminChatSession(\'' + s.id + '\')">' +
       '<div class="session-avatar ' + avatarClass + '">' + initials + '</div>' +
-      '<div class="session-info">' +
-        '<div class="session-name">' + escHtml(s.client_name) + (s.status === 'closed' ? ' <span style="font-size:10px;opacity:.5;">(closed)</span>' : '') + '</div>' +
-        '<div class="session-preview">' + escHtml(preview || (s.assigned_to ? 'Assigned to ' + s.assigned_to : '')) + '</div>' +
-      '</div>' +
+        '<div class="session-info">' +
+          '<div class="session-name">' + escHtml(s.client_name) + (s.status === 'closed' ? ' <span style="font-size:10px;opacity:.5;">(closed)</span>' : '') + '</div>' +
+          '<div class="session-preview">' + escHtml(preview || (s.assigned_to ? 'Assigned to ' + s.assigned_to : '')) + '</div>' +
+          '<div class="session-typing" id="st-' + s.id + '" style="display:none;font-size:10px;color:#e5383b;font-style:italic;">typing...</div>' +
+        '</div>' +
       unreadHtml +
       '<span class="session-time">' + time + '</span>' +
     '</div>';
@@ -3515,6 +3533,18 @@ function selectAdminChatSession(sessionId) {
     if (!d.success) return;
     renderAdminChatMessages(d.messages);
   }).catch(function() {});
+
+  // Start typing poll for this session
+  if (adminTypingPollTimer) clearInterval(adminTypingPollTimer);
+  adminTypingPollTimer = setInterval(function() {
+    if (!adminSelectedSessionId) return;
+    fetch('/api/admin/chat/typing?session_id=' + encodeURIComponent(adminSelectedSessionId), {
+      headers: getAdminHeaders()
+    }).then(function(r) { return r.json(); }).then(function(d) {
+      var el = document.getElementById('adminChatTypingIndicator');
+      if (el) el.style.display = d.typing ? 'inline' : 'none';
+    }).catch(function() {});
+  }, 2000);
 }
 
 function renderAdminChatMessages(messages) {
@@ -3840,5 +3870,16 @@ function formatPrice(n) {
 }
 </script>
 <script defer src="js/chat-widget.js"></script>
+<footer class="footer-admin">
+  <div class="container">
+    &copy; 2025 Royal Computers Namibia. All rights reserved.
+    <span class="sep">|</span>
+    <a href="privacy-policy.html">Privacy Policy</a>
+    <span class="sep">|</span>
+    <a href="terms-conditions.html">Terms &amp; Conditions</a>
+    <span class="sep">|</span>
+    <a href="index.html">&larr; Back to website</a>
+  </div>
+</footer>
 </body>
 </html>

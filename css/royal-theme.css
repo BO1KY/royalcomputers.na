@@ -4342,3 +4342,15 @@ body.no-scroll {
     }
 }
 
+/* ─── Mini footer (auth, reset-password, offline) ─── */
+.footer-mini{position:fixed;bottom:0;left:0;right:0;padding:12px 24px;text-align:center;font-size:12px;color:#888;background:rgba(245,243,244,.9);backdrop-filter:blur(8px);z-index:1}
+.footer-mini a{color:#e5383b;text-decoration:none}
+.footer-mini a:hover{text-decoration:underline}
+.footer-mini .sep{margin:0 6px;color:#ccc}
+
+/* ─── Admin footer ─── */
+.footer-admin{margin-top:48px;padding:24px 0;border-top:1px solid var(--border,#ddd);text-align:center;font-size:13px;color:var(--text-dim,#888)}
+.footer-admin a{color:var(--text-dim,#888);text-decoration:none}
+.footer-admin a:hover{color:var(--red,#e5383b)}
+.footer-admin .sep{margin:0 8px;color:var(--border,#ddd)}
+

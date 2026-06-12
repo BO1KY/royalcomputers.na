@@ -6,6 +6,8 @@
   var pollTimer = null;
   var notifTimer = null;
   var notifPlaying = false;
+  var typingTimer = null;
+  var typingPollTimer = null;
   var userName = '';
   var userEmail = '';
   var selectedBranchId = '';
@@ -143,6 +145,17 @@
     document.getElementById('chatInput').addEventListener('keydown', function (e) {
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChatMessage(); }
     });
+    document.getElementById('chatInput').addEventListener('input', function() {
+      if (!sessionId) return;
+      if (typingTimer) clearTimeout(typingTimer);
+      typingTimer = setTimeout(function() {
+        fetch('/api/chat/typing', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ session_id: sessionId })
+        }).catch(function() {});
+      }, 500);
+    });
     document.getElementById('chatSendBtn').onclick = sendChatMessage;
     document.getElementById('chatStartBtn').onclick = startChatSession;
     document.getElementById('chatAttachBtn').onclick = function() {
@@ -156,6 +169,7 @@
       document.getElementById('chatInputArea').style.display = 'flex';
       document.getElementById('chatWelcome').style.display = 'none';
       startPolling();
+      startTypingPoll();
     }
   }
 
@@ -213,6 +227,7 @@
         var msgs = document.getElementById('chatMessages');
         msgs.innerHTML = '<div class="chat-msg admin"><span class="chat-msg-sender">Royal Computers' + escHtml(branchLabel) + '</span>Hi ' + escHtml(name) + '! How can we help you today?<span class="chat-msg-time">just now</span></div>';
         startPolling();
+        startTypingPoll();
       }
     }).catch(function () {
       btn.disabled = false; btn.textContent = 'Start Chat';
@@ -324,6 +339,68 @@
     pollTimer = setInterval(pollMessages, 3000);
   }
 
+  function startTypingPoll() {
+    if (typingPollTimer) clearInterval(typingPollTimer);
+    typingPollTimer = setInterval(function() {
+      if (!sessionId) return;
+      fetch('/api/chat/typing?session_id=' + encodeURIComponent(sessionId))
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+          var el = document.getElementById('chatTyping');
+          if (el) el.classList.toggle('visible', d.typing);
+        }).catch(function() {});
+    }, 2000);
+  }
+
+  function showRatingUI() {
+    var msgs = document.getElementById('chatMessages');
+    if (!msgs || msgs.querySelector('.chat-rating')) return;
+    var container = document.createElement('div');
+    container.className = 'chat-rating';
+    container.innerHTML =
+      '<div class="chat-rating-inner">' +
+        '<p>How was your experience?</p>' +
+        '<div class="chat-stars" id="chatStars">' +
+          '<span data-star="1">&#9733;</span>' +
+          '<span data-star="2">&#9733;</span>' +
+          '<span data-star="3">&#9733;</span>' +
+          '<span data-star="4">&#9733;</span>' +
+          '<span data-star="5">&#9733;</span>' +
+        '</div>' +
+        '<textarea id="chatFeedback" placeholder="Any feedback? (optional)" rows="2"></textarea>' +
+        '<button id="chatRateSubmitBtn">Submit</button>' +
+      '</div>';
+    msgs.appendChild(container);
+    msgs.scrollTop = msgs.scrollHeight;
+
+    var stars = container.querySelectorAll('.chat-stars span');
+    var selectedRating = 0;
+    stars.forEach(function(s) {
+      s.addEventListener('click', function() {
+        selectedRating = parseInt(this.dataset.star, 10);
+        stars.forEach(function(st, i) {
+          st.classList.toggle('active', i < selectedRating);
+        });
+      });
+    });
+
+    document.getElementById('chatRateSubmitBtn').addEventListener('click', function() {
+      if (!selectedRating) { alert('Please select a rating'); return; }
+      var feedback = document.getElementById('chatFeedback').value.trim();
+      var btn = this;
+      btn.disabled = true; btn.textContent = 'Submitting...';
+      fetch('/api/chat/rate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_id: sessionId, rating: selectedRating, feedback: feedback })
+      }).then(function(r) { return r.json(); }).then(function(d) {
+        if (d.success) {
+          container.innerHTML = '<div class="chat-rating-inner"><p style="color:#16a34a;">Thank you for your feedback!</p></div>';
+        }
+      }).catch(function() { btn.disabled = false; btn.textContent = 'Submit'; });
+    });
+  }
+
   function renderMessage(m) {
     var time = m.created_at ? new Date(m.created_at + 'Z').toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
     var msgClass = m.sender_type === 'admin' ? 'admin' : 'client';
@@ -397,8 +474,10 @@
       if (d.session) {
         var statusEl = document.getElementById('chatStatusText');
         if (statusEl) {
-          if (d.session.status === 'closed') statusEl.textContent = 'Chat ended';
-          else statusEl.textContent = 'Online';
+          if (d.session.status === 'closed') {
+            statusEl.textContent = 'Chat ended';
+            showRatingUI();
+          } else statusEl.textContent = 'Online';
         }
         // Show branch in header
         if (d.session.branch_name) {
@@ -422,6 +501,8 @@
   window.addEventListener('beforeunload', function () {
     if (pollTimer) clearInterval(pollTimer);
     if (notifTimer) clearTimeout(notifTimer);
+    if (typingPollTimer) clearInterval(typingPollTimer);
+    if (typingTimer) clearTimeout(typingTimer);
     notifPlaying = false;
   });
 

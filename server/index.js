@@ -31,6 +31,7 @@ if (!SEED_BRANCH_PASSWORD || !SEED_ADMIN_PASSWORD) {
 var sessions = new Map();
 var SESSION_TTL = 120 * 60 * 1000;
 var adminLastSeen = new Map();
+var chatTyping = new Map();
 
 // Periodic cleanup for memory leaks
 setInterval(function () {
@@ -51,6 +52,10 @@ setInterval(function () {
   // Clean expired loginAttempts entries
   for (var key4 of loginAttempts.keys()) {
     if (now > loginAttempts.get(key4).reset) loginAttempts.delete(key4);
+  }
+  // Clean stale chatTyping entries (older than 10 seconds)
+  for (var key5 of chatTyping.keys()) {
+    if (now - chatTyping.get(key5) > 10000) chatTyping.delete(key5);
   }
 }, 60000);
 
@@ -198,6 +203,7 @@ try { db.exec("CREATE INDEX IF NOT EXISTS idx_branches_city ON branches(city)");
 try { db.exec("CREATE INDEX IF NOT EXISTS idx_quotations_branch_id ON quotations(branch_id)"); } catch(e) {}
 try { db.exec("CREATE INDEX IF NOT EXISTS idx_custom_products_category ON custom_products(category)"); } catch(e) {}
 try { db.exec("CREATE INDEX IF NOT EXISTS idx_campaigns_status ON campaigns(status)"); } catch(e) {}
+migrate('create_chat_ratings', "CREATE TABLE IF NOT EXISTS chat_ratings (id INTEGER PRIMARY KEY AUTOINCREMENT, session_id TEXT NOT NULL, rating INTEGER NOT NULL CHECK(rating >= 1 AND rating <= 5), feedback TEXT, created_at TEXT DEFAULT (datetime('now')))");
 
 var storage = multer.diskStorage({
   destination: function (req, file, cb) { cb(null, UPLOADS_DIR); },
@@ -3117,7 +3123,87 @@ app.get('/api/chat/messages', function (req, res) {
   }
 });
 
+// Client typing indicator
+app.post('/api/chat/typing', function (req, res) {
+  try {
+    var sessionId = (req.body.session_id || '').trim();
+    if (!sessionId) return res.status(400).json({ error: 'Session ID required' });
+    chatTyping.set('client_' + sessionId, Date.now());
+    res.json({ success: true });
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
+// Client checks if admin is typing
+app.get('/api/chat/typing', function (req, res) {
+  try {
+    var sessionId = (req.query.session_id || '').trim();
+    if (!sessionId) return res.status(400).json({ error: 'Session ID required' });
+    var lastTyping = chatTyping.get('admin_' + sessionId) || 0;
+    var isTyping = (Date.now() - lastTyping) < 3000;
+    res.json({ success: true, typing: isTyping });
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
+// Client rate a session
+app.post('/api/chat/rate', function (req, res) {
+  try {
+    var sessionId = (req.body.session_id || '').trim();
+    var rating = parseInt(req.body.rating, 10);
+    var feedback = (req.body.feedback || '').trim();
+    if (!sessionId || !rating || rating < 1 || rating > 5) return res.status(400).json({ error: 'Valid session ID and rating (1-5) required' });
+    db.prepare("INSERT INTO chat_ratings (session_id, rating, feedback) VALUES (?, ?, ?)").run(sessionId, rating, feedback || null);
+    res.json({ success: true });
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
 // ── Admin chat endpoints (require admin auth) ──
+
+// Admin typing indicator
+app.post('/api/admin/chat/typing', function (req, res) {
+  try {
+    var user = getUserFromRequest(req);
+    if (!user) return res.status(401).json({ error: 'Unauthorized' });
+    var sessionId = (req.body.session_id || '').trim();
+    if (!sessionId) return res.status(400).json({ error: 'Session ID required' });
+    chatTyping.set('admin_' + sessionId, Date.now());
+    res.json({ success: true });
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
+// Admin checks if client is typing
+app.get('/api/admin/chat/typing', function (req, res) {
+  try {
+    var user = getUserFromRequest(req);
+    if (!user) return res.status(401).json({ error: 'Unauthorized' });
+    var sessionId = (req.query.session_id || '').trim();
+    if (!sessionId) return res.status(400).json({ error: 'Session ID required' });
+    var lastTyping = chatTyping.get('client_' + sessionId) || 0;
+    var isTyping = (Date.now() - lastTyping) < 3000;
+    res.json({ success: true, typing: isTyping });
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
+// Get rating for a session (admin)
+app.get('/api/admin/chat/ratings/:session_id', function (req, res) {
+  try {
+    var user = getUserFromRequest(req);
+    if (!user) return res.status(401).json({ error: 'Unauthorized' });
+    var rating = db.prepare("SELECT * FROM chat_ratings WHERE session_id = ?").get(req.params.session_id);
+    res.json({ success: true, rating: rating || null });
+  } catch (err) {
+    sendError(res, err);
+  }
+});
 
 // List all chat sessions (active first, then closed)
 app.get('/api/admin/chat/sessions', function (req, res) {
@@ -3209,7 +3295,31 @@ app.post('/api/admin/chat/close', function (req, res) {
     var user = getUserFromRequest(req);
     if (!user) return res.status(401).json({ error: 'Unauthorized' });
     var sessionId = (req.body.session_id || '').trim();
+    var session = db.prepare("SELECT * FROM chat_sessions WHERE id = ?").get(sessionId);
+    if (!session) return res.status(404).json({ error: 'Session not found' });
     db.prepare("UPDATE chat_sessions SET status = 'closed' WHERE id = ?").run(sessionId);
+    // Clean up typing indicator
+    chatTyping.delete('client_' + sessionId);
+    chatTyping.delete('admin_' + sessionId);
+    // Send transcript email if client has email
+    if (session.client_email) {
+      var messages = db.prepare("SELECT * FROM chat_messages WHERE session_id = ? ORDER BY created_at ASC").all(sessionId);
+      var transcriptHtml = messages.map(function(m) {
+        var time = m.created_at ? new Date(m.created_at + 'Z').toLocaleString() : '';
+        var sender = m.sender_type === 'client' ? m.sender_name : (m.sender_name || 'Support');
+        return '<p><strong>' + escHtml(sender) + '</strong> <span style="color:#888;font-size:12px;">(' + time + ')</span><br>' + escHtml(m.message) + '</p>';
+      }).join('');
+      var mailOpts = {
+        from: process.env.SMTP_FROM || '"Royal Computers" <noreply@royalcomputers.na>',
+        to: session.client_email,
+        subject: 'Chat Transcript - Royal Computers Namibia',
+        html: '<div style="font-family:sans-serif;max-width:600px;margin:0 auto;"><h2 style="color:#dc2626;">Chat Transcript</h2><p>Your conversation with Royal Computers has ended. Here is the transcript:</p><hr>' + transcriptHtml + '<hr><p style="font-size:12px;color:#888;">Thank you for chatting with us!</p></div>'
+      };
+      var t = getTransporter();
+      if (t) {
+        t.sendMail(mailOpts).catch(function(err) { console.error('Transcript email failed:', err.message); });
+      }
+    }
     res.json({ success: true });
   } catch (err) {
     sendError(res, err);
