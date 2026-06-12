@@ -32,10 +32,25 @@ var sessions = new Map();
 var SESSION_TTL = 120 * 60 * 1000;
 var adminLastSeen = new Map();
 
+// Periodic cleanup for memory leaks
 setInterval(function () {
   var now = Date.now();
+  // Clean expired sessions
   for (var key of sessions.keys()) {
     if (now > sessions.get(key).expires) sessions.delete(key);
+  }
+  // Clean stale adminLastSeen entries (older than 1 hour)
+  var hourAgo = now - 3600000;
+  for (var key2 of adminLastSeen.keys()) {
+    if (adminLastSeen.get(key2) < hourAgo) adminLastSeen.delete(key2);
+  }
+  // Clean expired apiLimiter entries
+  for (var key3 of apiLimiter.keys()) {
+    if (now > apiLimiter.get(key3).reset) apiLimiter.delete(key3);
+  }
+  // Clean expired loginAttempts entries
+  for (var key4 of loginAttempts.keys()) {
+    if (now > loginAttempts.get(key4).reset) loginAttempts.delete(key4);
   }
 }, 60000);
 
@@ -307,15 +322,50 @@ app.use(function (req, res, next) {
   res.setHeader('X-Permitted-Cross-Domain-Policies', 'none');
   res.setHeader('Cross-Origin-Resource-Policy', 'same-origin');
   res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+  // Prevent caching of API responses
+  if (req.path.indexOf('/api/') === 0) {
+    res.setHeader('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+  }
   next();
 });
 
+// Input validation helper: trim, check max length, return sanitized value or null on failure
+function validateField(value, maxLen) {
+  if (value == null) return null;
+  var trimmed = String(value).trim().replace(/\0/g, '');
+  if (maxLen && trimmed.length > maxLen) return null;
+  return trimmed;
+}
+
+function validateRequired(value, maxLen, label) {
+  var v = validateField(value, maxLen);
+  if (!v) throw new Error(label + ' is required or too long (max ' + maxLen + ' chars)');
+  return v;
+}
+
+// Escape LIKE wildcards in user input for SQL LIKE queries
+function escapeLike(str) {
+  return String(str).replace(/[%_]/g, '\\$&');
+}
+
 app.use(function (req, res, next) {
-  var blocked = ['/server/data', '/server/data.db', '/server/data.db-shm', '/server/data.db-wal', '/server/.env'];
+  var blocked = ['/server/data', '/server/data.db', '/server/data.db-shm', '/server/data.db-wal', '/server/.env', '/.env', '/package.json', '/package-lock.json', '/node_modules'];
   if (blocked.indexOf(req.path) !== -1 || req.path.startsWith('/server/data/')) {
     return res.status(403).send('Forbidden');
   }
   next();
+});
+
+// Only serve specific public directories via static middleware
+app.use('/ROYAL PICS', express.static(path.join(__dirname, '..', 'ROYAL PICS')));
+app.use('/css', express.static(path.join(__dirname, '..', 'css')));
+app.use('/js', express.static(path.join(__dirname, '..', 'js')));
+app.use('/uploads', express.static(UPLOADS_DIR));
+
+// Serve specific root files individually
+app.get('/manifest.json', function(req, res) {
+  res.sendFile(path.join(__dirname, '..', 'js', 'manifest.json'));
 });
 
 app.get('/tracking', function(req, res) {
@@ -372,14 +422,26 @@ function validateSameOrigin(req) {
   var origin = req.headers['origin'];
   var referer = req.headers['referer'];
   var host = req.headers['host'];
-  // If no Origin and no Referer, allow (browser always sends Origin/Referer for cross-origin POSTs)
   if (!origin && !referer) return true;
-  // Check if origin/referer matches the host
   var allowed = (origin || referer || '').toLowerCase();
-  // Accept same-origin requests: origin matches host
-  if (allowed.indexOf('://' + host) > 0 || allowed.indexOf('://www.' + host) > 0) return true;
+  var hostParts = host ? host.split(':') : [];
+  var hostname = hostParts[0] || '';
+  // Exact match: protocol + hostname (port stripped for comparison)
+  var matchHost = '://' + hostname;
+  var matchHostWww = '://www.' + hostname;
+  if (allowed.indexOf(matchHost) >= 0 || allowed.indexOf(matchHostWww) >= 0) {
+    // Ensure it's not a subdomain match — verify it's the exact host or www prefix
+    var afterProto = allowed.split('://')[1] || '';
+    var allowedHost = afterProto.split('/')[0].split(':')[0];
+    if (allowedHost === hostname || allowedHost === 'www.' + hostname) return true;
+  }
   // Allow localhost in non-production
-  if (process.env.NODE_ENV !== 'production' && allowed.indexOf('://localhost') > 0) return true;
+  if (process.env.NODE_ENV !== 'production') {
+    try {
+      var url = new URL(allowed);
+      if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') return true;
+    } catch (_) {}
+  }
   return false;
 }
 
@@ -1524,12 +1586,21 @@ app.post('/api/upload', function (req, res) {
         if (originalExt !== '.webp') {
           var tempPath = filePath + '.tmp';
           fs.renameSync(filePath, tempPath);
-          await sharp(tempPath).webp({ quality: 85 }).toFile(filePath);
-          fs.unlinkSync(tempPath);
+          try {
+            await sharp(tempPath).webp({ quality: 85 }).toFile(filePath);
+            fs.unlinkSync(tempPath);
+          } catch (convErr) {
+            // Restore original file on conversion failure
+            try {
+              if (fs.existsSync(tempPath)) {
+                fs.renameSync(tempPath, filePath);
+              }
+            } catch (_) {}
+            console.warn('WebP conversion failed:', convErr.message);
+          }
         }
-      } catch (convErr) {
-        // If conversion fails, keep original (saved with .webp extension from multer)
-        console.warn('WebP conversion failed:', convErr.message);
+      } catch (err) {
+        console.warn('Image processing error:', err.message);
       }
     })().then(function() {
       var user = getUserFromRequest(req);
@@ -1999,60 +2070,6 @@ if (branchCount === 0) {
   stmt.run('branch-005', 'Royal Computers - Tsumeb', 'Tsumeb', 'Shop 03 Tsumeb Shopping Mall', '+264818163936', 'tsumeb@netmac.co.za');
   stmt.run('branch-006', 'Royal Computers - Grove Mall, Windhoek', 'Windhoek', 'GF Shop 256 Grove Mall', '061242938', 'grove@netmac.co.za');
 }
-
-app.get('/api/admin/branches', function (req, res) {
-  try {
-    if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
-    var rows = db.prepare("SELECT * FROM branches ORDER BY name ASC").all();
-    res.json({ success: true, branches: rows });
-  } catch (err) {
-    sendError(res, err);
-  }
-});
-
-app.post('/api/admin/branches', function (req, res) {
-  try {
-    if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
-    var admin = getUserFromRequest(req);
-    var b = req.body;
-    if (!b.id || !b.name) return res.status(400).json({ error: 'id and name are required' });
-    db.prepare("INSERT INTO branches (id, name, address, phone, email) VALUES (?, ?, ?, ?, ?)").run(
-      b.id, b.name, b.address || null, b.phone || null, b.email || null
-    );
-    logAudit(admin, 'create-branch', 'Created branch: ' + b.id + ' - ' + b.name, req);
-    res.json({ success: true });
-  } catch (err) {
-    sendError(res, err);
-  }
-});
-
-app.put('/api/admin/branches/:id', function (req, res) {
-  try {
-    if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
-    var admin = getUserFromRequest(req);
-    var b = req.body;
-    db.prepare("UPDATE branches SET name=?, address=?, phone=?, email=?, hours=?, whatsapp=?, is_headquarters=?, sort_order=?, image=?, description=? WHERE id=?").run(
-      b.name, b.address || null, b.phone || null, b.email || null, b.hours || null, b.whatsapp || null,
-      b.is_headquarters || 0, b.sort_order || 0, b.image || null, b.description || null, req.params.id
-    );
-    logAudit(admin, 'update-branch', 'Updated branch: ' + req.params.id, req);
-    res.json({ success: true });
-  } catch (err) {
-    sendError(res, err);
-  }
-});
-
-app.delete('/api/admin/branches/:id', function (req, res) {
-  try {
-    if (!authorizeRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
-    var admin = getUserFromRequest(req);
-    db.prepare("DELETE FROM branches WHERE id=?").run(req.params.id);
-    logAudit(admin, 'delete-branch', 'Deleted branch: ' + req.params.id, req);
-    res.json({ success: true });
-  } catch (err) {
-    sendError(res, err);
-  }
-});
 
 /* ─── Job Card Management ─── */
 
@@ -2770,18 +2787,21 @@ app.post('/api/user/register', function (req, res) {
 // ── Login ──
 app.post('/api/user/login', function (req, res) {
   try {
+    var ip = req.ip || req.connection.remoteAddress || 'unknown';
+    if (!checkRateLimit(ip)) return res.status(429).json({ error: 'Too many login attempts. Try again in 60 seconds.' });
     var b = req.body;
     var login = (b.login || '').trim().toLowerCase();
     var password = b.password || '';
     if (!login || !password) return res.status(400).json({ error: 'Login and password are required' });
     var user = db.prepare("SELECT * FROM users WHERE (username = ? OR email = ?) AND role = 'user'").get(login, login);
-    if (!user) return res.status(401).json({ error: 'Invalid login or password' });
-    if (!verifyPassword(password, user.password_hash)) return res.status(401).json({ error: 'Invalid login or password' });
+    if (!user) { loginAttempts.delete(ip); return res.status(401).json({ error: 'Invalid login or password' }); }
+    if (!verifyPassword(password, user.password_hash)) { loginAttempts.delete(ip); return res.status(401).json({ error: 'Invalid login or password' }); }
     if (!user.is_active && user.is_active !== undefined && user.is_active !== 1) return res.status(403).json({ error: 'Account is disabled' });
     var token = crypto.randomBytes(32).toString('hex');
     var userInfo = { id: user.id, username: user.username, name: user.display_name || user.name, email: user.email || '', phone: user.phone || '', address: user.address || '', city: user.city || '', avatar_url: user.avatar_url || '', role: user.role };
     userSessions.set(token, { expires: Date.now() + USER_SESSION_TTL, user: userInfo });
     db.prepare("UPDATE users SET last_login = datetime('now') WHERE id = ?").run(user.id);
+    loginAttempts.delete(ip);
     res.json({ success: true, token: token, user: userInfo });
   } catch (err) {
     sendError(res, err);
@@ -2850,7 +2870,8 @@ app.get('/api/auth/google/callback', function (req, res) {
         var userInfo = { id: user.id, username: user.username, name: user.display_name || user.name, email: user.email || '', phone: user.phone || '', address: user.address || '', city: user.city || '', avatar_url: user.avatar_url || '', role: user.role };
         userSessions.set(token, { expires: Date.now() + USER_SESSION_TTL, user: userInfo });
         db.prepare("UPDATE users SET last_login = datetime('now') WHERE id = ?").run(user.id);
-        res.redirect('/dashboard.html?token=' + token);
+        // Redirect with token in fragment (#) instead of query string to avoid server logs
+        res.redirect('/dashboard.html#token=' + token);
       } catch (e) {
         res.redirect('/auth.html?error=google_failed');
       }
@@ -3214,7 +3235,8 @@ app.get('/api/admin/products/search', function (req, res) {
     if (!user) return res.status(401).json({ error: 'Unauthorized' });
     var q = (req.query.q || '').trim();
     if (!q || q.length < 2) return res.json({ success: true, products: [] });
-    var products = db.prepare("SELECT * FROM custom_products WHERE (name LIKE ? OR category LIKE ?) AND hidden = 0 ORDER BY date DESC LIMIT 20").all('%' + q + '%', '%' + q + '%');
+    var escaped = escapeLike(q);
+    var products = db.prepare("SELECT * FROM custom_products WHERE (name LIKE ? OR category LIKE ?) AND hidden = 0 ORDER BY date DESC LIMIT 20").all('%' + escaped + '%', '%' + escaped + '%');
     // Parse variants_json to extract prices
     products.forEach(function(p) {
       try { p.variants = JSON.parse(p.variants_json || '[]'); } catch(e) { p.variants = []; }

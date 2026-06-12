@@ -2,7 +2,7 @@ module.exports = function (app, db, getUserFromRequest, hashPassword, logAudit, 
 
   /* ─── Content Management Tables ─── */
   db.exec("CREATE TABLE IF NOT EXISTS site_settings (key TEXT PRIMARY KEY, value TEXT, updated_at TEXT DEFAULT (datetime('now')))");
-  // Branches table is managed in index.js
+  // Branches CRUD is below
   db.exec("CREATE TABLE IF NOT EXISTS categories (id TEXT PRIMARY KEY, name TEXT NOT NULL, description TEXT, image TEXT, link TEXT, sort_order INTEGER DEFAULT 0, created_at TEXT DEFAULT (datetime('now')))");
   db.exec("CREATE TABLE IF NOT EXISTS services (id TEXT PRIMARY KEY, name TEXT NOT NULL, description TEXT, image TEXT, sort_order INTEGER DEFAULT 0, created_at TEXT DEFAULT (datetime('now')))");
   db.exec("CREATE TABLE IF NOT EXISTS faqs (id TEXT PRIMARY KEY, question TEXT NOT NULL, answer TEXT NOT NULL, sort_order INTEGER DEFAULT 0, created_at TEXT DEFAULT (datetime('now')))");
@@ -142,10 +142,17 @@ module.exports = function (app, db, getUserFromRequest, hashPassword, logAudit, 
     }
   });
 
+  function requireContentAccess(req, res) {
+    var admin = getUserFromRequest(req);
+    if (!admin) { res.status(401).json({ error: 'Unauthorized' }); return null; }
+    if (!admin.permissions || !admin.permissions.content) { res.status(403).json({ error: 'Forbidden: content permission required' }); return null; }
+    return admin;
+  }
+
   /* ─── Branches CRUD ─── */
   app.get('/api/admin/branches', function (req, res) {
     try {
-      if (!getUserFromRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+      if (!requireContentAccess(req, res)) return;
       var rows = db.prepare("SELECT * FROM branches ORDER BY sort_order ASC").all();
       res.json({ success: true, branches: rows });
     } catch (err) { sendError(res, err); }
@@ -153,8 +160,8 @@ module.exports = function (app, db, getUserFromRequest, hashPassword, logAudit, 
 
   app.post('/api/admin/branches', function (req, res) {
     try {
-      var admin = getUserFromRequest(req);
-      if (!admin) return res.status(401).json({ error: 'Unauthorized' });
+      var admin = requireContentAccess(req, res);
+      if (!admin) return;
       var b = req.body;
       if (!b.id || !b.name || !b.city || !b.address) return res.status(400).json({ error: 'id, name, city, and address are required' });
       db.prepare("INSERT INTO branches (id, name, city, address, phone, whatsapp, email, latitude, longitude, hours, description, image, is_headquarters, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").run(
@@ -172,8 +179,8 @@ module.exports = function (app, db, getUserFromRequest, hashPassword, logAudit, 
 
   app.put('/api/admin/branches/:id', function (req, res) {
     try {
-      var admin = getUserFromRequest(req);
-      if (!admin) return res.status(401).json({ error: 'Unauthorized' });
+      var admin = requireContentAccess(req, res);
+      if (!admin) return;
       var b = req.body;
       db.prepare("UPDATE branches SET name=?, city=?, address=?, phone=?, whatsapp=?, email=?, latitude=?, longitude=?, hours=?, description=?, image=?, is_headquarters=?, sort_order=? WHERE id=?").run(
         b.name, b.city, b.address || null, b.phone || null, b.whatsapp || null, b.email || null,
@@ -187,8 +194,8 @@ module.exports = function (app, db, getUserFromRequest, hashPassword, logAudit, 
 
   app.delete('/api/admin/branches/:id', function (req, res) {
     try {
-      var admin = getUserFromRequest(req);
-      if (!admin) return res.status(401).json({ error: 'Unauthorized' });
+      var admin = requireContentAccess(req, res);
+      if (!admin) return;
       db.prepare("DELETE FROM branches WHERE id=?").run(req.params.id);
       logAudit(admin, 'delete-branch', 'Deleted branch: ' + req.params.id, req);
       res.json({ success: true });
@@ -198,7 +205,7 @@ module.exports = function (app, db, getUserFromRequest, hashPassword, logAudit, 
   /* ─── Categories CRUD ─── */
   app.get('/api/admin/categories', function (req, res) {
     try {
-      if (!getUserFromRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+      if (!requireContentAccess(req, res)) return;
       var rows = db.prepare("SELECT * FROM categories ORDER BY sort_order ASC").all();
       res.json({ success: true, categories: rows });
     } catch (err) { sendError(res, err); }
@@ -206,8 +213,8 @@ module.exports = function (app, db, getUserFromRequest, hashPassword, logAudit, 
 
   app.post('/api/admin/categories', function (req, res) {
     try {
-      var admin = getUserFromRequest(req);
-      if (!admin) return res.status(401).json({ error: 'Unauthorized' });
+      var admin = requireContentAccess(req, res);
+      if (!admin) return;
       var b = req.body;
       if (!b.id || !b.name) return res.status(400).json({ error: 'id and name are required' });
       db.prepare("INSERT INTO categories (id, name, description, image, link, sort_order) VALUES (?, ?, ?, ?, ?, ?)").run(
@@ -223,8 +230,8 @@ module.exports = function (app, db, getUserFromRequest, hashPassword, logAudit, 
 
   app.put('/api/admin/categories/:id', function (req, res) {
     try {
-      var admin = getUserFromRequest(req);
-      if (!admin) return res.status(401).json({ error: 'Unauthorized' });
+      var admin = requireContentAccess(req, res);
+      if (!admin) return;
       var b = req.body;
       db.prepare("UPDATE categories SET name=?, description=?, image=?, link=?, sort_order=? WHERE id=?").run(
         b.name, b.description || null, b.image || null, b.link || null, b.sort_order || 0, req.params.id
@@ -236,8 +243,8 @@ module.exports = function (app, db, getUserFromRequest, hashPassword, logAudit, 
 
   app.delete('/api/admin/categories/:id', function (req, res) {
     try {
-      var admin = getUserFromRequest(req);
-      if (!admin) return res.status(401).json({ error: 'Unauthorized' });
+      var admin = requireContentAccess(req, res);
+      if (!admin) return;
       db.prepare("DELETE FROM categories WHERE id=?").run(req.params.id);
       logAudit(admin, 'delete-category', 'Deleted category: ' + req.params.id, req);
       res.json({ success: true });
@@ -247,7 +254,7 @@ module.exports = function (app, db, getUserFromRequest, hashPassword, logAudit, 
   /* ─── Services CRUD ─── */
   app.get('/api/admin/services', function (req, res) {
     try {
-      if (!getUserFromRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+      if (!requireContentAccess(req, res)) return;
       var rows = db.prepare("SELECT * FROM services ORDER BY sort_order ASC").all();
       res.json({ success: true, services: rows });
     } catch (err) { sendError(res, err); }
@@ -255,8 +262,8 @@ module.exports = function (app, db, getUserFromRequest, hashPassword, logAudit, 
 
   app.post('/api/admin/services', function (req, res) {
     try {
-      var admin = getUserFromRequest(req);
-      if (!admin) return res.status(401).json({ error: 'Unauthorized' });
+      var admin = requireContentAccess(req, res);
+      if (!admin) return;
       var b = req.body;
       if (!b.id || !b.name) return res.status(400).json({ error: 'id and name are required' });
       db.prepare("INSERT INTO services (id, name, description, image, sort_order) VALUES (?, ?, ?, ?, ?)").run(
@@ -272,8 +279,8 @@ module.exports = function (app, db, getUserFromRequest, hashPassword, logAudit, 
 
   app.put('/api/admin/services/:id', function (req, res) {
     try {
-      var admin = getUserFromRequest(req);
-      if (!admin) return res.status(401).json({ error: 'Unauthorized' });
+      var admin = requireContentAccess(req, res);
+      if (!admin) return;
       var b = req.body;
       db.prepare("UPDATE services SET name=?, description=?, image=?, sort_order=? WHERE id=?").run(
         b.name, b.description || null, b.image || null, b.sort_order || 0, req.params.id
@@ -285,8 +292,8 @@ module.exports = function (app, db, getUserFromRequest, hashPassword, logAudit, 
 
   app.delete('/api/admin/services/:id', function (req, res) {
     try {
-      var admin = getUserFromRequest(req);
-      if (!admin) return res.status(401).json({ error: 'Unauthorized' });
+      var admin = requireContentAccess(req, res);
+      if (!admin) return;
       db.prepare("DELETE FROM services WHERE id=?").run(req.params.id);
       logAudit(admin, 'delete-service', 'Deleted service: ' + req.params.id, req);
       res.json({ success: true });
@@ -296,7 +303,7 @@ module.exports = function (app, db, getUserFromRequest, hashPassword, logAudit, 
   /* ─── FAQs CRUD ─── */
   app.get('/api/admin/faqs', function (req, res) {
     try {
-      if (!getUserFromRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+      if (!requireContentAccess(req, res)) return;
       var rows = db.prepare("SELECT * FROM faqs ORDER BY sort_order ASC").all();
       res.json({ success: true, faqs: rows });
     } catch (err) { sendError(res, err); }
@@ -304,8 +311,8 @@ module.exports = function (app, db, getUserFromRequest, hashPassword, logAudit, 
 
   app.post('/api/admin/faqs', function (req, res) {
     try {
-      var admin = getUserFromRequest(req);
-      if (!admin) return res.status(401).json({ error: 'Unauthorized' });
+      var admin = requireContentAccess(req, res);
+      if (!admin) return;
       var b = req.body;
       if (!b.id || !b.question || !b.answer) return res.status(400).json({ error: 'id, question, and answer are required' });
       db.prepare("INSERT INTO faqs (id, question, answer, sort_order) VALUES (?, ?, ?, ?)").run(
@@ -321,8 +328,8 @@ module.exports = function (app, db, getUserFromRequest, hashPassword, logAudit, 
 
   app.put('/api/admin/faqs/:id', function (req, res) {
     try {
-      var admin = getUserFromRequest(req);
-      if (!admin) return res.status(401).json({ error: 'Unauthorized' });
+      var admin = requireContentAccess(req, res);
+      if (!admin) return;
       var b = req.body;
       db.prepare("UPDATE faqs SET question=?, answer=?, sort_order=? WHERE id=?").run(
         b.question, b.answer, b.sort_order || 0, req.params.id
@@ -334,8 +341,8 @@ module.exports = function (app, db, getUserFromRequest, hashPassword, logAudit, 
 
   app.delete('/api/admin/faqs/:id', function (req, res) {
     try {
-      var admin = getUserFromRequest(req);
-      if (!admin) return res.status(401).json({ error: 'Unauthorized' });
+      var admin = requireContentAccess(req, res);
+      if (!admin) return;
       db.prepare("DELETE FROM faqs WHERE id=?").run(req.params.id);
       logAudit(admin, 'delete-faq', 'Deleted FAQ: ' + req.params.id, req);
       res.json({ success: true });
@@ -345,7 +352,7 @@ module.exports = function (app, db, getUserFromRequest, hashPassword, logAudit, 
   /* ─── Hero Banners CRUD ─── */
   app.get('/api/admin/hero-banners', function (req, res) {
     try {
-      if (!getUserFromRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+      if (!requireContentAccess(req, res)) return;
       var rows = db.prepare("SELECT * FROM hero_banners ORDER BY sort_order ASC").all();
       res.json({ success: true, banners: rows });
     } catch (err) { sendError(res, err); }
@@ -353,8 +360,8 @@ module.exports = function (app, db, getUserFromRequest, hashPassword, logAudit, 
 
   app.post('/api/admin/hero-banners', function (req, res) {
     try {
-      var admin = getUserFromRequest(req);
-      if (!admin) return res.status(401).json({ error: 'Unauthorized' });
+      var admin = requireContentAccess(req, res);
+      if (!admin) return;
       var b = req.body;
       if (!b.id || !b.image) return res.status(400).json({ error: 'id and image are required' });
       db.prepare("INSERT INTO hero_banners (id, image, title, subtitle, cta_text, cta_link, is_active, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?)").run(
@@ -371,8 +378,8 @@ module.exports = function (app, db, getUserFromRequest, hashPassword, logAudit, 
 
   app.put('/api/admin/hero-banners/:id', function (req, res) {
     try {
-      var admin = getUserFromRequest(req);
-      if (!admin) return res.status(401).json({ error: 'Unauthorized' });
+      var admin = requireContentAccess(req, res);
+      if (!admin) return;
       var b = req.body;
       db.prepare("UPDATE hero_banners SET image=?, title=?, subtitle=?, cta_text=?, cta_link=?, is_active=?, sort_order=? WHERE id=?").run(
         b.image, b.title || null, b.subtitle || null, b.cta_text || null, b.cta_link || null,
@@ -385,8 +392,8 @@ module.exports = function (app, db, getUserFromRequest, hashPassword, logAudit, 
 
   app.delete('/api/admin/hero-banners/:id', function (req, res) {
     try {
-      var admin = getUserFromRequest(req);
-      if (!admin) return res.status(401).json({ error: 'Unauthorized' });
+      var admin = requireContentAccess(req, res);
+      if (!admin) return;
       db.prepare("DELETE FROM hero_banners WHERE id=?").run(req.params.id);
       logAudit(admin, 'delete-banner', 'Deleted banner: ' + req.params.id, req);
       res.json({ success: true });
@@ -396,7 +403,7 @@ module.exports = function (app, db, getUserFromRequest, hashPassword, logAudit, 
   /* ─── About Stats CRUD ─── */
   app.get('/api/admin/about-stats', function (req, res) {
     try {
-      if (!getUserFromRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+      if (!requireContentAccess(req, res)) return;
       var rows = db.prepare("SELECT * FROM about_stats ORDER BY sort_order ASC").all();
       res.json({ success: true, stats: rows });
     } catch (err) { sendError(res, err); }
@@ -404,8 +411,8 @@ module.exports = function (app, db, getUserFromRequest, hashPassword, logAudit, 
 
   app.post('/api/admin/about-stats', function (req, res) {
     try {
-      var admin = getUserFromRequest(req);
-      if (!admin) return res.status(401).json({ error: 'Unauthorized' });
+      var admin = requireContentAccess(req, res);
+      if (!admin) return;
       var b = req.body;
       if (!b.id || !b.label || !b.value) return res.status(400).json({ error: 'id, label, and value are required' });
       db.prepare("INSERT INTO about_stats (id, label, value, icon, sort_order) VALUES (?, ?, ?, ?, ?)").run(
@@ -421,8 +428,8 @@ module.exports = function (app, db, getUserFromRequest, hashPassword, logAudit, 
 
   app.put('/api/admin/about-stats/:id', function (req, res) {
     try {
-      var admin = getUserFromRequest(req);
-      if (!admin) return res.status(401).json({ error: 'Unauthorized' });
+      var admin = requireContentAccess(req, res);
+      if (!admin) return;
       var b = req.body;
       db.prepare("UPDATE about_stats SET label=?, value=?, icon=?, sort_order=? WHERE id=?").run(
         b.label, b.value, b.icon || null, b.sort_order || 0, req.params.id
@@ -434,8 +441,8 @@ module.exports = function (app, db, getUserFromRequest, hashPassword, logAudit, 
 
   app.delete('/api/admin/about-stats/:id', function (req, res) {
     try {
-      var admin = getUserFromRequest(req);
-      if (!admin) return res.status(401).json({ error: 'Unauthorized' });
+      var admin = requireContentAccess(req, res);
+      if (!admin) return;
       db.prepare("DELETE FROM about_stats WHERE id=?").run(req.params.id);
       logAudit(admin, 'delete-stat', 'Deleted stat: ' + req.params.id, req);
       res.json({ success: true });
@@ -445,7 +452,7 @@ module.exports = function (app, db, getUserFromRequest, hashPassword, logAudit, 
   /* ─── About Values CRUD ─── */
   app.get('/api/admin/about-values', function (req, res) {
     try {
-      if (!getUserFromRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+      if (!requireContentAccess(req, res)) return;
       var rows = db.prepare("SELECT * FROM about_values ORDER BY sort_order ASC").all();
       res.json({ success: true, values: rows });
     } catch (err) { sendError(res, err); }
@@ -453,8 +460,8 @@ module.exports = function (app, db, getUserFromRequest, hashPassword, logAudit, 
 
   app.post('/api/admin/about-values', function (req, res) {
     try {
-      var admin = getUserFromRequest(req);
-      if (!admin) return res.status(401).json({ error: 'Unauthorized' });
+      var admin = requireContentAccess(req, res);
+      if (!admin) return;
       var b = req.body;
       if (!b.id || !b.title) return res.status(400).json({ error: 'id and title are required' });
       db.prepare("INSERT INTO about_values (id, title, description, icon, sort_order) VALUES (?, ?, ?, ?, ?)").run(
@@ -470,8 +477,8 @@ module.exports = function (app, db, getUserFromRequest, hashPassword, logAudit, 
 
   app.put('/api/admin/about-values/:id', function (req, res) {
     try {
-      var admin = getUserFromRequest(req);
-      if (!admin) return res.status(401).json({ error: 'Unauthorized' });
+      var admin = requireContentAccess(req, res);
+      if (!admin) return;
       var b = req.body;
       db.prepare("UPDATE about_values SET title=?, description=?, icon=?, sort_order=? WHERE id=?").run(
         b.title, b.description || null, b.icon || null, b.sort_order || 0, req.params.id
@@ -483,18 +490,25 @@ module.exports = function (app, db, getUserFromRequest, hashPassword, logAudit, 
 
   app.delete('/api/admin/about-values/:id', function (req, res) {
     try {
-      var admin = getUserFromRequest(req);
-      if (!admin) return res.status(401).json({ error: 'Unauthorized' });
+      var admin = requireContentAccess(req, res);
+      if (!admin) return;
       db.prepare("DELETE FROM about_values WHERE id=?").run(req.params.id);
       logAudit(admin, 'delete-value', 'Deleted value: ' + req.params.id, req);
       res.json({ success: true });
     } catch (err) { sendError(res, err); }
   });
 
-  /* ─── Site Settings ─── */
+  /* ─── Site Settings with allowlist ─── */
+  var ALLOWED_SETTINGS = [
+    'site_name', 'site_description', 'site_keywords', 'footer_company', 'footer_tagline',
+    'footer_address', 'footer_phone', 'footer_whatsapp', 'footer_email',
+    'about_subtitle', 'about_who_we_are', 'contact_email', 'contact_phone',
+    'social_facebook', 'social_instagram', 'hero_title', 'hero_subtitle'
+  ];
+
   app.get('/api/admin/settings', function (req, res) {
     try {
-      if (!getUserFromRequest(req)) return res.status(401).json({ error: 'Unauthorized' });
+      if (!requireContentAccess(req, res)) return;
       var rows = db.prepare("SELECT * FROM site_settings").all();
       var settings = {};
       rows.forEach(function (s) { settings[s.key] = s.value; });
@@ -504,12 +518,14 @@ module.exports = function (app, db, getUserFromRequest, hashPassword, logAudit, 
 
   app.put('/api/admin/settings', function (req, res) {
     try {
-      var admin = getUserFromRequest(req);
-      if (!admin) return res.status(401).json({ error: 'Unauthorized' });
+      var admin = requireContentAccess(req, res);
+      if (!admin) return;
       var settings = req.body.settings || {};
       Object.keys(settings).forEach(function (key) {
-        if (settings[key] !== null && settings[key] !== undefined) {
-          db.prepare("INSERT INTO site_settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value, updated_at=datetime('now')").run(key, String(settings[key]));
+        if (ALLOWED_SETTINGS.indexOf(key) === -1) return;
+        var val = settings[key];
+        if (val !== null && val !== undefined && val !== '') {
+          db.prepare("INSERT INTO site_settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value, updated_at=datetime('now')").run(key, String(val));
         }
       });
       logAudit(admin, 'update-settings', 'Updated site settings (' + Object.keys(settings).length + ' keys)', req);
@@ -519,8 +535,9 @@ module.exports = function (app, db, getUserFromRequest, hashPassword, logAudit, 
 
   app.delete('/api/admin/settings/:key', function (req, res) {
     try {
-      var admin = getUserFromRequest(req);
-      if (!admin) return res.status(401).json({ error: 'Unauthorized' });
+      var admin = requireContentAccess(req, res);
+      if (!admin) return;
+      if (ALLOWED_SETTINGS.indexOf(req.params.key) === -1) return res.status(400).json({ error: 'Invalid setting key' });
       db.prepare("DELETE FROM site_settings WHERE key=?").run(req.params.key);
       logAudit(admin, 'delete-setting', 'Deleted setting: ' + req.params.key, req);
       res.json({ success: true });

@@ -315,6 +315,11 @@ function setMsg(el, msg, isError) {
 (function() {
   var params = new URLSearchParams(window.location.search);
   var qToken = params.get('token');
+  // Also check URL fragment (used by Google OAuth to avoid server logging)
+  if (!qToken && window.location.hash) {
+    var hashParams = new URLSearchParams(window.location.hash.substring(1));
+    qToken = hashParams.get('token');
+  }
   if (qToken) {
     userToken = qToken;
     localStorage.setItem('user_token', qToken);

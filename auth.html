@@ -196,6 +196,11 @@ document.getElementById('regConfirm').addEventListener('keydown', function(e) { 
 (function() {
   var params = new URLSearchParams(window.location.search);
   var token = params.get('token');
+  // Also check URL fragment
+  if (!token && window.location.hash) {
+    var hashParams = new URLSearchParams(window.location.hash.substring(1));
+    token = hashParams.get('token');
+  }
   if (token) {
     localStorage.setItem('user_token', token);
     // Fetch user info

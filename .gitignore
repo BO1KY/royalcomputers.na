@@ -9,5 +9,7 @@ server/test-data.db-wal
 server/royal.db
 server/.env
 .env
-
+.agents/
+skills-lock.json
+.env.local
 uploads/
