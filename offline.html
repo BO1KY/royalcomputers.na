@@ -23,11 +23,11 @@
       color: var(--text);
       min-height: 100vh;
       display: flex;
-      align-items: center;
-      justify-content: center;
+      flex-direction: column;
       text-align: center;
       padding: 24px;
     }
+    .offline-main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     .box { max-width: 420px; }
     .icon { font-size: 72px; margin-bottom: 24px; display: block; }
     h1 { font-size: 28px; font-weight: 700; margin-bottom: 12px; color: var(--text); }
@@ -54,11 +54,13 @@
     <div class="loader-spinner"></div>
     <div class="loader-text">Loading…</div>
   </div>
+  <div class="offline-main">
   <div class="box">
     <span class="icon">📡</span>
     <h1>You're Offline</h1>
     <p>It looks like you've lost your internet connection. Some pages you've visited recently may still be available.</p>
     <button class="btn" onclick="window.location.reload()">Try Again</button>
+  </div>
   </div>
 <script defer src="js/api-config.js"></script>
 <footer class="footer-mini">
