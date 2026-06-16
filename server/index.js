@@ -487,7 +487,7 @@ function sendTrackingEmail(jobCard, statusUpdateMsg) {
     var siteData = db.prepare("SELECT value FROM site_settings WHERE key='footer_company'").get();
     var companyName = siteData ? siteData.value : 'Royal Computers Namibia';
     var branchName = branchInfo ? branchInfo.name : '';
-    var baseUrl = 'https://netmac.co.za';
+    var baseUrl = 'https://royalcomputers.na';
     var trackUrl = baseUrl + '/tracking.html?token=' + (jobCard.public_token || '');
 
     var mailOpts = {
@@ -844,7 +844,12 @@ app.post('/api/admin/password-resets/:id/approve-with-email', function (req, res
           '<p style="font-size:11px;color:#aaa;text-align:center;">&copy; Royal Computers Namibia</p>' +
         '</div>'
     };
-    transporter.sendMail(mailOpts, function (emailErr) {
+    var t = getTransporter();
+    if (!t) {
+      logAudit(admin, 'approve-reset-email-failed', 'SMTP not configured, code: ' + code, req);
+      return res.json({ success: true, warning: 'Email service not configured. Code: ' + code, code: code });
+    }
+    t.sendMail(mailOpts, function (emailErr) {
       if (emailErr) {
         console.error('Password reset email error:', emailErr.message);
         logAudit(admin, 'approve-reset-email-failed', 'Approved reset for ' + reset.username + ' but email to ' + email + ' failed: ' + emailErr.message, req);
@@ -1650,7 +1655,7 @@ app.post('/api/send-campaign', function (req, res) {
     settings.forEach(function(r) { s[r.key] = r.value; });
     var campAddr = s.campaign_footer_address || 'GF Shop 12 Gustav Voigts Center, Independence Ave, Windhoek';
     var campPhone = s.campaign_footer_phone || '061228179';
-    var campEmail = s.campaign_footer_email || 'windhoek@netmac.co.za';
+    var campEmail = s.campaign_footer_email || 'windhoek@royalcomputers.na';
     var campHours = s.campaign_footer_hours || 'Mon-Fri: 08:30-17:30 | Sat: 08:30-13:00 | Sun: 09:00-13:00';
 
     var fullHtml = '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">' +
@@ -1673,7 +1678,7 @@ app.post('/api/send-campaign', function (req, res) {
       '<strong style="color:#1a1a2e;font-size:13px;">ROYAL COMPUTERS</strong><br>' +
       campAddr + '<br>' +
       'Tel: ' + campPhone + ' | Email: ' + campEmail + '<br>' +
-      'www.netmac.co.za | ' + campHours +
+      'www.royalcomputers.na | ' + campHours +
       '</td></tr></table>' +
       '</td></tr>' +
       '<tr><td style="background:#1a1a2e;padding:16px;text-align:center;">' +
@@ -2069,12 +2074,12 @@ migrate('add_image_to_branches', "ALTER TABLE branches ADD COLUMN image TEXT");
 var branchCount = db.prepare("SELECT COUNT(*) as c FROM branches").get().c;
 if (branchCount === 0) {
   var stmt = db.prepare("INSERT INTO branches (id, name, city, address, phone, email) VALUES (?, ?, ?, ?, ?, ?)");
-  stmt.run('branch-001', 'Royal Computers - Gustav Voigts Centre, Windhoek', 'Windhoek', 'GF Shop 12 Gustav Voigts Center, Independence Ave', '061228179', 'windhoek@netmac.co.za');
-  stmt.run('branch-002', 'Royal Computers - Swakopmund', 'Swakopmund', 'Shop 03 Minette Court Sam Nujoma Street', '064406914', 'swakop@netmec.co.za');
-  stmt.run('branch-003', 'Royal Computers - Oshakati', 'Oshakati', 'Shop 42 Etango Complex', '065227045', 'oshakati@netmac.co.za');
-  stmt.run('branch-004', 'Royal Computers - Walvis Bay', 'Walvis Bay', '111 Hage Geingob Street Office C', '064200453', 'walvisbay@netmac.co.za');
-  stmt.run('branch-005', 'Royal Computers - Tsumeb', 'Tsumeb', 'Shop 03 Tsumeb Shopping Mall', '+264818163936', 'tsumeb@netmac.co.za');
-  stmt.run('branch-006', 'Royal Computers - Grove Mall, Windhoek', 'Windhoek', 'GF Shop 256 Grove Mall', '061242938', 'grove@netmac.co.za');
+  stmt.run('branch-001', 'Royal Computers - Gustav Voigts Centre, Windhoek', 'Windhoek', 'GF Shop 12 Gustav Voigts Center, Independence Ave', '061228179', 'windhoek@royalcomputers.na');
+  stmt.run('branch-002', 'Royal Computers - Swakopmund', 'Swakopmund', 'Shop 03 Minette Court Sam Nujoma Street', '064406914', 'swakop@royalcomputers.na');
+  stmt.run('branch-003', 'Royal Computers - Oshakati', 'Oshakati', 'Shop 42 Etango Complex', '065227045', 'oshakati@royalcomputers.na');
+  stmt.run('branch-004', 'Royal Computers - Walvis Bay', 'Walvis Bay', '111 Hage Geingob Street Office C', '064200453', 'walvisbay@royalcomputers.na');
+  stmt.run('branch-005', 'Royal Computers - Tsumeb', 'Tsumeb', 'Shop 03 Tsumeb Shopping Mall', '+264818163936', 'tsumeb@royalcomputers.na');
+  stmt.run('branch-006', 'Royal Computers - Grove Mall, Windhoek', 'Windhoek', 'GF Shop 256 Grove Mall', '061242938', 'grove@royalcomputers.na');
 }
 
 /* ─── Job Card Management ─── */

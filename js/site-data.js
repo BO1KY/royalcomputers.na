@@ -50,7 +50,7 @@
       'site-footer-address': getSetting('footer_address', 'GF Shop 12 Gustav Voigts Center, Independence Ave, Windhoek'),
       'site-footer-phone': getSetting('footer_phone', '061228179'),
       'site-footer-whatsapp': getSetting('footer_whatsapp', '+264813631483'),
-      'site-footer-email': getSetting('footer_email', 'windhoek@netmac.co.za'),
+      'site-footer-email': getSetting('footer_email', 'windhoek@royalcomputers.na'),
       'site-footer-facebook': getSetting('footer_facebook_url', 'https://www.facebook.com/RoyalComputersNamibia/'),
       'site-footer-instagram': getSetting('footer_instagram_url', 'https://www.instagram.com/royalcomputernam/'),
       'site-footer-copyright': getSetting('footer_copyright', 'Copyright \u00A9 Royal Computers Namibia'),

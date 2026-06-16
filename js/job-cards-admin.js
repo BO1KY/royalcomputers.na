@@ -802,10 +802,10 @@ function printJobCard(id) {
 
       /* ── Branch footer ── */
       '<div class="bfooter">' +
-        '<div class="bcol"><div class="city">Swakopmund</div>Shop 3, Minette Court<br>Sam Nujoma Str<br>Tel 064 406914<br>swakop@netmac.co.za</div>' +
-        '<div class="bcol"><div class="city">Windhoek</div>Shop 25, Gustav Voigts Centre<br>Independence Av<br>Tel: 061 228179<br>windhoek@netmac.co.za</div>' +
-        '<div class="bcol"><div class="city">Walvis Bay</div>111 Hage Geingob Street<br>Office C<br>Tel: 064 200453<br>walvisbay@netmac.co.za</div>' +
-        '<div class="bcol"><div class="city">Oshakati</div>Shop 42 Etango Complex<br>081 6540001<br>oshakati@netmac.co.za</div>' +
+        '<div class="bcol"><div class="city">Swakopmund</div>Shop 3, Minette Court<br>Sam Nujoma Str<br>Tel 064 406914<br>swakop@royalcomputers.na</div>' +
+        '<div class="bcol"><div class="city">Windhoek</div>Shop 25, Gustav Voigts Centre<br>Independence Av<br>Tel: 061 228179<br>windhoek@royalcomputers.na</div>' +
+        '<div class="bcol"><div class="city">Walvis Bay</div>111 Hage Geingob Street<br>Office C<br>Tel: 064 200453<br>walvisbay@royalcomputers.na</div>' +
+        '<div class="bcol"><div class="city">Oshakati</div>Shop 42 Etango Complex<br>081 6540001<br>oshakati@royalcomputers.na</div>' +
       '</div>' +
       '</div></body></html>';
 

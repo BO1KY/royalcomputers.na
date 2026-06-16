@@ -14,12 +14,12 @@ module.exports = function (app, db, getUserFromRequest, hashPassword, logAudit, 
   /* ─── Seed data on first run ─── */
   (function seed() {
     var branchUsers = [
-      { username: 'windhoek@netmac.co.za', branch_id: 'branch-001' },
-      { username: 'swakop@netmec.co.za', branch_id: 'branch-002' },
-      { username: 'oshakati@netmac.co.za', branch_id: 'branch-003' },
-      { username: 'walvisbay@netmac.co.za', branch_id: 'branch-004' },
-      { username: 'tsumeb@netmac.co.za', branch_id: 'branch-005' },
-      { username: 'grove@netmac.co.za', branch_id: 'branch-006' }
+      { username: 'windhoek@royalcomputers.na', branch_id: 'branch-001' },
+      { username: 'swakop@royalcomputers.na', branch_id: 'branch-002' },
+      { username: 'oshakati@royalcomputers.na', branch_id: 'branch-003' },
+      { username: 'walvisbay@royalcomputers.na', branch_id: 'branch-004' },
+      { username: 'tsumeb@royalcomputers.na', branch_id: 'branch-005' },
+      { username: 'grove@royalcomputers.na', branch_id: 'branch-006' }
     ];
     var hasBranchUsers = false;
     try { hasBranchUsers = db.prepare("SELECT COUNT(*) as c FROM users WHERE branch_id IS NOT NULL").get().c > 0; } catch (e) {}
@@ -35,7 +35,7 @@ module.exports = function (app, db, getUserFromRequest, hashPassword, logAudit, 
         var branch = db.prepare("SELECT name FROM branches WHERE id = ?").get(bu.branch_id);
         var name = branch ? 'Admin - ' + branch.name : 'Admin - ' + bu.branch_id;
         var hash = hashPassword(seedAdminPassword);
-        var adminUsername = 'admin-' + bu.username.replace('@netmac.co.za','').replace('@netmec.co.za','');
+        var adminUsername = 'admin-' + bu.username.replace('@royalcomputers.na','').replace('@royalcomputers.na','');
         try { insertUser.run(adminUsername, hash, name, JSON.stringify({ job_cards: true, users: true, sales: true, livechat: true, subscribers: true, messages: true, campaigns: true, products: true, content: true }), bu.branch_id, 'manager'); } catch(e) {}
       });
       try {
