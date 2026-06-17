@@ -3152,14 +3152,22 @@ document.addEventListener('DOMContentLoaded', function() {
         '<input type="text" id="usernameInput" placeholder="Username" autocomplete="username" style="width:100%;padding:12px 16px;border:2px solid var(--border,#ddd);border-radius:8px;font-size:15px;font-family:\'DM Sans\',sans-serif;outline:none;transition:border-color .2s;margin-bottom:8px;box-sizing:border-box;" />' +
         '<input type="password" id="passwordInput" placeholder="Password" autocomplete="current-password" style="width:100%;padding:12px 16px;border:2px solid var(--border,#ddd);border-radius:8px;font-size:15px;font-family:\'DM Sans\',sans-serif;outline:none;transition:border-color .2s;margin-bottom:8px;box-sizing:border-box;" />' +
         '<button class="login-btn" id="loginBtn" style="width:100%;margin-top:4px;">Unlock</button>' +
-        '<p style="font-size:12px;color:#888;text-align:center;margin-top:10px;"><a href="#" onclick="showForgotPassword();return false;" style="color:#e5383b;">Forgot Password?</a></p>' +
+        '<p style="font-size:12px;color:#888;text-align:center;margin-top:10px;"><a href="#" id="forgotPasswordLink" style="color:#e5383b;">Forgot Password?</a></p>' +
       '</div>';
 
     var usernameInput = document.getElementById('usernameInput');
     var pwInput = document.getElementById('passwordInput');
     var loginBtn = document.getElementById('loginBtn');
+    var forgotLink = document.getElementById('forgotPasswordLink');
 
     if (!usernameInput || !pwInput || !loginBtn) return;
+
+    if (forgotLink) {
+      forgotLink.addEventListener('click', function(e) {
+        e.preventDefault();
+        showForgotPassword();
+      });
+    }
 
     pwInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') loginBtn.click(); });
 
@@ -3216,12 +3224,19 @@ document.addEventListener('DOMContentLoaded', function() {
         '<p style="font-size:13px;color:#666;margin:0 0 12px;">Enter your username. An admin will review your request and send a reset code to your email.</p>' +
         '<input type="text" id="forgotUserInput" placeholder="Your username" style="width:100%;padding:12px 16px;border:2px solid var(--border,#ddd);border-radius:8px;font-size:15px;font-family:\'DM Sans\',sans-serif;outline:none;transition:border-color .2s;margin-bottom:8px;box-sizing:border-box;" />' +
         '<button class="login-btn" id="forgotSubmitBtn" style="width:100%;margin-top:4px;">Request Reset</button>' +
-        '<p style="font-size:12px;color:#888;text-align:center;margin-top:10px;"><a href="#" onclick="showLegacyLogin();return false;" style="color:#e5383b;">Back to login</a> &middot; <a href="reset-password.html" style="color:#e5383b;">Already have a code?</a></p>' +
+        '<p style="font-size:12px;color:#888;text-align:center;margin-top:10px;"><a href="#" id="backToLoginLink" style="color:#e5383b;">Back to login</a> &middot; <a href="reset-password.html" style="color:#e5383b;">Already have a code?</a></p>' +
         '<p id="forgotMsg" style="font-size:12px;color:#888;text-align:center;margin-top:8px;"></p>' +
       '</div>';
 
     var userInput = document.getElementById('forgotUserInput');
     var submitBtn = document.getElementById('forgotSubmitBtn');
+    var backLink = document.getElementById('backToLoginLink');
+    if (backLink) {
+      backLink.addEventListener('click', function(e) {
+        e.preventDefault();
+        showLegacyLogin();
+      });
+    }
     var msgEl = document.getElementById('forgotMsg');
     if (!userInput || !submitBtn) return;
 
