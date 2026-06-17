@@ -94,3 +94,13 @@
   .chat-widget-box{right:8px;bottom:84px;width:calc(100vw - 16px);height:calc(100vh - 160px);max-height:none;border-radius:12px}
   .chat-widget-btn{bottom:16px;right:16px;width:52px;height:52px}
 }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+

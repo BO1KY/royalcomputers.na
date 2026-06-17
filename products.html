@@ -21,6 +21,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap"></noscript>
+  <noscript><link rel="stylesheet" href="css/royal-theme.css"><link rel="stylesheet" href="css/search-dropdown.css"><link rel="stylesheet" href="css/print-quote.css"><link rel="stylesheet" href="css/animations.css"><link rel="stylesheet" href="css/checkout-wizard.css"><link rel="stylesheet" href="css/enhanced-ui.css"><link rel="stylesheet" href="css/interactive-components.css"><link rel="stylesheet" href="css/ecommerce-features.css"><link rel="stylesheet" href="css/pc-builder.css"><link rel="stylesheet" href="css/mobile.css"></noscript>
   <link rel="stylesheet" href="css/design-tokens.css">
   <link rel="stylesheet" href="css/royal-theme.css" media="print" onload="this.media='all'">
   <link rel="stylesheet" href="css/search-dropdown.css" media="print" onload="this.media='all'">
@@ -793,7 +794,13 @@ select.form-input{appearance:none;background:var(--dark-3);padding-right:36px}
           result = result.filter(function(group) { return group.category.toLowerCase() === cat.toLowerCase(); });
         }
       }
-      if (term) { result = result.filter(group => getSearchText(group).includes(term)); }
+      if (term) {
+        var words = term.toLowerCase().split(/\s+/).filter(Boolean);
+        result = result.filter(function(group) {
+          var text = getSearchText(group);
+          return words.every(function(w) { return text.indexOf(w) !== -1; });
+        });
+      }
       filteredGroups = sortGroups(result, uiState.sort);
       updateControlState();
       persistState();

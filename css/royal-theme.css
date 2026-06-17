@@ -4354,3 +4354,12 @@ body.no-scroll {
 .footer-admin a:hover{color:var(--red,#e5383b)}
 .footer-admin .sep{margin:0 8px;color:var(--border,#ddd)}
 
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+

@@ -205,6 +205,11 @@ try { db.exec("CREATE INDEX IF NOT EXISTS idx_custom_products_category ON custom
 try { db.exec("CREATE INDEX IF NOT EXISTS idx_campaigns_status ON campaigns(status)"); } catch(e) {}
 migrate('create_chat_ratings', "CREATE TABLE IF NOT EXISTS chat_ratings (id INTEGER PRIMARY KEY AUTOINCREMENT, session_id TEXT NOT NULL, rating INTEGER NOT NULL CHECK(rating >= 1 AND rating <= 5), feedback TEXT, created_at TEXT DEFAULT (datetime('now')))");
 
+// ─── Admin password reset OTP tables ───
+db.exec("CREATE TABLE IF NOT EXISTS password_reset_otps (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT NOT NULL, otp_hash TEXT NOT NULL, expires_at INTEGER NOT NULL, attempts INTEGER DEFAULT 0, used INTEGER DEFAULT 0, created_at TEXT DEFAULT (datetime('now')))");
+db.exec("CREATE TABLE IF NOT EXISTS admin_config (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at TEXT DEFAULT (datetime('now')))");
+db.exec("CREATE TABLE IF NOT EXISTS password_reset_tokens (token TEXT PRIMARY KEY, expires_at INTEGER NOT NULL, used INTEGER DEFAULT 0, created_at TEXT DEFAULT (datetime('now')))");
+
 var storage = multer.diskStorage({
   destination: function (req, file, cb) { cb(null, UPLOADS_DIR); },
   filename: function (req, file, cb) {
@@ -214,12 +219,13 @@ var storage = multer.diskStorage({
   }
 });
 function imageFilter(req, file, cb) {
-  var allowed = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.tiff', '.tif'];
+  var allowed = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.tiff', '.tif', '.mp4', '.pdf'];
   var ext = path.extname(file.originalname).toLowerCase();
-  if (allowed.indexOf(ext) >= 0) { cb(null, true); }
-  else { cb(new Error('Only image files are allowed (jpg, jpeg, png, gif, webp, bmp, tiff). SVGs and PDFs are not accepted.')); }
+  var allowedMime = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/bmp', 'image/tiff', 'video/mp4', 'application/pdf'];
+  if (allowed.indexOf(ext) >= 0 && allowedMime.indexOf(file.mimetype) >= 0) { cb(null, true); }
+  else { cb(new Error('Only image files, MP4 videos, and PDFs are allowed.')); }
 }
-var upload = multer({ storage: storage, limits: { fileSize: 10 * 1024 * 1024 }, fileFilter: imageFilter });
+var upload = multer({ storage: storage, limits: { fileSize: 50 * 1024 * 1024 }, fileFilter: imageFilter });
 
 // Validate file content via magic bytes (runs after multer saves the file)
 function validateMagicBytes(filePath) {
@@ -279,7 +285,7 @@ function getTransporter() {
 
 var ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '').split(',').filter(Boolean);
 app.use(cors({
-  origin: ALLOWED_ORIGINS.length ? ALLOWED_ORIGINS : (process.env.NODE_ENV === 'production' ? false : '*'),
+  origin: ALLOWED_ORIGINS.length ? ALLOWED_ORIGINS : true,
   credentials: true
 }));
 app.use(express.json({ limit: '5mb' }));
@@ -395,17 +401,26 @@ function sha256(str) {
 }
 
 // Master password verification — scrypt only.
+// Checks DB override first (set by password reset), falls back to .env.
 // SHA-256 fallback REMOVED for security.
 // If ADMIN_HASH is a legacy SHA-256 hash, migrate it to scrypt:
 //   1. Set a new password via env: ADMIN_PASSWORD_HASH=salt:scrypt64hash
 //   2. Or use the helper: node -e "console.log(require('crypto').randomBytes(16).toString('hex')+':'+require('crypto').scryptSync('your-password',require('crypto').randomBytes(16).toString('hex'),64).toString('hex'))"
+function getEffectiveAdminHash() {
+  try {
+    var row = db.prepare("SELECT value FROM admin_config WHERE key = 'admin_password_hash'").get();
+    if (row && row.value) return row.value;
+  } catch (_) {}
+  return ADMIN_HASH;
+}
 function verifyMasterPassword(password) {
-  if (!ADMIN_HASH) return false;
-  if (ADMIN_HASH.indexOf(':') < 0) {
+  var hash = getEffectiveAdminHash();
+  if (!hash) return false;
+  if (hash.indexOf(':') < 0) {
     console.error('SECURITY: ADMIN_PASSWORD_HASH is a legacy SHA-256 hash. Migrate to scrypt immediately.');
     return false;
   }
-  return verifyPassword(password, ADMIN_HASH);
+  return verifyPassword(password, hash);
 }
 
 // Simple in-memory rate limiter (per-IP, sliding window)
@@ -420,7 +435,7 @@ function checkRateLimit(ip) {
 }
 
 function esc(str) {
-  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
 // Origin/Referer check for CSRF protection on public endpoints
@@ -633,6 +648,30 @@ app.get('/api/admin/me', function (req, res) {
   }
 });
 
+app.post('/api/admin/logout', function (req, res) {
+  try {
+    var token = getTokenFromRequest(req);
+    if (token) {
+      sessions.delete(token);
+    }
+    res.json({ success: true });
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
+app.post('/api/user/logout', function (req, res) {
+  try {
+    var token = getTokenFromRequest(req);
+    if (token) {
+      userSessions.delete(token);
+    }
+    res.json({ success: true });
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
 // ── User Management (admin only) ──
 app.get('/api/admin/users', function (req, res) {
   try {
@@ -770,7 +809,10 @@ app.post('/api/admin/password-resets/:id/approve', function (req, res) {
     var reset = db.prepare("SELECT * FROM password_resets WHERE id = ? AND status = 'pending'").get(req.params.id);
     if (!reset) return res.status(404).json({ error: 'Reset request not found or already resolved' });
     if (admin.branch_id && reset.branch_id !== admin.branch_id) return res.status(403).json({ error: 'Cannot reset passwords for other branches' });
-    var newPassword = req.body.password || SEED_BRANCH_PASSWORD;
+    var newPassword = req.body.password;
+    if (!newPassword) {
+      return res.status(400).json({ error: 'Password is required' });
+    }
     var password_hash = hashPassword(newPassword);
     db.prepare("UPDATE users SET password_hash = ? WHERE username = ?").run(password_hash, reset.username);
     db.prepare("UPDATE password_resets SET status = 'approved', resolved_at = datetime('now'), resolved_by = ? WHERE id = ?").run(admin.username || 'admin', req.params.id);
@@ -846,14 +888,14 @@ app.post('/api/admin/password-resets/:id/approve-with-email', function (req, res
     };
     var t = getTransporter();
     if (!t) {
-      logAudit(admin, 'approve-reset-email-failed', 'SMTP not configured, code: ' + code, req);
-      return res.json({ success: true, warning: 'Email service not configured. Code: ' + code, code: code });
+      logAudit(admin, 'approve-reset-email-failed', 'SMTP not configured', req);
+      return res.json({ success: true, warning: 'Email service not configured. Contact admin to retrieve code.' });
     }
     t.sendMail(mailOpts, function (emailErr) {
       if (emailErr) {
         console.error('Password reset email error:', emailErr.message);
         logAudit(admin, 'approve-reset-email-failed', 'Approved reset for ' + reset.username + ' but email to ' + email + ' failed: ' + emailErr.message, req);
-        return res.json({ success: true, warning: 'Code generated but email delivery failed. Code: ' + code, code: code });
+        return res.json({ success: true, warning: 'Code generated but email delivery failed. Contact admin to retrieve code.' });
       }
       logAudit(admin, 'approve-reset-email', 'Approved reset for ' + reset.username + ', code sent to ' + email, req);
       res.json({ success: true, message: '6-digit code sent to ' + email });
@@ -1465,9 +1507,9 @@ app.post('/api/contact', function (req, res) {
 
 app.post('/api/get-data', function (req, res) {
   try {
-    if (!authorizeRequest(req)) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
+    var user = getUserFromRequest(req);
+    if (!user) return res.status(401).json({ error: 'Unauthorized' });
+    if (!user.permissions.subscribers && !user.permissions.messages) return res.status(403).json({ error: 'Forbidden: insufficient permissions' });
 
     var subscribers = db.prepare("SELECT email FROM subscribers ORDER BY created_at ASC").all().map(function (r) { return r.email; });
     var messages = db.prepare("SELECT * FROM messages ORDER BY id ASC").all();
@@ -1556,15 +1598,17 @@ app.post('/api/notify-unsubscribe', function (req, res) {
 
 app.post('/api/clear-data', function (req, res) {
   try {
-    if (!authorizeRequest(req)) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
+    var user = getUserFromRequest(req);
+    if (!user) return res.status(401).json({ error: 'Unauthorized' });
+    if (user.branch_id) return res.status(403).json({ error: 'Forbidden: only master admin can clear data' });
+    if (!user.permissions.messages && !user.permissions.subscribers) return res.status(403).json({ error: 'Forbidden: insufficient permissions' });
 
     var type = req.body.type || '';
-    var user = getUserFromRequest(req);
     if (type === 'subscribers') {
+      if (!user.permissions.subscribers) return res.status(403).json({ error: 'Forbidden: subscribers permission required' });
       db.prepare("DELETE FROM subscribers").run();
     } else if (type === 'messages') {
+      if (!user.permissions.messages) return res.status(403).json({ error: 'Forbidden: messages permission required' });
       db.prepare("DELETE FROM messages").run();
     } else {
       return res.status(400).json({ error: 'Invalid type' });
@@ -3023,7 +3067,8 @@ app.get('/api/user/quotes', function (req, res) {
   try {
     var user = getUserFromUserSession(req);
     if (!user) return res.status(401).json({ error: 'Not authenticated' });
-    var rows = db.prepare("SELECT * FROM quotations WHERE customer_info LIKE ? ORDER BY created_at DESC").all('%' + user.email + '%');
+    var escapedEmail = escapeLike(user.email);
+    var rows = db.prepare("SELECT * FROM quotations WHERE customer_info LIKE ? ESCAPE '\\' ORDER BY created_at DESC").all('%' + escapedEmail + '%');
     res.json({ success: true, quotes: rows });
   } catch (err) {
     sendError(res, err);
@@ -3107,6 +3152,16 @@ app.post('/api/chat/send', function (req, res) {
 app.post('/api/chat/upload', chatUpload.single('file'), function (req, res) {
   try {
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+    var sessionId = (req.body.session_id || '').trim();
+    if (!sessionId) {
+      if (req.file) fs.unlinkSync(req.file.path);
+      return res.status(400).json({ error: 'Session ID required' });
+    }
+    var session = db.prepare("SELECT * FROM chat_sessions WHERE id = ? AND status = 'active'").get(sessionId);
+    if (!session) {
+      if (req.file) fs.unlinkSync(req.file.path);
+      return res.status(404).json({ error: 'Session not found or closed' });
+    }
     var url = '/uploads/' + req.file.filename;
     res.json({ success: true, file: { name: req.file.originalname, url: url, type: req.file.mimetype, size: req.file.size } });
   } catch (err) {
@@ -3176,6 +3231,8 @@ app.post('/api/admin/chat/typing', function (req, res) {
     if (!user) return res.status(401).json({ error: 'Unauthorized' });
     var sessionId = (req.body.session_id || '').trim();
     if (!sessionId) return res.status(400).json({ error: 'Session ID required' });
+    var session = db.prepare("SELECT * FROM chat_sessions WHERE id = ?").get(sessionId);
+    if (session && user.branch_id && session.branch_id !== user.branch_id) return res.status(403).json({ error: 'Access denied' });
     chatTyping.set('admin_' + sessionId, Date.now());
     res.json({ success: true });
   } catch (err) {
@@ -3190,6 +3247,8 @@ app.get('/api/admin/chat/typing', function (req, res) {
     if (!user) return res.status(401).json({ error: 'Unauthorized' });
     var sessionId = (req.query.session_id || '').trim();
     if (!sessionId) return res.status(400).json({ error: 'Session ID required' });
+    var session = db.prepare("SELECT * FROM chat_sessions WHERE id = ?").get(sessionId);
+    if (session && user.branch_id && session.branch_id !== user.branch_id) return res.status(403).json({ error: 'Access denied' });
     var lastTyping = chatTyping.get('client_' + sessionId) || 0;
     var isTyping = (Date.now() - lastTyping) < 3000;
     res.json({ success: true, typing: isTyping });
@@ -3203,6 +3262,10 @@ app.get('/api/admin/chat/ratings/:session_id', function (req, res) {
   try {
     var user = getUserFromRequest(req);
     if (!user) return res.status(401).json({ error: 'Unauthorized' });
+    if (user.branch_id) {
+      var session = db.prepare("SELECT branch_id FROM chat_sessions WHERE id = ?").get(req.params.session_id);
+      if (session && session.branch_id !== user.branch_id) return res.status(403).json({ error: 'Access denied' });
+    }
     var rating = db.prepare("SELECT * FROM chat_ratings WHERE session_id = ?").get(req.params.session_id);
     res.json({ success: true, rating: rating || null });
   } catch (err) {
@@ -3215,7 +3278,14 @@ app.get('/api/admin/chat/sessions', function (req, res) {
   try {
     var user = getUserFromRequest(req);
     if (!user) return res.status(401).json({ error: 'Unauthorized' });
-    var sessions = db.prepare("SELECT s.*, (SELECT COUNT(*) FROM chat_messages m WHERE m.session_id = s.id AND m.sender_type = 'client' AND m.read_at IS NULL) as unread FROM chat_sessions s ORDER BY s.status ASC, s.last_activity DESC").all();
+    var query = "SELECT s.*, (SELECT COUNT(*) FROM chat_messages m WHERE m.session_id = s.id AND m.sender_type = 'client' AND m.read_at IS NULL) as unread FROM chat_sessions s";
+    var params = [];
+    if (user.branch_id) {
+      query += " WHERE s.branch_id = ?";
+      params.push(user.branch_id);
+    }
+    query += " ORDER BY s.status ASC, s.last_activity DESC";
+    var sessions = params.length ? db.prepare(query).all.apply(db, params) : db.prepare(query).all();
     res.json({ success: true, sessions: sessions });
   } catch (err) {
     sendError(res, err);
@@ -3228,6 +3298,10 @@ app.get('/api/admin/chat/messages', function (req, res) {
     var user = getUserFromRequest(req);
     if (!user) return res.status(401).json({ error: 'Unauthorized' });
     var sessionId = (req.query.session_id || '').trim();
+    if (!sessionId) return res.status(400).json({ error: 'Session ID required' });
+    var session = db.prepare("SELECT * FROM chat_sessions WHERE id = ?").get(sessionId);
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+    if (user.branch_id && session.branch_id !== user.branch_id) return res.status(403).json({ error: 'Access denied' });
     var messages = db.prepare("SELECT * FROM chat_messages WHERE session_id = ? ORDER BY created_at ASC").all(sessionId);
     // Mark unread client messages as read
     db.prepare("UPDATE chat_messages SET read_at = datetime('now') WHERE session_id = ? AND sender_type = 'client' AND read_at IS NULL").run(sessionId);
@@ -3251,6 +3325,7 @@ app.post('/api/admin/chat/send', function (req, res) {
     if (messageType === 'text' && !message) return res.status(400).json({ error: 'Message required' });
     var session = db.prepare("SELECT * FROM chat_sessions WHERE id = ? AND status = 'active'").get(sessionId);
     if (!session) return res.status(404).json({ error: 'Session not found or closed' });
+    if (user.branch_id && session.branch_id !== user.branch_id) return res.status(403).json({ error: 'Access denied' });
     var dataJson = null;
     if (messageType === 'product' && productData) dataJson = JSON.stringify(productData);
     else if (attachments) dataJson = JSON.stringify(attachments);
@@ -3285,6 +3360,7 @@ app.post('/api/admin/chat/transfer', function (req, res) {
     if (!sessionId || !transferTo) return res.status(400).json({ error: 'Session ID and target admin required' });
     var session = db.prepare("SELECT * FROM chat_sessions WHERE id = ?").get(sessionId);
     if (!session) return res.status(404).json({ error: 'Session not found' });
+    if (user.branch_id && session.branch_id !== user.branch_id) return res.status(403).json({ error: 'Access denied' });
     db.prepare("UPDATE chat_sessions SET assigned_to = ?, transferred_from = ? WHERE id = ?").run(transferTo, (user.name || 'Admin'), sessionId);
     // Add system message
     db.prepare("INSERT INTO chat_messages (session_id, sender_type, sender_name, message, message_type) VALUES (?, 'admin', 'System', ?, 'text')").run(sessionId, 'Conversation transferred to ' + transferTo + ' by ' + (user.name || 'Admin'));
@@ -3351,7 +3427,7 @@ app.get('/api/admin/products/search', function (req, res) {
     var q = (req.query.q || '').trim();
     if (!q || q.length < 2) return res.json({ success: true, products: [] });
     var escaped = escapeLike(q);
-    var products = db.prepare("SELECT * FROM custom_products WHERE (name LIKE ? OR category LIKE ?) AND hidden = 0 ORDER BY date DESC LIMIT 20").all('%' + escaped + '%', '%' + escaped + '%');
+    var products = db.prepare("SELECT * FROM custom_products WHERE (name LIKE ? ESCAPE '\\' OR category LIKE ? ESCAPE '\\') AND hidden = 0 ORDER BY date DESC LIMIT 20").all('%' + escaped + '%', '%' + escaped + '%');
     // Parse variants_json to extract prices
     products.forEach(function(p) {
       try { p.variants = JSON.parse(p.variants_json || '[]'); } catch(e) { p.variants = []; }
@@ -3388,6 +3464,167 @@ app.get('/api/admin/chat/admins', function (req, res) {
       adminList.push({ username: 'admin', name: 'Admin', online: true, lastSeen: Date.now() });
     }
     res.json({ success: true, admins: adminList });
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
+/* ─── Admin OTP Password Reset ─── */
+app.post('/api/admin/forgot-password', function (req, res) {
+  try {
+    var email = (req.body.email || '').trim().toLowerCase();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ error: 'Invalid email address.' });
+    }
+    var adminEmail = process.env.ADMIN_EMAIL || process.env.SMTP_USER || '';
+    // Always return same message regardless of email match (prevent enumeration)
+    var genericMsg = 'If that email is registered, you will receive an OTP shortly.';
+
+    if (email !== adminEmail) {
+      return res.json({ success: true, message: genericMsg });
+    }
+
+    // Rate limit: max 3 requests per hour per email
+    var recent = db.prepare("SELECT COUNT(*) AS cnt FROM password_reset_otps WHERE email = ? AND created_at > datetime('now', '-1 hour')").get(email);
+    if (recent && recent.cnt >= 3) {
+      return res.status(429).json({ error: 'Too many reset requests. Try again in an hour.' });
+    }
+
+    var otp = crypto.randomInt(100000, 999999).toString();
+    var otpHash = sha256(otp);
+    var expiresAt = Date.now() + 10 * 60 * 1000;
+
+    // Invalidate existing unused OTPs for this email
+    db.prepare("UPDATE password_reset_otps SET used = 1 WHERE email = ? AND used = 0").run(email);
+    // Insert new OTP
+    db.prepare("INSERT INTO password_reset_otps (email, otp_hash, expires_at) VALUES (?, ?, ?)").run(email, otpHash, expiresAt);
+
+    var mailOpts = {
+      from: process.env.SMTP_FROM || '"Royal Computers Namibia" <noreply@royalcomputers.na>',
+      to: email,
+      subject: 'Royal Computers Admin — Password Reset OTP',
+      html: '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head><body style="margin:0;padding:0;background:#f5f3f4;font-family:Arial,sans-serif;"><table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f3f4;"><tr><td align="center" style="padding:40px 20px;"><table width="480" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);"><tr><td style="background:#1a1a2e;padding:24px;text-align:center;"><h1 style="color:#ffffff;margin:0;font-size:20px;font-weight:700;">Royal Computers Namibia</h1><p style="color:#e5383b;margin:4px 0 0;font-size:13px;font-weight:600;">ADMIN PANEL</p></td></tr><tr><td style="padding:32px 40px;text-align:center;"><h2 style="color:#161a1d;margin:0 0 8px;font-size:18px;">Password Reset Request</h2><p style="color:#666;font-size:14px;margin:0 0 28px;line-height:1.6;">Use the code below to reset your admin password.<br>This code expires in <strong>10 minutes</strong>.</p><div style="display:inline-block;background:#f5f3f4;border:2px solid #e5383b;border-radius:10px;padding:20px 40px;margin:0 0 24px;"><p style="margin:0 0 4px;font-size:11px;font-weight:700;color:#888;letter-spacing:0.1em;text-transform:uppercase;">Your OTP Code</p><p style="margin:0;font-size:40px;font-weight:700;color:#1a1a2e;letter-spacing:0.15em;font-family:\'Courier New\',monospace;">' + otp + '</p></div><p style="color:#e5383b;font-size:13px;font-weight:600;margin:0 0 8px;">Do not share this code with anyone.</p><p style="color:#999;font-size:12px;margin:0;">If you did not request this, ignore this email. Your password remains unchanged.</p></td></tr><tr><td style="background:#1a1a2e;padding:16px;text-align:center;"><p style="color:#aaa;font-size:11px;margin:0;">&copy; 2025 Royal Computers Namibia &middot; Windhoek, Namibia</p></td></tr></table></td></tr></table></body></html>'
+    };
+
+    var t = getTransporter();
+    if (!t) {
+      console.error('SMTP not configured for password reset OTP');
+      return res.status(500).json({ error: 'Failed to send reset email. Check SMTP configuration.' });
+    }
+
+    t.sendMail(mailOpts, function (emailErr) {
+      if (emailErr) {
+        console.error('Password reset OTP email error:', emailErr.message);
+        return res.status(500).json({ error: 'Failed to send reset email. Check SMTP configuration.' });
+      }
+      logAudit(null, 'forgot-password-otp', 'OTP sent to admin email', req);
+      res.json({ success: true, message: genericMsg });
+    });
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
+app.post('/api/admin/verify-otp', function (req, res) {
+  try {
+    var email = (req.body.email || '').trim().toLowerCase();
+    var otp = (req.body.otp || '').trim();
+
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ error: 'Invalid email address.' });
+    }
+    if (!/^\d{6}$/.test(otp)) {
+      return res.status(400).json({ error: 'OTP must be exactly 6 digits.' });
+    }
+
+    var row = db.prepare("SELECT * FROM password_reset_otps WHERE email = ? AND used = 0 ORDER BY id DESC LIMIT 1").get(email);
+    if (!row) {
+      return res.status(400).json({ error: 'No active reset request found. Please request a new OTP.' });
+    }
+    if (Date.now() > row.expires_at) {
+      db.prepare("UPDATE password_reset_otps SET used = 1 WHERE id = ?").run(row.id);
+      return res.status(400).json({ error: 'OTP has expired. Please request a new one.' });
+    }
+    if (row.attempts >= 3) {
+      db.prepare("UPDATE password_reset_otps SET used = 1 WHERE id = ?").run(row.id);
+      return res.status(400).json({ error: 'Too many incorrect attempts. Please request a new OTP.' });
+    }
+
+    if (sha256(otp) !== row.otp_hash) {
+      var remaining = 3 - (row.attempts + 1);
+      db.prepare("UPDATE password_reset_otps SET attempts = attempts + 1 WHERE id = ?").run(row.id);
+      if (remaining <= 0) {
+        db.prepare("UPDATE password_reset_otps SET used = 1 WHERE id = ?").run(row.id);
+        return res.status(400).json({ error: 'Incorrect OTP. No attempts remaining. Please request a new OTP.' });
+      }
+      return res.status(400).json({ error: 'Incorrect OTP. ' + remaining + ' attempt(s) remaining.' });
+    }
+
+    // OTP correct
+    db.prepare("UPDATE password_reset_otps SET used = 1 WHERE id = ?").run(row.id);
+    var resetToken = crypto.randomBytes(32).toString('hex');
+    db.prepare("INSERT INTO password_reset_tokens (token, expires_at) VALUES (?, ?)").run(resetToken, Date.now() + 15 * 60 * 1000);
+    res.json({ success: true, reset_token: resetToken });
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
+app.post('/api/admin/reset-password', function (req, res) {
+  try {
+    var resetToken = (req.body.reset_token || '').trim();
+    var newPassword = (req.body.new_password || '').trim();
+
+    if (!resetToken || !/^[a-f0-9]{64}$/.test(resetToken)) {
+      return res.status(400).json({ error: 'Invalid reset token.' });
+    }
+    if (newPassword.length < 8) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters.' });
+    }
+    if (!/[A-Z]/.test(newPassword)) {
+      return res.status(400).json({ error: 'Password must contain at least 1 uppercase letter.' });
+    }
+    if (!/\d/.test(newPassword)) {
+      return res.status(400).json({ error: 'Password must contain at least 1 number.' });
+    }
+    if (!/[!@#$%^&*_\-+=?]/.test(newPassword)) {
+      return res.status(400).json({ error: 'Password must contain at least 1 special character (!@#$%^&*_-+=?).' });
+    }
+
+    var row = db.prepare("SELECT * FROM password_reset_tokens WHERE token = ? AND used = 0").get(resetToken);
+    if (!row) {
+      return res.status(400).json({ error: 'Invalid or expired reset token.' });
+    }
+    if (Date.now() > row.expires_at) {
+      return res.status(400).json({ error: 'Reset token has expired. Please start over.' });
+    }
+
+    var hash = hashPassword(newPassword);
+    db.prepare("INSERT OR REPLACE INTO admin_config (key, value, updated_at) VALUES ('admin_password_hash', ?, datetime('now'))").run(hash);
+    db.prepare("UPDATE password_reset_tokens SET used = 1 WHERE token = ?").run(resetToken);
+
+    // Invalidate all sessions
+    sessions.clear();
+
+    // Send confirmation email
+    var adminEmail = process.env.ADMIN_EMAIL || process.env.SMTP_USER || '';
+    if (adminEmail) {
+      var confirmOpts = {
+        from: process.env.SMTP_FROM || '"Royal Computers Namibia" <noreply@royalcomputers.na>',
+        to: adminEmail,
+        subject: 'Royal Computers Admin — Password Changed',
+        html: '<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="margin:0;padding:0;background:#f5f3f4;font-family:Arial,sans-serif;"><table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:40px 20px;"><table width="480" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;padding:32px 40px;"><tr><td style="text-align:center;"><h2 style="color:#161a1d;margin:0 0 12px;font-size:18px;">Password Updated Successfully</h2><p style="color:#666;font-size:14px;line-height:1.6;margin:0 0 16px;">Your Royal Computers admin password was just changed. If this wasn\'t you, contact your system administrator immediately.</p><p style="color:#e5383b;font-size:13px;font-weight:600;margin:0;">&mdash; Royal Computers Namibia</p></td></tr></table></td></tr></table></body></html>'
+      };
+      var confT = getTransporter();
+      if (confT) {
+        confT.sendMail(confirmOpts).catch(function (mailErr) {
+          console.error('Password change confirmation email failed:', mailErr.message);
+        });
+      }
+    }
+
+    logAudit(null, 'reset-password', 'Admin password reset completed via OTP flow', req);
+    res.json({ success: true, message: 'Password updated successfully. Please login with your new password.' });
   } catch (err) {
     sendError(res, err);
   }

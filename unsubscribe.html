@@ -322,15 +322,6 @@
   <script defer src="js/guides-modal.js"></script>
   <script defer src="js/mobile-nav.js"></script>
 
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', function () {
-        navigator.serviceWorker.register('js/sw.js')
-          .then(reg => console.log('[SW] Registered, scope:', reg.scope))
-          .catch(err => console.warn('[SW] Registration failed:', err));
-      });
-    }
-  </script>
   <script defer src="js/site-data.js"></script>
   <script defer src="js/api-config.js"></script>
   <script defer src="js/newsletter.js"></script>

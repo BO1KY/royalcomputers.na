@@ -21,6 +21,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap"></noscript>
+  <noscript><link rel="stylesheet" href="css/royal-theme.css"><link rel="stylesheet" href="css/search-dropdown.css"><link rel="stylesheet" href="css/print-quote.css"><link rel="stylesheet" href="css/animations.css"><link rel="stylesheet" href="css/checkout-wizard.css"><link rel="stylesheet" href="css/enhanced-ui.css"><link rel="stylesheet" href="css/interactive-components.css"><link rel="stylesheet" href="css/ecommerce-features.css"><link rel="stylesheet" href="css/mobile.css"></noscript>
   <link rel="stylesheet" href="css/design-tokens.css">
   <link rel="stylesheet" href="css/royal-theme.css" media="print" onload="this.media='all'">
   <link rel="stylesheet" href="css/search-dropdown.css" media="print" onload="this.media='all'">
@@ -67,7 +68,10 @@ select.form-input{appearance:none;background:var(--dark-3);padding-right:36px}
 <div class="cart-sidebar" id="cartSidebar">
   <div class="cart-header">
     <h2 id="cartHeaderTitle">Shopping Cart</h2>
-    <button class="cart-close" id="closeCartBtn" onclick="closeCart()">&times;</button>
+    <div class="cart-header-actions">
+      <button class="btn-clear-cart" id="clearCartBtn">Clear Cart</button>
+      <button class="cart-close" id="closeCartBtn" onclick="closeCart()">&times;</button>
+    </div>
   </div>
   <div class="cart-items" id="cartItems"></div>
   <div class="cart-footer">
@@ -75,7 +79,6 @@ select.form-input{appearance:none;background:var(--dark-3);padding-right:36px}
       <span>Total:</span>
       <span id="cartTotalPrice">N$0.00</span>
     </div>
-    <button class="btn-clear-cart" id="clearCartBtn">Clear Cart</button>
     <button class="btn-checkout" id="checkoutBtn" onclick="handleCheckout()">Generate Quote</button>
     <button class="btn-continue" id="continueShopping" onclick="closeCart()">Continue Shopping</button>
   </div>
@@ -125,6 +128,10 @@ select.form-input{appearance:none;background:var(--dark-3);padding-right:36px}
           <label class="form-label" for="notesInput">Special Requests / Notes</label>
           <textarea id="notesInput" placeholder="Any special notes for your order..."></textarea>
         </div>
+        <div class="form-group">
+          <label class="form-label" for="additionalDetailsInput">Additional Customer Details</label>
+          <textarea id="additionalDetailsInput" placeholder="Add any additional information you'd like included on the quote (ID number, reference, etc.)..."></textarea>
+        </div>
         <div class="form-group form-checkbox">
           <input type="checkbox" id="termsCheckbox">
           <label for="termsCheckbox" class="terms-label">I agree to the terms and conditions</label>
@@ -147,6 +154,28 @@ select.form-input{appearance:none;background:var(--dark-3);padding-right:36px}
 </div>
 
 
+<div class="guide-overlay" id="guideModal">
+  <div class="guide-modal">
+    <div class="bg-header">
+      <h3 id="guideModalTitle">Guide</h3>
+      <button class="bg-close" onclick="closeGuideModal()">&times;</button>
+    </div>
+    <div class="bg-body" id="guideModalBody"></div>
+  </div>
+</div>
+
+
+<div class="newsletter-overlay" id="salePopup">
+  <div class="newsletter-box" style="max-width:520px;text-align:center;">
+    <button class="close-newsletter" onclick="closeSalePopup()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <div style="font-size:48px;margin-bottom:8px;">🏷️</div>
+    <h3 style="color:var(--red);margin:0 0 8px;">Special Offers!</h3>
+    <div id="salePopupBody" style="font-size:14px;line-height:1.6;margin-bottom:16px;"></div>
+    <div id="salePopupMedia" style="margin-bottom:16px;"></div>
+    <a href="deals.html" class="nl-subscribe">Shop Deals</a>
+  </div>
+</div>
+
 <div class="newsletter-overlay" id="newsletterOverlay">
   <div class="newsletter-box">
     <button class="close-newsletter" onclick="closeNewsletter()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
@@ -160,6 +189,8 @@ select.form-input{appearance:none;background:var(--dark-3);padding-right:36px}
     <p class="privacy">No spam, ever. <a href="unsubscribe.html" class="link-red">Unsubscribe anytime</a>.</p>
   </div>
 </div>
+
+<button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg></button>
 
 
 <header>
@@ -302,12 +333,14 @@ select.form-input{appearance:none;background:var(--dark-3);padding-right:36px}
 <script src="js/cart.js"></script>
 <script>
   var header = document.querySelector('header');
+  var btt = document.getElementById('backToTop');
   window.addEventListener('scroll', function() {
     if (window.scrollY > 20) {
       header.classList.add('scrolled');
     } else {
       header.classList.remove('scrolled');
     }
+    if (btt) btt.classList.toggle('visible', window.scrollY > 400);
   });
 </script>
 <script defer src="js/quote.js"></script>

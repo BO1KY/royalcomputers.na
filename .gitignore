@@ -12,4 +12,5 @@ server/.env
 .agents/
 skills-lock.json
 .env.local
+.env.example
 uploads/
