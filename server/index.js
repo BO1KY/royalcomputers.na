@@ -9,6 +9,9 @@ var Database = require('better-sqlite3');
 var nodemailer = require('nodemailer');
 var multer = require('multer');
 var sharp = require('sharp');
+var helmet = require('helmet');
+var rateLimit = require('express-rate-limit');
+var { body, validationResult } = require('express-validator');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 var app = express();
@@ -45,13 +48,13 @@ setInterval(function () {
   for (var key2 of adminLastSeen.keys()) {
     if (adminLastSeen.get(key2) < hourAgo) adminLastSeen.delete(key2);
   }
-  // Clean expired apiLimiter entries
-  for (var key3 of apiLimiter.keys()) {
-    if (now > apiLimiter.get(key3).reset) apiLimiter.delete(key3);
-  }
   // Clean expired loginAttempts entries
   for (var key4 of loginAttempts.keys()) {
     if (now > loginAttempts.get(key4).reset) loginAttempts.delete(key4);
+  }
+  // Clean expired CSRF tokens
+  for (var key6 of csrfTokens.keys()) {
+    if (now > csrfTokens.get(key6).expires) csrfTokens.delete(key6);
   }
   // Clean stale chatTyping entries (older than 10 seconds)
   for (var key5 of chatTyping.keys()) {
@@ -291,20 +294,65 @@ app.use(cors({
 app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: false }));
 
-// General API rate limiter (per-IP, 120 requests per minute)
-var apiLimiter = new Map();
-app.use('/api/', function (req, res, next) {
-  var ip = req.ip || req.connection.remoteAddress || 'unknown';
-  var now = Date.now();
-  var entry = apiLimiter.get(ip) || { count: 0, reset: now + 60000 };
-  if (now > entry.reset) { entry.count = 0; entry.reset = now + 60000; }
-  entry.count++;
-  apiLimiter.set(ip, entry);
-  if (entry.count > 120) {
-    return res.status(429).json({ error: 'Too many requests. Try again later.' });
+// ─── Helmet security headers ───
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'same-origin' },
+  crossOriginOpenerPolicy: { policy: 'same-origin' },
+  contentSecurityPolicy: {
+    useDefaults: false,
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'", "https:"],
+      frameSrc: ["'self'"],
+      baseUri: ["'self'"],
+      formAction: ["'self'"],
+      objectSrc: ["'none'"],
+      upgradeInsecureRequests: []
+    }
   }
-  next();
+}));
+
+// ─── Rate limiting ───
+var generalLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 120,
+  message: { error: 'Too many requests. Try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { xForwardedForHeader: false }
 });
+var strictLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 10,
+  message: { error: 'Too many requests. Try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { xForwardedForHeader: false }
+});
+app.use('/api/', generalLimiter);
+
+// ─── CSRF token store ───
+var csrfTokens = new Map();
+var CSRF_TTL = 60 * 60 * 1000;
+
+function validateCsrfToken(req, res, next) {
+  if (['GET', 'HEAD', 'OPTIONS'].indexOf(req.method) !== -1) return next();
+  if (authorizeRequest(req)) return next();
+  if (!validateSameOrigin(req)) return res.status(403).json({ error: 'Cross-origin request denied' });
+  var token = req.headers['x-csrf-token'] || (req.body && req.body._csrf);
+  if (!token || !csrfTokens.has(token)) return res.status(403).json({ error: 'Invalid or missing CSRF token' });
+  var entry = csrfTokens.get(token);
+  if (Date.now() > entry.expires) {
+    csrfTokens.delete(token);
+    return res.status(403).json({ error: 'CSRF token expired' });
+  }
+  csrfTokens.delete(token);
+  next();
+}
 
 // Strip null bytes from request body strings to prevent injection
 app.use(function (req, res, next) {
@@ -325,15 +373,20 @@ function requireAuth(req, res, next) {
 
 app.use('/uploads', express.static(UPLOADS_DIR));
 
+// Validation error handler middleware
+function handleValidationErrors(req, res, next) {
+  var errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      errors: errors.array().map(function(e) {
+        return { field: e.param, message: e.msg };
+      })
+    });
+  }
+  next();
+}
+
 app.use(function (req, res, next) {
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'DENY');
-  res.setHeader('X-XSS-Protection', '1; mode=block');
-  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
-  res.setHeader('X-Permitted-Cross-Domain-Policies', 'none');
-  res.setHeader('Cross-Origin-Resource-Policy', 'same-origin');
-  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
   // Prevent caching of API responses
   if (req.path.indexOf('/api/') === 0) {
     res.setHeader('Cache-Control', 'private, no-cache, no-store, must-revalidate');
@@ -773,8 +826,8 @@ app.post('/api/admin/request-password-reset', function (req, res) {
     var username = (req.body.username || '').trim().toLowerCase();
     if (!username) return res.status(400).json({ error: 'Username is required' });
     var user = db.prepare("SELECT id, username, name, branch_id FROM users WHERE LOWER(username) = ?").get(username);
-    if (!user) return res.json({ success: true, message: 'If the account exists, a reset request has been submitted.' });
-    if (!user.branch_id) return res.json({ success: true, message: 'If the account exists, a reset request has been submitted.' });
+    if (!user) return res.json({ success: true, message: 'That username was not found.', userExists: false });
+    if (!user.branch_id) return res.json({ success: true, message: 'That username was not found.', userExists: false });
     var existing = db.prepare("SELECT id FROM password_resets WHERE username = ? AND status = 'pending'").get(user.username);
     if (existing) return res.json({ success: true, message: 'A reset request is already pending for this account.' });
     db.prepare("INSERT INTO password_resets (username, branch_id) VALUES (?, ?)").run(user.username, user.branch_id);
@@ -1456,20 +1509,24 @@ app.post('/api/admin/change-password', function (req, res) {
   }
 });
 
-app.post('/api/subscribe', function (req, res) {
+// ─── CSRF token endpoint ───
+app.get('/api/csrf-token', function (req, res) {
+  var token = crypto.randomBytes(32).toString('hex');
+  csrfTokens.set(token, { expires: Date.now() + CSRF_TTL });
+  res.json({ csrfToken: token });
+});
+
+app.post('/api/subscribe',
+  validateCsrfToken,
+  body('email').trim().isEmail().withMessage('Valid email is required').normalizeEmail(),
+  handleValidationErrors,
+  function (req, res) {
   try {
-    if (!validateSameOrigin(req)) return res.status(403).json({ error: 'Cross-origin request denied' });
-
-    var email = (req.body.email || '').trim().toLowerCase();
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return res.status(400).json({ error: 'Invalid email' });
-    }
-
+    var email = req.body.email;
     var existing = db.prepare("SELECT email FROM subscribers WHERE email = ?").get(email);
     if (existing) {
       return res.status(409).json({ error: 'Already subscribed' });
     }
-
     db.prepare("INSERT INTO subscribers (email) VALUES (?)").run(email);
     res.json({ success: true });
   } catch (err) {
@@ -1477,27 +1534,23 @@ app.post('/api/subscribe', function (req, res) {
   }
 });
 
-app.post('/api/contact', function (req, res) {
+app.post('/api/contact',
+  validateCsrfToken,
+  strictLimiter,
+  body('name').trim().notEmpty().withMessage('Name is required').isLength({ max: 100 }).escape(),
+  body('phone').trim().notEmpty().withMessage('Phone is required').isLength({ max: 30 }).escape(),
+  body('email').trim().isEmail().withMessage('Valid email is required').normalizeEmail(),
+  body('company').optional().trim().escape().isLength({ max: 200 }),
+  body('subject').trim().notEmpty().withMessage('Subject is required').isLength({ max: 200 }).escape(),
+  body('message').trim().notEmpty().withMessage('Message is required').isLength({ min: 10, max: 5000 }).withMessage('Message must be 10-5000 characters').escape(),
+  handleValidationErrors,
+  function (req, res) {
   try {
-    if (!validateSameOrigin(req)) return res.status(403).json({ error: 'Cross-origin request denied' });
-
-    var name = (req.body.name || '').trim();
-    var phone = (req.body.phone || '').trim();
-    var email = (req.body.email || '').trim();
-    var company = (req.body.company || '').trim();
-    var subject = req.body.subject || '';
-    var message = (req.body.message || '').trim();
-    var date = req.body.date || new Date().toISOString();
-
-    if (!name || !phone || !email || !subject || !message) {
-      return res.status(400).json({ error: 'Missing required fields' });
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return res.status(400).json({ error: 'Invalid email format' });
-    }
+    var { name, phone, email, company, subject, message } = req.body;
+    var date = new Date().toISOString();
 
     db.prepare("INSERT INTO messages (name, phone, email, company, subject, message, date) VALUES (?, ?, ?, ?, ?, ?, ?)")
-      .run(name, phone, email, company, subject, message, date);
+      .run(name, phone, email, company || null, subject, message, date);
 
     res.json({ success: true });
   } catch (err) {
@@ -1535,20 +1588,17 @@ app.post('/api/check-subscriber', function (req, res) {
   }
 });
 
-app.post('/api/unsubscribe', function (req, res) {
+app.post('/api/unsubscribe',
+  validateCsrfToken,
+  body('email').trim().isEmail().withMessage('Valid email is required').normalizeEmail(),
+  handleValidationErrors,
+  function (req, res) {
   try {
-    if (!validateSameOrigin(req)) return res.status(403).json({ error: 'Cross-origin request denied' });
-
-    var email = (req.body.email || '').trim().toLowerCase();
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return res.status(400).json({ error: 'Invalid email' });
-    }
-
+    var email = req.body.email;
     var result = db.prepare("DELETE FROM subscribers WHERE email = ?").run(email);
     if (result.changes === 0) {
       return res.status(404).json({ error: 'Email not found in our subscribers list.' });
     }
-
     res.json({ success: true, message: 'You have been unsubscribed successfully.' });
   } catch (err) {
     sendError(res, err);
@@ -2006,9 +2056,8 @@ app.get('/api/quotations', function (req, res) {
       params.push('%' + search + '%');
     }
     var where = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';
-    var rows = params.length
-      ? db.prepare('SELECT * FROM quotations ' + where + ' ORDER BY created_at DESC').all.apply(null, params)
-      : db.prepare('SELECT * FROM quotations ORDER BY created_at DESC').all();
+    var qStmt = db.prepare('SELECT * FROM quotations ' + where + ' ORDER BY created_at DESC');
+    var rows = params.length ? qStmt.all.apply(qStmt, params) : db.prepare('SELECT * FROM quotations ORDER BY created_at DESC').all();
     res.json({ success: true, quotations: rows });
   } catch (err) {
     sendError(res, err);
@@ -2722,7 +2771,8 @@ app.post('/api/admin/job-cards/:id/upload-proof', upload.fields([{ name: 'proof'
     }
 
     updateParams.push(req.params.id);
-    db.prepare("UPDATE job_cards SET " + updateFields.join(',') + " WHERE id=?").run.apply(null, updateParams);
+    var jcStmt = db.prepare("UPDATE job_cards SET " + updateFields.join(',') + " WHERE id=?");
+    jcStmt.run.apply(jcStmt, updateParams);
 
     logAudit(user, 'upload-proof', 'Uploaded collection proof' + (sigFile ? ' and signature' : '') + ' for job card ' + req.params.id + ' (collector: ' + collectorName.trim() + ')', req);
     res.json({
@@ -3048,7 +3098,8 @@ app.post('/api/user/wishlist/quote', function (req, res) {
     var itemIds = req.body.item_ids || [];
     if (!itemIds.length) return res.status(400).json({ error: 'No items selected' });
     var placeholders = itemIds.map(function() { return '?'; }).join(',');
-    var items = db.prepare("SELECT w.*, p.name, p.price, p.image FROM wishlist w LEFT JOIN custom_products p ON p.id = w.product_id WHERE w.id IN (" + placeholders + ") AND w.user_id = ?").all.apply(null, itemIds.concat([user.id]));
+    var wStmt = db.prepare("SELECT w.*, p.name, p.price, p.image FROM wishlist w LEFT JOIN custom_products p ON p.id = w.product_id WHERE w.id IN (" + placeholders + ") AND w.user_id = ?");
+    var items = wStmt.all.apply(wStmt, itemIds.concat([user.id]));
     if (!items.length) return res.status(404).json({ error: 'No wishlist items found' });
     var quoteItems = items.map(function(item) { return { product_id: item.product_id, name: item.name || 'Unknown', price: item.price || 0, qty: 1 }; });
     var subtotal = quoteItems.reduce(function(sum, i) { return sum + (parseFloat(i.price) || 0); }, 0);
@@ -3285,7 +3336,8 @@ app.get('/api/admin/chat/sessions', function (req, res) {
       params.push(user.branch_id);
     }
     query += " ORDER BY s.status ASC, s.last_activity DESC";
-    var sessions = params.length ? db.prepare(query).all.apply(db, params) : db.prepare(query).all();
+    var stmt = db.prepare(query);
+    var sessions = params.length ? stmt.all.apply(stmt, params) : stmt.all();
     res.json({ success: true, sessions: sessions });
   } catch (err) {
     sendError(res, err);

@@ -274,6 +274,10 @@
       });
     });
 
+    function fetchCsrfToken() {
+      return fetch('/api/csrf-token').then(function(r) { return r.json(); }).then(function(d) { return d.csrfToken; });
+    }
+
     confirmBtn.addEventListener('click', function() {
       if (!verifiedEmail) return;
 
@@ -282,10 +286,12 @@
       step2Msg.className = 'message';
       step2Msg.textContent = '';
 
-      fetch('/api/unsubscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: verifiedEmail })
+      fetchCsrfToken().then(function(token) {
+        return fetch('/api/unsubscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token },
+          body: JSON.stringify({ email: verifiedEmail })
+        });
       }).then(function(res) {
         return res.json().then(function(data) {
           if (!res.ok) throw new Error(data.error || 'Failed to unsubscribe');
